@@ -5,23 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>原子習慣養成</title>
     
-    <!-- PWA Manifest 設定 -->
     <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoi5Y6f5a2Q57+S5oWj6aSK5oiQIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJ0aGVtZV9jb2xvciI6IiNmZGY4ZjUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2ZkZjhmNSIsImljb25zIjpbeyJzcmMiOiJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBISjViQ0JndmN5QjBZbk4wY205a1pUMGlNV1FpSUhacFpYZENiM2c5SWpBZ01DQXhNREFnTVRBd0lqNDhZMnhwWTJ4bElHTjRQU0k1TUNJZ2RITTlJakl3SWlCMEwwWnBiR3c5SWk5MGFHVnRaU0lnYUhSMGNEb3ZMM2QzZHk1M2MyMHVZMjl0THpFd0wyNWtjQ0k4TDNNMlpUND0iLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCIsInNpemVzIjoiMTkyeDE5MiJ9XX0=">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        body {
-            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', 'Segoe UI', sans-serif;
-            background-color: #fdf8f5; 
-            background-image: radial-gradient(#fde2e4 3px, transparent 3px);
-            background-size: 30px 30px;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* 📱 RWD 雙欄式佈局 (iPad 寬螢幕適配) */
+        body { font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', 'Segoe UI', sans-serif; background-color: #fdf8f5; background-image: radial-gradient(#fde2e4 3px, transparent 3px); background-size: 30px 30px; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
         .app-wrapper { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; transition: filter 0.3s; }
         @media (min-width: 768px) {
             .app-wrapper { max-width: 1024px; flex-direction: row; gap: 20px; padding: 20px; min-height: calc(100vh - 40px); }
@@ -34,13 +24,9 @@
             .app-wrapper { background-color: #ffffff; border-left: 4px solid #1f2937; border-right: 4px solid #1f2937; }
             .panel-right { padding: 20px; padding-top: 0; flex: 1; }
         }
-
-        /* 元件樣式 */
         .hand-drawn-border { border: 4px solid #1f2937; border-radius: 24px 12px 24px 12px; box-shadow: 4px 4px 0px #1f2937; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .hand-drawn-btn:active { transform: translate(4px, 4px) !important; box-shadow: 0px 0px 0px #1f2937 !important; }
         .bg-theme-transition { transition: background 0.5s ease-in-out; border-bottom: 4px solid #1f2937; }
-
-        /* 繪本風圖表與動畫 */
         .pie-chart { transform: rotate(-90deg); border-radius: 50%; border: 4px solid #1f2937; box-shadow: 4px 4px 0px #1f2937; background: #fff; overflow: hidden; }
         @keyframes float { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(2deg); } }
         .mascot-float { animation: float 3s infinite ease-in-out; }
@@ -56,13 +42,9 @@
         .tree-sway { animation: sway 4s ease-in-out infinite; transform-origin: 100px 140px; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .loading-spin { animation: spin 1s linear infinite; }
-
-        /* 黃金雨特效 */
         #golden-rain { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; display: none; background: rgba(0,0,0,0.4); }
         .falling-coin { position: absolute; top: -50px; animation: fall linear forwards; }
         @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
-
-        /* 滾動條隱藏與自訂 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .custom-scroll::-webkit-scrollbar { width: 6px; }
@@ -71,10 +53,8 @@
 </head>
 <body class="antialiased text-gray-800">
 
-    <!-- ☁️ 雲端同步鎖定遮罩 (防止 Race Condition) -->
     <div id="sync-overlay" class="fixed inset-0 z-[200] bg-white/80 backdrop-blur-md flex flex-col items-center justify-center transition-opacity duration-500">
         <div class="w-20 h-24 mb-4 relative mascot-float">
-            <!-- 預設顯示 SVG 貓咪，零 Emoji -->
             <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md"><polygon points="15,40 25,10 45,30" fill="#a855f7" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/><polygon points="85,40 75,10 55,30" fill="#a855f7" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/><path d="M15,40 Q10,80 50,85 Q90,80 85,40 Q65,30 50,35 Q35,30 15,40 Z" fill="#c084fc" stroke="#1f2937" stroke-width="3"/><circle cx="38" cy="55" r="2.5" fill="#1f2937"/><circle cx="62" cy="55" r="2.5" fill="#1f2937"/></svg>
             <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-8 loading-spin border-4 border-blue-500 border-t-transparent rounded-full"></div>
         </div>
@@ -82,21 +62,16 @@
         <p class="text-gray-500 font-bold text-sm mt-2">全家人的進度同步中...</p>
     </div>
 
-    <!-- 📲 PWA 安裝提示 Banner -->
     <div id="pwa-banner" class="hidden bg-blue-500 text-white font-black p-3 text-center text-sm border-b-4 border-gray-800 relative z-50 shadow-md">
         <span class="mr-2">💡 想要全螢幕體驗嗎？</span>
         <button onclick="PWA.install()" class="bg-yellow-300 text-gray-900 px-3 py-1 rounded-lg border-2 border-gray-800 shadow-sm active:translate-y-1">📲 安裝至桌面</button>
         <button onclick="PWA.hide()" class="absolute right-3 top-3 text-white font-bold opacity-80">✕</button>
     </div>
-    
-    <!-- 黃金雨容器 -->
     <div id="golden-rain"></div>
 
     <div class="app-wrapper">
-        <!-- ================= 左半邊：操作儀表板 ================= -->
         <div class="panel-left">
             <header id="main-header" class="bg-theme-transition text-white p-5 pb-10 relative z-30 md:rounded-none rounded-b-[2rem]">
-                <!-- Row 1: 標題與角色切換 -->
                 <div class="flex justify-between items-start mb-4 relative z-50">
                     <div class="relative max-w-[60%] md:max-w-[70%]">
                         <button onclick="UI.toggleHabitMenu()" class="text-3xl font-black tracking-wide drop-shadow-md text-white flex items-center gap-1 active:scale-95 transition-transform" style="text-shadow: 2px 2px 0 #1f2937; max-width: 100%;">
@@ -105,7 +80,6 @@
                         <div id="identity-badge" class="mt-1 inline-flex items-center gap-1 bg-white/90 text-gray-800 px-3 py-0.5 rounded-full border-2 border-gray-800 text-xs font-black shadow-sm transform -rotate-1 max-w-full">
                             <div class="w-3 h-3 flex-shrink-0" id="icon-crown-header"></div> <span id="identity-text" class="truncate">稱號載入中</span>
                         </div>
-                        
                         <div id="habit-dropdown" class="absolute top-full left-0 mt-2 bg-white hand-drawn-border p-2 hidden flex-col gap-2 w-56 shadow-[4px_4px_0px_#1f2937]">
                             <div id="habit-list-container" class="flex flex-col gap-1 max-h-64 overflow-y-auto custom-scroll"></div>
                             <div class="border-t-2 border-dashed border-gray-300 my-1"></div>
@@ -114,14 +88,11 @@
                             <button onclick="Editor.open()" class="w-full text-left px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-black text-gray-800 flex items-center gap-2">⚙️ 系統與習慣管理</button>
                         </div>
                     </div>
-                    
                     <div class="flex items-center gap-2 flex-shrink-0">
                         <button onclick="AudioEngine.toggleMute()" id="mute-btn" class="w-10 h-10 bg-white/30 rounded-full border-2 border-white/50 flex items-center justify-center text-xl shadow-sm hover:bg-white/50 transition-colors">🔊</button>
                         <div class="flex space-x-1.5 bg-white/30 p-1.5 rounded-2xl hand-drawn-border shadow-[2px_2px_0px_#1f2937]" id="user-switcher"></div>
                     </div>
                 </div>
-                
-                <!-- Row 2: 工具列與數據庫 -->
                 <div class="flex flex-col items-start gap-2 relative z-40 max-w-[65%] mt-1">
                     <div class="flex items-center gap-2">
                         <button onclick="Shop.open()" id="shop-btn" class="w-12 h-12 bg-pink-200 rounded-xl hand-drawn-border flex items-center justify-center shadow-[2px_2px_0px_#1f2937] transition-all hover:bg-pink-300 p-2"></button>
@@ -136,21 +107,14 @@
                         <div class="flex items-center gap-1.5" title="綜合活躍連勝"><div class="w-5 h-5 fire-anim" id="flame-icon"></div><span class="text-xl font-black drop-shadow-md text-gray-800" id="overall-streak">0</span></div>
                     </div>
                 </div>
-
-                <!-- 廣播對話框與吉祥物 (互動彩蛋區) -->
                 <div class="absolute -bottom-8 -right-2 flex flex-row items-end justify-end z-20 pointer-events-none w-[120%]">
                     <div class="bg-white border-4 border-gray-800 text-gray-800 px-4 py-3 rounded-2xl rounded-br-none shadow-[4px_4px_0px_#1f2937] mb-10 mr-[-15px] pop-in text-sm font-black text-left w-[200px] pointer-events-auto relative z-10 transform -rotate-2" id="mascot-speech"></div>
-                    <div class="w-28 h-28 mascot-float cursor-pointer pointer-events-auto relative z-20 select-none" id="mascot-img" 
-                         onmousedown="EasterEggs.startPress(event)" onmouseup="EasterEggs.endPress(event)" onmouseleave="EasterEggs.cancelPress(event)"
-                         ontouchstart="EasterEggs.startPress(event)" ontouchend="EasterEggs.endPress(event)" ontouchcancel="EasterEggs.cancelPress(event)"></div>
+                    <div class="w-28 h-28 mascot-float cursor-pointer pointer-events-auto relative z-20 select-none" id="mascot-img" onmousedown="EasterEggs.startPress(event)" onmouseup="EasterEggs.endPress(event)" onmouseleave="EasterEggs.cancelPress(event)" ontouchstart="EasterEggs.startPress(event)" ontouchend="EasterEggs.endPress(event)" ontouchcancel="EasterEggs.cancelPress(event)"></div>
                 </div>
             </header>
 
-            <!-- 操作區 (打卡按鈕) -->
             <div class="p-5 pt-10 flex-1 bg-white md:bg-transparent">
-                <div id="family-buff-banner" class="hidden w-full mb-4 bg-red-500 text-white font-black text-sm px-4 py-2 rounded-xl border-4 border-gray-800 shadow-[2px_2px_0px_#1f2937] transform rotate-1 pop-in text-center">
-                    👨‍👩‍👦 全家連擊中！今日金幣 x1.2 倍
-                </div>
+                <div id="family-buff-banner" class="hidden w-full mb-4 bg-red-500 text-white font-black text-sm px-4 py-2 rounded-xl border-4 border-gray-800 shadow-[2px_2px_0px_#1f2937] transform rotate-1 pop-in text-center">👨‍👩‍👦 全家連擊中！今日金幣 x1.2 倍</div>
                 <div id="action-title-container" class="inline-block border-2 border-gray-800 px-3 py-1 rounded-lg font-black text-sm transform -rotate-1 mb-4 shadow-[2px_2px_0px_#1f2937] transition-colors duration-300">
                     <span id="action-title-text">✨ 準備好完成任務了嗎？</span>
                     <button id="cancel-recovery-btn" onclick="Logic.cancelRecovery()" class="hidden ml-2 bg-red-400 text-white px-2 py-0.5 rounded border border-gray-800">取消時光機</button>
@@ -159,7 +123,6 @@
             </div>
         </div>
 
-        <!-- ================= 右半邊：數據與日曆 ================= -->
         <div class="panel-right pb-20 md:pb-5 relative">
             <div class="bg-white p-5 hand-drawn-border bg-yellow-50 relative mt-4 md:mt-2">
                 <div class="absolute -top-3 left-4 bg-yellow-300 border-2 border-gray-800 px-3 py-1 rounded-lg font-black text-xs transform -rotate-2">近 7 天活躍</div>
@@ -174,7 +137,6 @@
                 <button id="btn-load-more-footprints" onclick="UI.loadMoreFootprints()" class="hidden mt-3 text-sm font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 py-2 rounded-xl border-2 border-dashed border-gray-300 transition-colors">📜 展開歷史足跡 ▼</button>
             </div>
             
-            <!-- 🦊 作者專屬印記彩蛋 (防手指遮擋，置於最底部) -->
             <div class="text-right mt-6 opacity-40 hover:opacity-100 transition-opacity cursor-pointer flex items-center justify-end gap-1" onclick="EasterEggs.triggerAuthorEgg()">
                 <span class="text-xs font-black text-gray-500">Made by TeacherFox</span>
                 <div class="w-4 h-4" id="icon-author-fox"></div>
@@ -182,11 +144,9 @@
         </div>
     </div>
 
-    <!-- Modal 容器注入點 -->
     <div id="modals-container"></div>
     <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-gray-800 border-4 border-gray-900 text-white px-6 py-3 rounded-2xl shadow-[4px_4px_0px_rgba(0,0,0,0.3)] transition-all duration-300 opacity-0 pointer-events-none z-[100] font-bold text-center w-max max-w-[90%]"><span id="toast-msg">提示！</span></div>
 
-    <!-- PWA 安裝彈窗 -->
     <div id="ios-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0 px-4 pb-10 md:pb-0">
         <div class="bg-[#fff9f0] w-full max-w-[360px] rounded-[2rem] p-6 border-8 border-gray-800 transform transition-transform translate-y-full md:translate-y-0 text-center shadow-[8px_8px_0px_#1f2937] relative">
             <h3 class="text-2xl font-black text-gray-800 mb-4">📲 安裝至桌面</h3>
@@ -197,187 +157,9 @@
         </div>
     </div>
 
-    <!-- 隱藏的備份匯入元件 -->
     <input type="file" id="backup-file-input" class="hidden" accept=".json" onchange="SystemConfig.handleRestoreBackup(event)">
 
     <script>
-        // ==========================================
-        // ☁️ 雲端同步引擎 (GAS 無痛背景連線 + 防衝突)
-        // ==========================================
-        const SyncEngine = {
-            API_URL: "https://script.google.com/macros/s/AKfycbyISODCgqeOUH0ZtIf2kf3VmdmOzaF1PLoNd9ZQQ19j40FQZcYP1GVqb72uYqyf7NJb3w/exec",
-            isSyncing: false,
-            
-            async pull() {
-                try {
-                    const response = await fetch(this.API_URL);
-                    const result = await response.json();
-                    
-                    if (result.status === 'success' && result.data) {
-                        const cloudData = result.data;
-                        if(Object.keys(cloudData).length === 0) return 'empty'; 
-                        
-                        const rawDaily = cloudData['daily-habit-v13'] || cloudData['daily-habit-v12'] || {};
-                        users.forEach(u => {
-                            if (!rawDaily[u.uid]) rawDaily[u.uid] = { totalCoins: 0, currentCoins: 0, mails: [], habits: {}, shopHistory: [] };
-                            if (!rawDaily[u.uid].mails) rawDaily[u.uid].mails = [];
-                            if (!rawDaily[u.uid].shopHistory) rawDaily[u.uid].shopHistory = [];
-                            if (!rawDaily[u.uid].habits) rawDaily[u.uid].habits = {};
-                        });
-                        
-                        if (cloudData.appTemplates_v13) localStorage.setItem('appTemplates_v13', JSON.stringify(cloudData.appTemplates_v13));
-                        if (cloudData.shopItems_v13) localStorage.setItem('shopItems_v13', JSON.stringify(cloudData.shopItems_v13));
-                        if (cloudData.customRadios_v13) localStorage.setItem('customRadios_v13', JSON.stringify(cloudData.customRadios_v13));
-                        localStorage.setItem('daily-habit-v13', JSON.stringify(rawDaily));
-                        return 'success';
-                    }
-                } catch (e) { console.error("Pull failed", e); }
-                return 'error';
-            },
-
-            async push() {
-                if (this.isSyncing) return;
-                this.isSyncing = true;
-                const updates = {
-                    appTemplates_v13: JSON.parse(localStorage.getItem('appTemplates_v13') || "{}"),
-                    shopItems_v13: JSON.parse(localStorage.getItem('shopItems_v13') || "[]"),
-                    customRadios_v13: JSON.parse(localStorage.getItem('customRadios_v13') || "[]"),
-                    'daily-habit-v13': JSON.parse(localStorage.getItem('daily-habit-v13') || "{}")
-                };
-                try {
-                    await fetch(this.API_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ updates })
-                    });
-                } catch (e) { console.error("Push failed", e); }
-                this.isSyncing = false;
-            },
-
-            async manualSync() {
-                if(this.isSyncing) return;
-                document.getElementById('sync-overlay').classList.remove('hidden');
-                document.getElementById('sync-overlay').style.opacity = '1';
-                document.getElementById('sync-msg').innerText = '🔄 雲端下載驗證中...';
-                
-                const status = await this.pull();
-                if (status === 'success' || status === 'empty') { 
-                    initDB(); 
-                    UI.renderAll(); 
-                    document.getElementById('sync-msg').innerText = '✅ 資料已同步，執行上傳...';
-                    await this.push();
-                    UI.showToast("資料同步完成！");
-                } else { 
-                    document.getElementById('sync-msg').innerText = '❌ 連線失敗，保護機制啟動';
-                    UI.showToast("網路異常，已暫停同步。您的本地資料安全無虞。"); 
-                }
-                setTimeout(() => {
-                    document.getElementById('sync-overlay').style.opacity = '0';
-                    setTimeout(() => document.getElementById('sync-overlay').classList.add('hidden'), 500);
-                }, 1000);
-            }
-        };
-
-        // ==========================================
-        // 🎵 音效引擎
-        // ==========================================
-        const AudioEngine = {
-            muted: false, ctx: null,
-            init() { if(this.ctx) return; try { window.AudioContext = window.AudioContext || window.webkitAudioContext; this.ctx = new AudioContext(); } catch(e) {} },
-            toggleMute() { this.muted = !this.muted; document.getElementById('mute-btn').innerText = this.muted ? "🔇" : "🔊"; if(!this.muted) { this.init(); if(this.ctx.state === 'suspended') this.ctx.resume(); this.playCoin(); } },
-            playCoin() { if(this.muted || !this.ctx) return; const osc = this.ctx.createOscillator(), gain = this.ctx.createGain(); osc.type = 'square'; osc.frequency.setValueAtTime(987, this.ctx.currentTime); osc.frequency.setValueAtTime(1318, this.ctx.currentTime + 0.1); gain.gain.setValueAtTime(0.1, this.ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.4); osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.4); },
-            playLevelUp() { if(this.muted || !this.ctx) return; const notes = [523, 659, 783, 1046]; notes.forEach((freq, i) => { const osc = this.ctx.createOscillator(), gain = this.ctx.createGain(); osc.type = 'square'; osc.frequency.value = freq; gain.gain.setValueAtTime(0.1, this.ctx.currentTime + i*0.1); gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + i*0.1 + 0.3); osc.connect(gain); gain.connect(this.ctx.destination); osc.start(this.ctx.currentTime + i*0.1); osc.stop(this.ctx.currentTime + i*0.1 + 0.3); }); },
-            playAnimal(type) { if(this.muted || !this.ctx) return; const osc = this.ctx.createOscillator(), gain = this.ctx.createGain(); if(type === 'cat') { osc.type = 'sine'; osc.frequency.setValueAtTime(600, this.ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(300, this.ctx.currentTime + 0.4); gain.gain.setValueAtTime(0.1, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.4); } else if (type === 'fox') { osc.type = 'triangle'; osc.frequency.setValueAtTime(800, this.ctx.currentTime); osc.frequency.linearRampToValueAtTime(1000, this.ctx.currentTime + 0.1); gain.gain.setValueAtTime(0.1, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.1); } else { osc.type = 'sine'; osc.frequency.setValueAtTime(1200, this.ctx.currentTime); osc.frequency.linearRampToValueAtTime(1600, this.ctx.currentTime + 0.3); gain.gain.setValueAtTime(0.05, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.3); } osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.4); },
-            playPurr() { if(this.muted || !this.ctx) return; const osc = this.ctx.createOscillator(), gain = this.ctx.createGain(); osc.type = 'sawtooth'; osc.frequency.value = 40; gain.gain.setValueAtTime(0.2, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 2); osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 2); },
-            vibrate(pattern) { if(navigator.vibrate) navigator.vibrate(pattern); }
-        };
-
-        // ==========================================
-        // 📲 PWA 安裝控制
-        // ==========================================
-        const PWA = {
-            deferredPrompt: null,
-            init() { 
-                if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) { this.hide(); return; } 
-                window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); this.deferredPrompt = e; this.show(); }); 
-                const isIos = () => { const ua = window.navigator.userAgent.toLowerCase(); return /iphone|ipad|ipod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); };
-                const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone); 
-                if (isIos() && !isInStandaloneMode()) this.show(); 
-            },
-            show() { document.getElementById('pwa-banner').classList.remove('hidden'); }, 
-            hide() { document.getElementById('pwa-banner').classList.add('hidden'); },
-            install() { 
-                const isIos = () => { const ua = window.navigator.userAgent.toLowerCase(); return /iphone|ipad|ipod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); };
-                if(isIos()) { document.getElementById('pwa-icon').innerHTML = SVGs.fox; UI.openModal('ios-pwa-modal'); } 
-                else if (this.deferredPrompt) { this.deferredPrompt.prompt(); this.deferredPrompt.userChoice.then((c) => { if (c.outcome === 'accepted') this.hide(); this.deferredPrompt = null; }); } 
-                else { UI.showToast("請從瀏覽器的設定選單加入主畫面！"); } 
-            }
-        };
-
-        // ==========================================
-        // 🎁 彩蛋與互動系統
-        // ==========================================
-        const EasterEggs = {
-            clickCount: 0, clickTimer: null, pressTimer: null, isPressed: false, pressStartTime: 0,
-            startPress(e) { 
-                if(e && e.type === 'touchstart' && e.cancelable) e.preventDefault(); 
-                if(this.isPressed) return; 
-                this.isPressed = true; this.pressStartTime = Date.now(); 
-                this.pressTimer = setTimeout(() => { 
-                    if(this.isPressed) { 
-                        this.isPressed = false; AudioEngine.init(); AudioEngine.playPurr(); AudioEngine.vibrate([2000]); this.spawnHearts(); 
-                        const speech = document.getElementById('mascot-speech');
-                        speech.innerText = "呼嚕嚕...算你摸得挺舒服的喵... 💖"; 
-                        speech.classList.remove('pop-in'); void speech.offsetWidth; speech.classList.add('pop-in'); 
-                    } 
-                }, 1000); 
-            },
-            endPress(e) { 
-                if(e && e.type === 'touchend' && e.cancelable) e.preventDefault(); 
-                if(this.pressTimer) clearTimeout(this.pressTimer); 
-                if (this.isPressed) { this.isPressed = false; const duration = Date.now() - this.pressStartTime; if (duration < 1000) UI.pokeMascot(); } 
-            },
-            cancelPress(e) { this.isPressed = false; if(this.pressTimer) clearTimeout(this.pressTimer); },
-            handleClick() {
-                this.clickCount++; if(this.clickTimer) clearTimeout(this.clickTimer); 
-                this.clickTimer = setTimeout(() => { this.clickCount = 0; }, 2000);
-                if(this.clickCount >= 10) {
-                    this.clickCount = 0; const uData = getUserData(currentUser.uid); const todayStr = getTodayStr();
-                    if(!uData.eggFastClick) uData.eggFastClick = {}; 
-                    if(uData.eggFastClick[todayStr]) { document.getElementById('mascot-speech').innerText = "別再戳了喵！今天已經給過你金幣了！"; return true; }
-                    uData.eggFastClick[todayStr] = true; uData.totalCoins += 10; uData.currentCoins += 10; saveLocal();
-                    AudioEngine.playLevelUp(); AudioEngine.vibrate([100,50,100,50,100]); 
-                    document.getElementById('mascot-speech').innerText = "煩死啦喵！別再戳本大人了！這 10 枚金幣給你，快去打卡！"; 
-                    UI.renderDashboard(); return true;
-                } else { AudioEngine.playAnimal(currentUser.svgKey); return false; }
-            },
-            spawnHearts() { 
-                const container = document.getElementById('mascot-img'); 
-                for(let i=0; i<5; i++) { 
-                    const heart = document.createElement('div'); heart.className = 'heart-float'; 
-                    heart.innerHTML = `<svg viewBox="0 0 100 100"><path d="M50,30 C50,30 40,10 20,20 C0,30 10,60 50,90 C90,60 100,30 80,20 C60,10 50,30 50,30 Z" fill="#fca5a5" stroke="#1f2937" stroke-width="4"/></svg>`; 
-                    heart.style.left = (Math.random() * 80 + 10) + 'px'; heart.style.top = (Math.random() * 20 + 20) + 'px'; heart.style.animationDelay = (Math.random() * 0.5) + 's'; 
-                    container.appendChild(heart); setTimeout(() => heart.remove(), 1000); 
-                } 
-            },
-            triggerGoldenRain() { 
-                const rain = document.getElementById('golden-rain'); rain.style.display = 'block'; 
-                for(let i=0; i<30; i++) { 
-                    const coin = document.createElement('div'); coin.className = 'falling-coin w-8 h-8'; coin.innerHTML = SVGs.coin; 
-                    coin.style.left = Math.random() * 100 + 'vw'; coin.style.animationDuration = (Math.random() * 1 + 1) + 's'; 
-                    rain.appendChild(coin); 
-                } 
-                setTimeout(() => { rain.style.display = 'none'; rain.innerHTML = ''; }, 2500); 
-            },
-            triggerAuthorEgg() {
-                AudioEngine.init(); AudioEngine.playAnimal('fox'); UI.showToast("🦊 爸爸永遠愛你們喔喵！💖");
-            }
-        };
-
-        // ==========================================
-        // 🎨 純手繪 SVG 圖庫
-        // ==========================================
         const SVGs = {
             fox: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md"><polygon points="15,45 20,15 40,30" fill="#fb923c" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/><polygon points="85,45 80,15 60,30" fill="#fb923c" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/><path d="M10,50 Q10,85 50,90 Q90,85 90,50 Q75,25 50,30 Q25,25 10,50 Z" fill="#fdba74" stroke="#1f2937" stroke-width="3"/><path d="M30,55 Q37,50 42,55 M58,55 Q63,50 70,55" stroke="#1f2937" stroke-width="4" fill="none"/><ellipse cx="50" cy="68" rx="5" ry="4" fill="#1f2937"/><path d="M30,70 Q50,95 70,70 Q50,80 30,70 Z" fill="#ffedd5" opacity="0.8"/></svg>`,
             cat: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md"><polygon points="15,40 25,10 45,30" fill="#a855f7" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/><polygon points="85,40 75,10 55,30" fill="#a855f7" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/><path d="M15,40 Q10,80 50,85 Q90,80 85,40 Q65,30 50,35 Q35,30 15,40 Z" fill="#c084fc" stroke="#1f2937" stroke-width="3"/><circle cx="38" cy="55" r="2.5" fill="#1f2937"/><circle cx="62" cy="55" r="2.5" fill="#1f2937"/><ellipse cx="25" cy="60" rx="4" ry="2" fill="#fbcfe8"/><ellipse cx="75" cy="60" rx="4" ry="2" fill="#fbcfe8"/></svg>`,
@@ -394,7 +176,6 @@
             crown: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M15,80 L85,80 L90,30 L70,50 L50,15 L30,50 L10,30 Z" fill="CROWN_COLOR" stroke="#1f2937" stroke-width="6"/></svg>`,
             fatJar: `<svg viewBox="0 0 100 120" class="absolute inset-0 w-full h-full drop-shadow-md"><path d="M35,5 L65,5 L60,20 L40,20 Z" fill="#d4a373" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/><path d="M40,20 C10,20 -5,60 10,95 C15,115 85,115 90,95 C105,60 90,20 60,20 Z" fill="rgba(255,255,255,0.8)" stroke="#1f2937" stroke-width="4" stroke-linejoin="round"/><path d="M38,20 L62,20" stroke="#f43f5e" stroke-width="4"/><path d="M50,20 C40,10 30,25 50,30 C70,25 60,10 50,20 Z" fill="#f43f5e" stroke="#1f2937" stroke-width="2"/><path d="M20,60 C20,90 80,90 80,60" stroke="rgba(255,255,255,0.9)" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`,
             fluffyTree: `<svg viewBox="0 0 200 300" class="w-[120%] h-[110%] opacity-95 transform translate-y-6"><path d="M 80 130 C 80 200, 50 280, 30 300 L 170 300 C 150 280, 120 200, 120 130 Z" fill="#78350f" stroke="#1f2937" stroke-width="4"/><g class="tree-sway"><path d="M 100 140 C 150 150, 180 170, 190 120 C 210 70, 170 30, 140 30 C 120 -10, 60 -10, 50 30 C 10 30, -10 80, 20 120 C 40 160, 60 140, 100 140 Z" fill="#22c55e" stroke="#1f2937" stroke-width="4"/></g></svg>`,
-            goldApple: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md"><path d="M50,20 C20,20 10,50 20,80 C30,100 50,90 50,90 C50,90 70,100 80,80 C90,50 80,20 50,20 Z" fill="#fde047" stroke="#1f2937" stroke-width="4" stroke-linejoin="round"/><path d="M50,20 C50,10 65,5 70,10 C70,20 50,20 50,20 Z" fill="#4ade80" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/></svg>`,
             icons: {
                 book: `<svg viewBox="0 0 100 100"><path d="M20 20 L45 25 L45 80 L20 75 Z" fill="#ffb3ba" stroke="#1f2937" stroke-width="4"/><path d="M80 20 L55 25 L55 80 L80 75 Z" fill="#ffb3ba" stroke="#1f2937" stroke-width="4"/></svg>`,
                 read: `<svg viewBox="0 0 100 100"><path d="M30 10 L70 10 L70 90 L50 70 L30 90 Z" fill="#bae1ff" stroke="#1f2937" stroke-width="4"/></svg>`,
@@ -415,441 +196,216 @@
             { id: 'green', title: '薄荷綠', hex: '#34d399', grad: 'linear-gradient(135deg, #34d399 0%, #a7f3d0 100%)', prim: 'bg-emerald-400', btn: 'bg-emerald-100', dot: 'bg-emerald-500' }
         ];
 
-        const users = [
-            { uid: "user_dad", name: "狐狸", svgKey: "fox" },
-            { uid: "user_son", name: "阿蛇", svgKey: "cat" },
-            { uid: "user_mom", name: "綠公主", svgKey: "princess" }
-        ];
+        const users = [{ uid: "user_dad", name: "狐狸", svgKey: "fox" }, { uid: "user_son", name: "阿蛇", svgKey: "cat" }, { uid: "user_mom", name: "綠公主", svgKey: "princess" }];
+        let currentUser = users[1]; let currentHabitId = "reading"; let appTemplates = {}; let shopItems = []; let customRadios = []; let dailyHabitData = {};
+        let recoveryDate = null; let isEditMode = false; let currentActionObj = null; let editTargetDate = null;
 
-        let currentUser = users[1]; 
-        let currentHabitId = "reading"; 
-        let appTemplates = {}; 
-        let shopItems = []; 
-        let customRadios = []; 
-        let dailyHabitData = {};
-        let recoveryDate = null; 
-        let isEditMode = false; 
-        let currentActionObj = null;
-        let editTargetDate = null;
-
-        // ==========================================
-        // 💾 資料庫與智慧維運系統
-        // ==========================================
-        async function initDB() {
-            const cloudSync = await SyncEngine.pull();
-            
-            const savedTpl = localStorage.getItem('appTemplates_v13') || localStorage.getItem('appTemplates_v12');
-            if (savedTpl) {
-                appTemplates = JSON.parse(savedTpl); 
-                Object.values(appTemplates).forEach(h => { 
-                    if(h.roles && typeof h.roles[0] === 'string') {
-                        h.roles = h.roles.map((r, i) => ({ threshold: i===0?0:(i===1?10:30), title: r })); 
+        const SyncEngine = {
+            API_URL: "https://script.google.com/macros/s/AKfycbyISODCgqeOUH0ZtIf2kf3VmdmOzaF1PLoNd9ZQQ19j40FQZcYP1GVqb72uYqyf7NJb3w/exec",
+            isSyncing: false,
+            async pull() {
+                try {
+                    const res = await fetch(this.API_URL); const result = await res.json();
+                    if (result.status === 'success' && result.data) {
+                        const cloudData = result.data; if(Object.keys(cloudData).length === 0) return 'empty'; 
+                        const rawDaily = cloudData['daily-habit-v13'] || cloudData['daily-habit-v12'] || {};
+                        users.forEach(u => {
+                            if (!rawDaily[u.uid]) rawDaily[u.uid] = { totalCoins: 0, currentCoins: 0, mails: [], habits: {}, shopHistory: [] };
+                            if (!rawDaily[u.uid].mails) rawDaily[u.uid].mails = [];
+                            if (!rawDaily[u.uid].shopHistory) rawDaily[u.uid].shopHistory = [];
+                            if (!rawDaily[u.uid].habits) rawDaily[u.uid].habits = {};
+                        });
+                        if (cloudData.appTemplates_v13) localStorage.setItem('appTemplates_v13', JSON.stringify(cloudData.appTemplates_v13));
+                        if (cloudData.shopItems_v13) localStorage.setItem('shopItems_v13', JSON.stringify(cloudData.shopItems_v13));
+                        if (cloudData.customRadios_v13) localStorage.setItem('customRadios_v13', JSON.stringify(cloudData.customRadios_v13));
+                        localStorage.setItem('daily-habit-v13', JSON.stringify(rawDaily));
+                        return 'success';
                     }
-                });
-            } else {
-                appTemplates = {
-                    "reading": { id: "reading", title: "每日閱讀", themeId: "pink", roles: [{threshold:0, title:"見習書蟲"}, {threshold:10, title:"知識探險家"}, {threshold:30, title:"智慧大師"}], actions: [{ id: "a1", label: "看書", unit: "頁", icon: "book", points: 10 }, { id: "a2", label: "好句子", unit: "", icon: "bulb", points: 10, isQuote: true }] },
-                    "workout": { id: "workout", title: "每日運動", themeId: "orange", roles: [{threshold:0, title:"活力幼苗"}, {threshold:10, title:"飆汗挑戰者"}, {threshold:30, title:"鋼鐵鐵人"}], actions: [{ id: "a5", label: "跑步", unit: "公里", icon: "run", points: 20 }, { id: "a8", label: "喝水", unit: "杯", icon: "water", points: 5, isOneClick: true, isCrit: true }] }
-                };
-            }
-            
-            const lastHId = localStorage.getItem('lastHabitId_v13');
-            currentHabitId = appTemplates[lastHId] ? lastHId : Object.keys(appTemplates)[0];
-
-            const savedShop = localStorage.getItem('shopItems_v13') || localStorage.getItem('shopItems_v12');
-            if (savedShop) shopItems = JSON.parse(savedShop);
-            else shopItems = [{ id: "s1", name: "看電視 30 分鐘", cost: 50, icon: "star", reqLog: true }];
-
-            const savedRadios = localStorage.getItem('customRadios_v13') || localStorage.getItem('customRadios_v12');
-            if(savedRadios) customRadios = JSON.parse(savedRadios);
-
-            dailyHabitData = JSON.parse(localStorage.getItem('daily-habit-v13')) || JSON.parse(localStorage.getItem('daily-habit-v12')) || {};
-            users.forEach(u => {
-                if (!dailyHabitData[u.uid]) dailyHabitData[u.uid] = { totalCoins: 0, currentCoins: 0, mails: [], habits: {}, shopHistory: [] };
-                if (!dailyHabitData[u.uid].mails) dailyHabitData[u.uid].mails = [];
-                if (!dailyHabitData[u.uid].shopHistory) dailyHabitData[u.uid].shopHistory = [];
-                Object.keys(appTemplates).forEach(hId => { 
-                    if(!dailyHabitData[u.uid].habits) dailyHabitData[u.uid].habits = {};
-                    if(!dailyHabitData[u.uid].habits[hId]) dailyHabitData[u.uid].habits[hId] = { logs: {}, points: 0, streak: 0, goldApples: 0 }; 
-                    if(!dailyHabitData[u.uid].habits[hId].logs) dailyHabitData[u.uid].habits[hId].logs = {};
-                });
-            });
-            
-            pruneAllData();
-            localStorage.setItem('daily-habit-v13', JSON.stringify(dailyHabitData));
-            
-            if(cloudSync === 'empty' || !cloudSync) saveLocal();
-            
-            document.getElementById('sync-overlay').style.opacity = '0';
-            setTimeout(() => document.getElementById('sync-overlay').classList.add('hidden'), 500);
-        }
-
-        function pruneAllData() {
-            const cutOffTime = Date.now() - (90 * 24 * 60 * 60 * 1000); 
-            users.forEach(u => {
-                const uData = dailyHabitData[u.uid];
-                if(uData.mails) uData.mails = uData.mails.slice(0, 100);
-                if(uData.shopHistory) uData.shopHistory = uData.shopHistory.slice(0, 100);
-                Object.keys(uData.habits || {}).forEach(hId => {
-                    const logs = uData.habits[hId]?.logs || {};
-                    Object.keys(logs).forEach(dateStr => {
-                        if(logs[dateStr] && logs[dateStr].timestamp < cutOffTime) delete logs[dateStr];
-                    });
-                });
-            });
-        }
-
-        function saveLocal() {
-            pruneAllData();
-            localStorage.setItem('appTemplates_v13', JSON.stringify(appTemplates));
-            localStorage.setItem('shopItems_v13', JSON.stringify(shopItems));
-            localStorage.setItem('customRadios_v13', JSON.stringify(customRadios));
-            localStorage.setItem('daily-habit-v13', JSON.stringify(dailyHabitData));
-            SyncEngine.push(); 
-        }
-
-        // ==========================================
-        // ⚙️ 系統設定與備份還原
-        // ==========================================
-        const SystemConfig = {
-            downloadBackup() {
-                const payload = { appTemplates_v13: appTemplates, shopItems_v13: shopItems, customRadios_v13: customRadios, 'daily-habit-v13': dailyHabitData };
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload));
-                const anchor = document.createElement('a'); 
-                anchor.href = dataStr; 
-                anchor.download = `AtomicHabits_Backup_${getTodayStr()}.json`; 
-                anchor.click();
+                } catch (e) { console.error("Pull failed", e); }
+                return 'error';
             },
-            triggerRestore() { 
-                Confirm.show("警告：還原備份", "這會用備份檔覆蓋目前所有的資料與雲端，確定要繼續嗎？", "選擇檔案", () => { document.getElementById('backup-file-input').click(); }); 
+            async push() {
+                if (this.isSyncing) return; this.isSyncing = true;
+                const updates = { appTemplates_v13: JSON.parse(localStorage.getItem('appTemplates_v13') || "{}"), shopItems_v13: JSON.parse(localStorage.getItem('shopItems_v13') || "[]"), customRadios_v13: JSON.parse(localStorage.getItem('customRadios_v13') || "[]"), 'daily-habit-v13': JSON.parse(localStorage.getItem('daily-habit-v13') || "{}") };
+                try { await fetch(this.API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ updates }) }); } catch (e) { console.error("Push failed", e); }
+                this.isSyncing = false;
             },
-            handleRestoreBackup(event) {
-                const file = event.target.files[0]; if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const parsed = JSON.parse(e.target.result);
-                        if(parsed.appTemplates_v13) appTemplates = parsed.appTemplates_v13;
-                        if(parsed.shopItems_v13) shopItems = parsed.shopItems_v13;
-                        if(parsed.customRadios_v13) customRadios = parsed.customRadios_v13;
-                        if(parsed['daily-habit-v13']) dailyHabitData = parsed['daily-habit-v13'];
-                        saveLocal(); UI.init(); UI.showToast("✅ 備份還原成功並已同步！");
-                    } catch(err) { UI.showToast("❌ 備份檔讀取失敗"); }
-                };
-                reader.readAsText(file);
+            async manualSync() {
+                if(this.isSyncing) return;
+                document.getElementById('sync-overlay').classList.remove('hidden'); document.getElementById('sync-overlay').style.opacity = '1'; document.getElementById('sync-msg').innerText = '🔄 雲端下載驗證中...';
+                const status = await this.pull();
+                if (status === 'success' || status === 'empty') { initDB(); UI.renderAll(); document.getElementById('sync-msg').innerText = '✅ 資料已同步，執行上傳...'; await this.push(); UI.showToast("資料同步完成！"); } 
+                else { document.getElementById('sync-msg').innerText = '❌ 連線失敗，保護機制啟動'; UI.showToast("網路異常，已暫停同步。您的本地資料安全無虞。"); }
+                setTimeout(() => { document.getElementById('sync-overlay').style.opacity = '0'; setTimeout(() => document.getElementById('sync-overlay').classList.add('hidden'), 500); }, 1000);
             }
         };
 
-        // ==========================================
-        // 📊 日期與共用圖表處理
-        // ==========================================
-        function getTodayStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-        function formatFootprintDate(ts) {
-            const d = new Date(ts); const m = d.getMonth() + 1; const day = d.getDate(); const w = ['日','一','二','三','四','五','六'][d.getDay()];
-            let h = d.getHours(); const min = d.getMinutes().toString().padStart(2, '0'); const ampm = h >= 12 ? '下午' : '上午';
-            if (h > 12) h -= 12; if (h === 0) h = 12; return `${m}月${day}日(${w}) ${ampm}${h.toString().padStart(2, '0')}:${min}`;
-        }
-        function getOverallStreak(uid) {
-            const uData = getUserData(uid); let streak = 0; const checkDate = new Date();
-            const formatD = (date) => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
-            let hasToday = Object.values(uData.habits||{}).some(h => h?.logs?.[formatD(checkDate)]);
-            if (!hasToday) { checkDate.setDate(checkDate.getDate() - 1); if (!Object.values(uData.habits||{}).some(h => h?.logs?.[formatD(checkDate)])) return 0; } 
-            else { streak++; checkDate.setDate(checkDate.getDate() - 1); }
-            while(true) { if (Object.values(uData.habits||{}).some(h => h?.logs?.[formatD(checkDate)])) { streak++; checkDate.setDate(checkDate.getDate() - 1); } else break; } 
-            return streak;
-        }
-        function isFamilyBondActive() {
-            const yDate = new Date(); yDate.setDate(yDate.getDate() - 1); const yStr = `${yDate.getFullYear()}-${String(yDate.getMonth()+1).padStart(2,'0')}-${String(yDate.getDate()).padStart(2,'0')}`;
-            return users.every(u => Object.values(getUserData(u.uid)?.habits||{}).some(h => h?.logs?.[yStr]));
-        }
-        function getIdentityBadge(hId, uid) {
-            const hData = getUserData(uid)?.habits?.[hId]; if(!hData) return "新手";
-            const logsCount = Object.keys(hData.logs||{}).length;
-            const roles = appTemplates[hId]?.roles || [{threshold:0, title:"新手"}];
-            let currentRole = roles[0].title; const sortedRoles = [...roles].sort((a,b)=>a.threshold - b.threshold);
-            for(let r of sortedRoles) { if(logsCount >= r.threshold) currentRole = r.title; } return currentRole;
-        }
-        function createPieChartSVG(data) {
-            let total = data.reduce((sum, d) => sum + d.value, 0);
-            if (total === 0) return `<div class="w-full h-full bg-gray-100 rounded-full border-4 border-gray-800 flex items-center justify-center text-xs font-bold text-gray-400">無數據</div>`;
-            let svg = `<svg viewBox="0 0 31.83 31.83" class="w-full h-full pie-chart">`;
-            let offset = 0;
-            data.forEach(d => {
-                let slice = (d.value / total) * 100;
-                svg += `<circle cx="15.915" cy="15.915" r="15.915" fill="none" stroke="${d.color}" stroke-width="31.83" stroke-dasharray="${slice} 100" stroke-dashoffset="${-offset}"></circle>`;
-                offset += slice;
-            });
-            return svg + `</svg>`;
-        }
-        function renderLeaderboard(data, unit) {
-            if(data.length === 0) return `<p class="text-sm font-bold text-gray-400 text-center py-2">尚未開始</p>`;
-            return data.map((d, i) => {
-                let crown = '';
-                if(i===0) crown = `<div class="w-5 h-5 ml-1 flex-shrink-0">${SVGs.crown.replace('CROWN_COLOR', '#fde047')}</div>`;
-                else if(i===1) crown = `<div class="w-5 h-5 ml-1 flex-shrink-0">${SVGs.crown.replace('CROWN_COLOR', '#e5e7eb')}</div>`;
-                else if(i===2) crown = `<div class="w-5 h-5 ml-1 flex-shrink-0">${SVGs.crown.replace('CROWN_COLOR', '#fdba74')}</div>`;
-                return `<div class="flex justify-between items-center bg-gray-50 border-2 border-dashed border-gray-300 p-2 rounded-lg mb-1"><div class="flex items-center gap-1.5 truncate"><div class="w-3 h-3 rounded-full border border-gray-800 flex-shrink-0" style="background:${d.color}"></div><span class="font-black text-sm text-gray-800 truncate max-w-[120px] md:max-w-[160px]">${d.title}</span>${crown}</div><span class="font-black text-sm text-gray-800 flex-shrink-0">${d.value} ${unit}</span></div>`;
-            }).join('');
+        const AudioEngine = {
+            muted: false, ctx: null,
+            init() { if(this.ctx) return; try { window.AudioContext = window.AudioContext || window.webkitAudioContext; this.ctx = new AudioContext(); } catch(e) {} },
+            toggleMute() { this.muted = !this.muted; document.getElementById('mute-btn').innerText = this.muted ? "🔇" : "🔊"; if(!this.muted) { this.init(); if(this.ctx.state === 'suspended') this.ctx.resume(); this.playCoin(); } },
+            playCoin() { if(this.muted || !this.ctx) return; const osc = this.ctx.createOscillator(), gain = this.ctx.createGain(); osc.type = 'square'; osc.frequency.setValueAtTime(987, this.ctx.currentTime); osc.frequency.setValueAtTime(1318, this.ctx.currentTime + 0.1); gain.gain.setValueAtTime(0.1, this.ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.4); osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.4); },
+            playLevelUp() { if(this.muted || !this.ctx) return; const notes = [523, 659, 783, 1046]; notes.forEach((freq, i) => { const osc = this.ctx.createOscillator(), gain = this.ctx.createGain(); osc.type = 'square'; osc.frequency.value = freq; gain.gain.setValueAtTime(0.1, this.ctx.currentTime + i*0.1); gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + i*0.1 + 0.3); osc.connect(gain); gain.connect(this.ctx.destination); osc.start(this.ctx.currentTime + i*0.1); osc.stop(this.ctx.currentTime + i*0.1 + 0.3); }); },
+            playAnimal(type) { if(this.muted || !this.ctx) return; const osc = this.ctx.createOscillator(), gain = this.ctx.createGain(); if(type === 'cat') { osc.type = 'sine'; osc.frequency.setValueAtTime(600, this.ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(300, this.ctx.currentTime + 0.4); gain.gain.setValueAtTime(0.1, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.4); } else if (type === 'fox') { osc.type = 'triangle'; osc.frequency.setValueAtTime(800, this.ctx.currentTime); osc.frequency.linearRampToValueAtTime(1000, this.ctx.currentTime + 0.1); gain.gain.setValueAtTime(0.1, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.1); } else { osc.type = 'sine'; osc.frequency.setValueAtTime(1200, this.ctx.currentTime); osc.frequency.linearRampToValueAtTime(1600, this.ctx.currentTime + 0.3); gain.gain.setValueAtTime(0.05, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.3); } osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.4); },
+            playPurr() { if(this.muted || !this.ctx) return; const osc = this.ctx.createOscillator(), gain = this.ctx.createGain(); osc.type = 'sawtooth'; osc.frequency.value = 40; gain.gain.setValueAtTime(0.2, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 2); osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 2); },
+            vibrate(pattern) { if(navigator.vibrate) navigator.vibrate(pattern); }
+        };
+
+        const PWA = {
+            deferredPrompt: null,
+            init() { 
+                if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) { this.hide(); return; } 
+                window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); this.deferredPrompt = e; this.show(); }); 
+                const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone); 
+                if (isIos() && !isInStandaloneMode()) this.show(); 
+            },
+            show() { document.getElementById('pwa-banner').classList.remove('hidden'); }, hide() { document.getElementById('pwa-banner').classList.add('hidden'); },
+            install() { 
+                const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                if(isIos()) { document.getElementById('pwa-icon').innerHTML = SVGs.fox; UI.openModal('ios-pwa-modal'); } 
+                else if (this.deferredPrompt) { this.deferredPrompt.prompt(); this.deferredPrompt.userChoice.then((c) => { if (c.outcome === 'accepted') this.hide(); this.deferredPrompt = null; }); } 
+                else { UI.showToast("請從瀏覽器的設定選單加入主畫面！"); } 
+            }
+        };
+
+        const EasterEggs = {
+            clickCount: 0, clickTimer: null, pressTimer: null, isPressed: false, pressStartTime: 0,
+            startPress(e) { if(e && e.type === 'touchstart' && e.cancelable) e.preventDefault(); if(this.isPressed) return; this.isPressed = true; this.pressStartTime = Date.now(); this.pressTimer = setTimeout(() => { if(this.isPressed) { this.isPressed = false; AudioEngine.init(); AudioEngine.playPurr(); AudioEngine.vibrate([2000]); this.spawnHearts(); const speech = document.getElementById('mascot-speech'); speech.innerText = "呼嚕嚕...算你摸得挺舒服的喵... 💖"; speech.classList.remove('pop-in'); void speech.offsetWidth; speech.classList.add('pop-in'); } }, 1000); },
+            endPress(e) { if(e && e.type === 'touchend' && e.cancelable) e.preventDefault(); if(this.pressTimer) clearTimeout(this.pressTimer); if (this.isPressed) { this.isPressed = false; if (Date.now() - this.pressStartTime < 1000) UI.pokeMascot(); } },
+            cancelPress(e) { this.isPressed = false; if(this.pressTimer) clearTimeout(this.pressTimer); },
+            handleClick() {
+                this.clickCount++; if(this.clickTimer) clearTimeout(this.clickTimer); this.clickTimer = setTimeout(() => { this.clickCount = 0; }, 2000);
+                if(this.clickCount >= 10) {
+                    this.clickCount = 0; const uData = getUserData(currentUser.uid), todayStr = getTodayStr();
+                    if(!uData.eggFastClick) uData.eggFastClick = {}; if(uData.eggFastClick[todayStr]) { document.getElementById('mascot-speech').innerText = "別再戳了喵！今天已經給過你金幣了！"; return true; }
+                    uData.eggFastClick[todayStr] = true; uData.totalCoins += 10; uData.currentCoins += 10; saveLocal(); AudioEngine.playLevelUp(); AudioEngine.vibrate([100,50,100,50,100]); document.getElementById('mascot-speech').innerText = "煩死啦喵！這 10 枚金幣給你，快去打卡！"; UI.renderDashboard(); return true;
+                } else { AudioEngine.playAnimal(currentUser.svgKey); return false; }
+            },
+            spawnHearts() { const container = document.getElementById('mascot-img'); for(let i=0; i<5; i++) { const heart = document.createElement('div'); heart.className = 'heart-float'; heart.innerHTML = `<svg viewBox="0 0 100 100"><path d="M50,30 C50,30 40,10 20,20 C0,30 10,60 50,90 C90,60 100,30 80,20 C60,10 50,30 50,30 Z" fill="#fca5a5" stroke="#1f2937" stroke-width="4"/></svg>`; heart.style.left = (Math.random() * 80 + 10) + 'px'; heart.style.top = (Math.random() * 20 + 20) + 'px'; heart.style.animationDelay = (Math.random() * 0.5) + 's'; container.appendChild(heart); setTimeout(() => heart.remove(), 1000); } },
+            triggerGoldenRain() { const rain = document.getElementById('golden-rain'); rain.style.display = 'block'; for(let i=0; i<30; i++) { const coin = document.createElement('div'); coin.className = 'falling-coin w-8 h-8'; coin.innerHTML = SVGs.coin; coin.style.left = Math.random() * 100 + 'vw'; coin.style.animationDuration = (Math.random() * 1 + 1) + 's'; rain.appendChild(coin); } setTimeout(() => { rain.style.display = 'none'; rain.innerHTML = ''; }, 2500); },
+            triggerAuthorEgg() { AudioEngine.init(); AudioEngine.playAnimal('fox'); UI.showToast("🦊 爸爸永遠愛你們喔喵！💖"); }
+        };
+
+        async function initDB() {
+            const cloudSync = await SyncEngine.pull();
+            const savedTpl = localStorage.getItem('appTemplates_v13') || localStorage.getItem('appTemplates_v12');
+            if (savedTpl) { appTemplates = JSON.parse(savedTpl); Object.values(appTemplates).forEach(h => { if(h.roles && typeof h.roles[0] === 'string') h.roles = h.roles.map((r, i) => ({ threshold: i===0?0:(i===1?10:30), title: r })); }); } 
+            else { appTemplates = { "reading": { id: "reading", title: "每日閱讀", themeId: "pink", roles: [{threshold:0, title:"見習書蟲"}, {threshold:10, title:"知識探險家"}, {threshold:30, title:"智慧大師"}], actions: [{ id: "a1", label: "看書", unit: "頁", icon: "book", points: 10 }, { id: "a2", label: "好句子", unit: "", icon: "bulb", points: 10, isQuote: true }] }, "workout": { id: "workout", title: "每日運動", themeId: "orange", roles: [{threshold:0, title:"活力幼苗"}, {threshold:10, title:"飆汗挑戰者"}, {threshold:30, title:"鋼鐵鐵人"}], actions: [{ id: "a5", label: "跑步", unit: "公里", icon: "run", points: 20 }, { id: "a8", label: "喝水", unit: "杯", icon: "water", points: 5, isOneClick: true, isCrit: true }] } }; }
+            const lastHId = localStorage.getItem('lastHabitId_v13'); currentHabitId = appTemplates[lastHId] ? lastHId : Object.keys(appTemplates)[0];
+            const savedShop = localStorage.getItem('shopItems_v13') || localStorage.getItem('shopItems_v12'); if (savedShop) shopItems = JSON.parse(savedShop); else shopItems = [{ id: "s1", name: "看電視 30 分鐘", cost: 50, icon: "star", reqLog: true }];
+            const savedRadios = localStorage.getItem('customRadios_v13') || localStorage.getItem('customRadios_v12'); if(savedRadios) customRadios = JSON.parse(savedRadios);
+            dailyHabitData = JSON.parse(localStorage.getItem('daily-habit-v13')) || JSON.parse(localStorage.getItem('daily-habit-v12')) || {};
+            users.forEach(u => { if (!dailyHabitData[u.uid]) dailyHabitData[u.uid] = { totalCoins: 0, currentCoins: 0, mails: [], habits: {}, shopHistory: [] }; if (!dailyHabitData[u.uid].mails) dailyHabitData[u.uid].mails = []; if (!dailyHabitData[u.uid].shopHistory) dailyHabitData[u.uid].shopHistory = []; Object.keys(appTemplates).forEach(hId => { if(!dailyHabitData[u.uid].habits) dailyHabitData[u.uid].habits = {}; if(!dailyHabitData[u.uid].habits[hId]) dailyHabitData[u.uid].habits[hId] = { logs: {}, points: 0, streak: 0, goldApples: 0 }; if(!dailyHabitData[u.uid].habits[hId].logs) dailyHabitData[u.uid].habits[hId].logs = {}; }); });
+            pruneAllData(); localStorage.setItem('daily-habit-v13', JSON.stringify(dailyHabitData));
+            if(cloudSync === 'empty' || !cloudSync) saveLocal();
+            document.getElementById('sync-overlay').style.opacity = '0'; setTimeout(() => document.getElementById('sync-overlay').classList.add('hidden'), 500);
         }
 
-        // ==========================================
-        // 🖥️ 核心 UI 渲染引擎
-        // ==========================================
+        function pruneAllData() { const cutOffTime = Date.now() - (90 * 24 * 60 * 60 * 1000); users.forEach(u => { const uData = dailyHabitData[u.uid]; if(uData.mails) uData.mails = uData.mails.slice(0, 100); if(uData.shopHistory) uData.shopHistory = uData.shopHistory.slice(0, 100); Object.keys(uData.habits || {}).forEach(hId => { const logs = uData.habits[hId]?.logs || {}; Object.keys(logs).forEach(dateStr => { if(logs[dateStr] && logs[dateStr].timestamp < cutOffTime) delete logs[dateStr]; }); }); }); }
+        function saveLocal() { pruneAllData(); localStorage.setItem('appTemplates_v13', JSON.stringify(appTemplates)); localStorage.setItem('shopItems_v13', JSON.stringify(shopItems)); localStorage.setItem('customRadios_v13', JSON.stringify(customRadios)); localStorage.setItem('daily-habit-v13', JSON.stringify(dailyHabitData)); SyncEngine.push(); }
+
+        const SystemConfig = {
+            downloadBackup() { const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ appTemplates_v13: appTemplates, shopItems_v13: shopItems, customRadios_v13: customRadios, 'daily-habit-v13': dailyHabitData })); const anchor = document.createElement('a'); anchor.href = dataStr; anchor.download = `AtomicHabits_Backup_${getTodayStr()}.json`; anchor.click(); },
+            triggerRestore() { Confirm.show("警告：還原備份", "這會用備份檔覆蓋目前所有的資料與雲端，確定要繼續嗎？", "選擇檔案", () => { document.getElementById('backup-file-input').click(); }); },
+            handleRestoreBackup(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (e) => { try { const parsed = JSON.parse(e.target.result); if(parsed.appTemplates_v13) appTemplates = parsed.appTemplates_v13; if(parsed.shopItems_v13) shopItems = parsed.shopItems_v13; if(parsed.customRadios_v13) customRadios = parsed.customRadios_v13; if(parsed['daily-habit-v13']) dailyHabitData = parsed['daily-habit-v13']; saveLocal(); UI.init(); UI.showToast("✅ 備份還原成功並已同步！"); } catch(err) { UI.showToast("❌ 備份檔讀取失敗"); } }; reader.readAsText(file); }
+        };
+
+        function getTodayStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+        function formatFootprintDate(ts) { const d = new Date(ts); const m = d.getMonth() + 1; const day = d.getDate(); const w = ['日','一','二','三','四','五','六'][d.getDay()]; let h = d.getHours(); const min = d.getMinutes().toString().padStart(2, '0'); const ampm = h >= 12 ? '下午' : '上午'; if (h > 12) h -= 12; if (h === 0) h = 12; return `${m}月${day}日(${w}) ${ampm}${h.toString().padStart(2, '0')}:${min}`; }
+        function getOverallStreak(uid) { const uData = getUserData(uid); let streak = 0; const checkDate = new Date(); const formatD = (date) => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`; let hasToday = Object.values(uData.habits||{}).some(h => h?.logs?.[formatD(checkDate)]); if (!hasToday) { checkDate.setDate(checkDate.getDate() - 1); if (!Object.values(uData.habits||{}).some(h => h?.logs?.[formatD(checkDate)])) return 0; } else { streak++; checkDate.setDate(checkDate.getDate() - 1); } while(true) { if (Object.values(uData.habits||{}).some(h => h?.logs?.[formatD(checkDate)])) { streak++; checkDate.setDate(checkDate.getDate() - 1); } else break; } return streak; }
+        function isFamilyBondActive() { const yDate = new Date(); yDate.setDate(yDate.getDate() - 1); const yStr = `${yDate.getFullYear()}-${String(yDate.getMonth()+1).padStart(2,'0')}-${String(yDate.getDate()).padStart(2,'0')}`; return users.every(u => Object.values(getUserData(u.uid)?.habits||{}).some(h => h?.logs?.[yStr])); }
+        function getIdentityBadge(hId, uid) { const hData = getUserData(uid)?.habits?.[hId]; if(!hData) return "新手"; const logsCount = Object.keys(hData.logs||{}).length; const roles = appTemplates[hId]?.roles || [{threshold:0, title:"新手"}]; let currentRole = roles[0].title; const sortedRoles = [...roles].sort((a,b)=>a.threshold - b.threshold); for(let r of sortedRoles) { if(logsCount >= r.threshold) currentRole = r.title; } return currentRole; }
+        function createPieChartSVG(data) { let total = data.reduce((sum, d) => sum + d.value, 0); if (total === 0) return `<div class="w-full h-full bg-gray-100 rounded-full border-4 border-gray-800 flex items-center justify-center text-xs font-bold text-gray-400">無數據</div>`; let svg = `<svg viewBox="0 0 31.83 31.83" class="w-full h-full pie-chart">`; let offset = 0; data.forEach(d => { let slice = (d.value / total) * 100; svg += `<circle cx="15.915" cy="15.915" r="15.915" fill="none" stroke="${d.color}" stroke-width="31.83" stroke-dasharray="${slice} 100" stroke-dashoffset="${-offset}"></circle>`; offset += slice; }); return svg + `</svg>`; }
+        function renderLeaderboard(data, unit) { if(data.length === 0) return `<p class="text-sm font-bold text-gray-400 text-center py-2">尚未開始</p>`; return data.map((d, i) => { let crown = ''; if(i===0) crown = `<div class="w-5 h-5 ml-1 flex-shrink-0">${SVGs.crown.replace('CROWN_COLOR', '#fde047')}</div>`; else if(i===1) crown = `<div class="w-5 h-5 ml-1 flex-shrink-0">${SVGs.crown.replace('CROWN_COLOR', '#e5e7eb')}</div>`; else if(i===2) crown = `<div class="w-5 h-5 ml-1 flex-shrink-0">${SVGs.crown.replace('CROWN_COLOR', '#fdba74')}</div>`; return `<div class="flex justify-between items-center bg-gray-50 border-2 border-dashed border-gray-300 p-2 rounded-lg mb-1"><div class="flex items-center gap-1.5 truncate"><div class="w-3 h-3 rounded-full border border-gray-800 flex-shrink-0" style="background:${d.color}"></div><span class="font-black text-sm text-gray-800 truncate max-w-[120px] md:max-w-[160px]">${d.title}</span>${crown}</div><span class="font-black text-sm text-gray-800 flex-shrink-0">${d.value} ${unit}</span></div>`; }).join(''); }
+
         const UI = {
             footprintLimit: 7,
             init() {
                 PWA.init(); this.injectModals();
-                document.getElementById('shop-btn').innerHTML = SVGs.shop; document.getElementById('trophy-btn').innerHTML = SVGs.trophy;
-                document.getElementById('mailbox-btn').innerHTML += `<div class="w-full h-full p-0.5">${SVGs.mailbox}</div>`;
-                document.getElementById('coin-icon').innerHTML = SVGs.coin; document.getElementById('flame-icon').innerHTML = SVGs.flame;
-                document.getElementById('icon-crown-header').innerHTML = SVGs.crown.replace('CROWN_COLOR', '#fde047');
+                document.getElementById('shop-btn').innerHTML = SVGs.shop; document.getElementById('trophy-btn').innerHTML = SVGs.trophy; document.getElementById('mailbox-btn').innerHTML += `<div class="w-full h-full p-0.5">${SVGs.mailbox}</div>`;
+                document.getElementById('coin-icon').innerHTML = SVGs.coin; document.getElementById('flame-icon').innerHTML = SVGs.flame; document.getElementById('icon-crown-header').innerHTML = SVGs.crown.replace('CROWN_COLOR', '#fde047');
                 document.getElementById('icon-paw-title').innerHTML = SVGs.paw; document.getElementById('icon-author-fox').innerHTML = SVGs.fox;
+                document.addEventListener("visibilitychange", () => { if (!document.hidden && !SyncEngine.isSyncing) this.renderAll(); });
                 this.renderHabitDropdown(); this.renderUsers(); this.switchUser(currentUser.uid, true);
             },
-            renderAll() {
-                if (!appTemplates[currentHabitId]) { currentHabitId = Object.keys(appTemplates)[0]; localStorage.setItem('lastHabitId_v13', currentHabitId); }
-                this.renderDashboard(); this.renderButtons(); this.renderCalendar(); this.renderFootprints(); this.updateMailBadge();
-                if(isFamilyBondActive()) document.getElementById('family-buff-banner').classList.remove('hidden'); else document.getElementById('family-buff-banner').classList.add('hidden');
-                document.getElementById('identity-text').innerText = getIdentityBadge(currentHabitId, currentUser.uid);
-            },
-            renderDashboard() {
-                const uData = getUserData(currentUser.uid);
-                document.getElementById('current-coins').innerText = uData.currentCoins || 0;
-                document.getElementById('overall-streak').innerText = getOverallStreak(currentUser.uid);
-            },
-            switchUser(uid, isInit=false) {
-                currentUser = users.find(u => u.uid === uid);
-                users.forEach(u => {
-                    const btn = document.getElementById(`btn-${u.uid}`);
-                    if (u.uid === uid) { btn.classList.add('bg-yellow-200', 'scale-110'); btn.style.boxShadow = "2px 2px 0 #1f2937"; } 
-                    else { btn.classList.remove('bg-yellow-200', 'scale-110'); btn.style.boxShadow = "none"; }
-                });
-                document.getElementById('mascot-img').innerHTML = SVGs[currentUser.svgKey];
-                if(isInit) this.switchHabit(currentHabitId); else this.renderAll();
-                this.showMascotMessage();
-            },
+            renderUsers() { document.getElementById('user-switcher').innerHTML = users.map(u => `<button id="btn-${u.uid}" onclick="UI.switchUser('${u.uid}')" class="w-8 h-8 rounded-full border-2 border-gray-800 bg-white flex items-center justify-center transition-all overflow-hidden p-1 shadow-sm active:scale-95"><div class="w-full h-full pointer-events-none">${SVGs[u.svgKey]}</div></button>`).join(''); },
+            renderAll() { if (!appTemplates[currentHabitId]) { currentHabitId = Object.keys(appTemplates)[0]; localStorage.setItem('lastHabitId_v13', currentHabitId); } this.renderDashboard(); this.renderButtons(); this.renderCalendar(); this.renderFootprints(); this.updateMailBadge(); if(isFamilyBondActive()) document.getElementById('family-buff-banner').classList.remove('hidden'); else document.getElementById('family-buff-banner').classList.add('hidden'); document.getElementById('identity-text').innerText = getIdentityBadge(currentHabitId, currentUser.uid); },
+            renderDashboard() { const uData = getUserData(currentUser.uid); document.getElementById('current-coins').innerText = uData.currentCoins || 0; document.getElementById('overall-streak').innerText = getOverallStreak(currentUser.uid); },
+            switchUser(uid, isInit=false) { currentUser = users.find(u => u.uid === uid); users.forEach(u => { const btn = document.getElementById(`btn-${u.uid}`); if (u.uid === uid) { btn.classList.add('bg-yellow-200', 'scale-110'); btn.style.boxShadow = "2px 2px 0 #1f2937"; } else { btn.classList.remove('bg-yellow-200', 'scale-110'); btn.style.boxShadow = "none"; } }); document.getElementById('mascot-img').innerHTML = SVGs[currentUser.svgKey]; if(isInit) this.switchHabit(currentHabitId); else this.renderAll(); this.showMascotMessage(); },
             renderHabitDropdown() { document.getElementById('habit-list-container').innerHTML = Object.values(appTemplates).map(h => `<button onclick="UI.switchHabit('${h.id}')" class="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg font-black text-gray-800 flex items-center gap-2 truncate"><div class="w-3 h-3 flex-shrink-0 rounded-full border border-gray-800 ${THEMES.find(t=>t.id===h.themeId)?.dot}"></div><span class="truncate">${h.title}</span></button>`).join(''); },
-            switchHabit(hId) {
-                currentHabitId = hId; localStorage.setItem('lastHabitId_v13', hId); document.getElementById('habit-dropdown').classList.add('hidden'); Logic.cancelRecovery();
-                const habit = appTemplates[hId], th = THEMES.find(t => t.id === habit.themeId) || THEMES[0];
-                document.getElementById('app-title').innerText = habit.title; document.getElementById('main-header').style.background = th.grad;
-                this.renderAll();
-            },
-            renderButtons() {
-                const habit = appTemplates[currentHabitId], th = THEMES.find(t => t.id === habit.themeId) || THEMES[0];
-                document.getElementById('action-buttons').innerHTML = habit.actions.map(a => `<button onclick='Logic.openActionModal("${a.id}")' class="${th.btn} hand-drawn-border hand-drawn-btn p-3 flex flex-col items-center justify-center gap-1 relative active:scale-95 w-full"><div class="w-12 h-12 mb-1">${SVGs.icons[a.icon] || SVGs.icons.star}</div><span class="text-sm font-black text-gray-800">${a.label}</span>${a.stackingText ? `<span class="text-[10px] font-bold text-gray-500 bg-white/50 px-1 rounded truncate max-w-full">${a.stackingText}</span>` : ''}</button>`).join('');
-            },
-            renderCalendar() {
-                const uData = getUserData(currentUser.uid); let html = '';
-                for (let i = 6; i >= 0; i--) {
-                    const d = new Date(); d.setDate(d.getDate() - i); const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-                    const isToday = i === 0, isActive = Object.values(uData.habits||{}).some(h => h?.logs?.[dateStr]);
-                    let statusClass = "bg-white border-4 border-gray-300 text-gray-400", icon = d.getDate(), clickAction = "";
-                    if (isActive) { statusClass = "bg-green-400 border-4 border-gray-800 text-gray-900 shadow-[2px_2px_0px_#1f2937] scale-110"; icon = "✓"; } 
-                    else if (!isToday) { statusClass = "bg-gray-100 border-4 border-dashed border-gray-400 text-gray-500 cursor-pointer"; icon = "⏳"; clickAction = `onclick="Logic.startRecovery('${dateStr}')"`; }
-                    html += `<div class="flex flex-col items-center gap-1.5" ${clickAction}><span class="text-[11px] font-black ${isToday ? 'text-purple-600 bg-purple-100 px-2 border-2 border-gray-800 rounded-lg' : 'text-gray-500'}">${isToday ? '今天' : ["日","一","二","三","四","五","六"][d.getDay()]}</span><div class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black ${statusClass}">${icon}</div></div>`;
-                }
-                document.getElementById('calendar-row').innerHTML = html;
-            },
-            renderFootprints() {
-                const hData = getUserData(currentUser.uid)?.habits?.[currentHabitId] || {logs:{}}, habit = appTemplates[currentHabitId], container = document.getElementById('footprints-container');
-                let allLogs = []; Object.keys(hData.logs).forEach(k => allLogs.push(hData.logs[k])); allLogs.sort((a,b)=>b.timestamp - a.timestamp);
-                if(allLogs.length === 0) return container.innerHTML = `<p class="text-center text-gray-400 py-4 font-bold">還沒有足跡喔喵！</p>`;
-                container.innerHTML = allLogs.slice(0, this.footprintLimit).map(log => {
-                    const action = habit.actions.find(a=>a.id===log.actionId); if(!action) return '';
-                    const recoverBadge = log.isRecovery ? `<span class="bg-pink-200 text-pink-800 border-2 border-gray-800 text-[10px] px-1 rounded-md ml-1 font-black transform -rotate-3 flex-shrink-0">補救</span>` : '';
-                    return `<div class="bg-white hand-drawn-border p-4 flex flex-col gap-2 relative pop-in transform -rotate-1"><div class="flex justify-between items-start border-b-2 border-gray-100 pb-2"><div class="flex items-center gap-1 flex-wrap"><span class="text-xs font-black text-white bg-gray-800 px-2 py-1 rounded-md">${formatFootprintDate(log.timestamp)}</span>${recoverBadge}<span class="text-xs font-black text-gray-900 bg-yellow-300 px-2 py-1 rounded-md border-2 border-gray-800 ml-1 flex items-center gap-1">+${log.pointsEarned} <div class="w-3 h-3">${SVGs.coin}</div></span></div><div class="flex gap-2"><button onclick="Logic.editAction(${log.timestamp})" class="w-7 h-7 p-1.5 bg-blue-50 hover:bg-blue-100 border border-gray-800 rounded hand-drawn-btn">${SVGs.editPen}</button><button onclick="Logic.triggerDelete('${log.timestamp}')" class="w-7 h-7 p-1.5 bg-red-50 hover:bg-red-100 border border-gray-800 rounded hand-drawn-btn">${SVGs.trash}</button></div></div><p class="font-black text-gray-800 mt-1 flex flex-wrap gap-2 items-center"><span class="bg-purple-100 px-2 py-1 border-2 border-gray-800 rounded-lg text-xs truncate max-w-[120px]">項目：${log.bookTitle}</span><span>共 <span class="text-blue-600">${log.val}</span> ${action.unit||''}</span></p>${log.memo ? `<p class="text-sm text-gray-700 bg-gray-50 border-2 border-dashed border-gray-400 p-2 rounded-xl mt-1 font-bold break-words">📝 ${log.memo}</p>` : ''}</div>`;
-                }).join('');
-                document.getElementById('btn-load-more-footprints').classList.toggle('hidden', allLogs.length <= this.footprintLimit);
-            },
+            switchHabit(hId) { currentHabitId = hId; localStorage.setItem('lastHabitId_v13', hId); document.getElementById('habit-dropdown').classList.add('hidden'); Logic.cancelRecovery(); const habit = appTemplates[hId], th = THEMES.find(t => t.id === habit.themeId) || THEMES[0]; document.getElementById('app-title').innerText = habit.title; document.getElementById('main-header').style.background = th.grad; this.renderAll(); },
+            renderButtons() { const habit = appTemplates[currentHabitId], th = THEMES.find(t => t.id === habit.themeId) || THEMES[0]; document.getElementById('action-buttons').innerHTML = habit.actions.map(a => `<button onclick='Logic.openActionModal("${a.id}")' class="${th.btn} hand-drawn-border hand-drawn-btn p-3 flex flex-col items-center justify-center gap-1 relative active:scale-95 w-full"><div class="w-12 h-12 mb-1">${SVGs.icons[a.icon] || SVGs.icons.star}</div><span class="text-sm font-black text-gray-800">${a.label}</span>${a.stackingText ? `<span class="text-[10px] font-bold text-gray-500 bg-white/50 px-1 rounded truncate max-w-full">${a.stackingText}</span>` : ''}</button>`).join(''); },
+            renderCalendar() { const uData = getUserData(currentUser.uid); let html = ''; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; const isToday = i === 0, isActive = Object.values(uData.habits||{}).some(h => h?.logs?.[dateStr]); let statusClass = "bg-white border-4 border-gray-300 text-gray-400", icon = d.getDate(), clickAction = ""; if (isActive) { statusClass = "bg-green-400 border-4 border-gray-800 text-gray-900 shadow-[2px_2px_0px_#1f2937] scale-110"; icon = "✓"; } else if (!isToday) { statusClass = "bg-gray-100 border-4 border-dashed border-gray-400 text-gray-500 cursor-pointer"; icon = "⏳"; clickAction = `onclick="Logic.startRecovery('${dateStr}')"`; } html += `<div class="flex flex-col items-center gap-1.5" ${clickAction}><span class="text-[11px] font-black ${isToday ? 'text-purple-600 bg-purple-100 px-2 border-2 border-gray-800 rounded-lg' : 'text-gray-500'}">${isToday ? '今天' : ["日","一","二","三","四","五","六"][d.getDay()]}</span><div class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black ${statusClass}">${icon}</div></div>`; } document.getElementById('calendar-row').innerHTML = html; },
+            renderFootprints() { const hData = getUserData(currentUser.uid)?.habits?.[currentHabitId] || {logs:{}}, habit = appTemplates[currentHabitId], container = document.getElementById('footprints-container'); let allLogs = []; Object.keys(hData.logs).forEach(k => allLogs.push(hData.logs[k])); allLogs.sort((a,b)=>b.timestamp - a.timestamp); if(allLogs.length === 0) return container.innerHTML = `<p class="text-center text-gray-400 py-4 font-bold">還沒有足跡喔喵！</p>`; container.innerHTML = allLogs.slice(0, this.footprintLimit).map(log => { const action = habit.actions.find(a=>a.id===log.actionId); if(!action) return ''; const recoverBadge = log.isRecovery ? `<span class="bg-pink-200 text-pink-800 border-2 border-gray-800 text-[10px] px-1 rounded-md ml-1 font-black transform -rotate-3 flex-shrink-0">補救</span>` : ''; return `<div class="bg-white hand-drawn-border p-4 flex flex-col gap-2 relative pop-in transform -rotate-1"><div class="flex justify-between items-start border-b-2 border-gray-100 pb-2"><div class="flex items-center gap-1 flex-wrap"><span class="text-xs font-black text-white bg-gray-800 px-2 py-1 rounded-md">${formatFootprintDate(log.timestamp)}</span>${recoverBadge}<span class="text-xs font-black text-gray-900 bg-yellow-300 px-2 py-1 rounded-md border-2 border-gray-800 ml-1 flex items-center gap-1">+${log.pointsEarned} <div class="w-3 h-3">${SVGs.coin}</div></span></div><div class="flex gap-2"><button onclick="Logic.editAction(${log.timestamp})" class="w-7 h-7 p-1.5 bg-blue-50 hover:bg-blue-100 border border-gray-800 rounded hand-drawn-btn">${SVGs.editPen}</button><button onclick="Logic.triggerDelete('${log.timestamp}')" class="w-7 h-7 p-1.5 bg-red-50 hover:bg-red-100 border border-gray-800 rounded hand-drawn-btn">${SVGs.trash}</button></div></div><p class="font-black text-gray-800 mt-1 flex flex-wrap gap-2 items-center"><span class="bg-purple-100 px-2 py-1 border-2 border-gray-800 rounded-lg text-xs truncate max-w-[120px]">項目：${log.bookTitle}</span><span>共 <span class="text-blue-600">${log.val}</span> ${action.unit||''}</span></p>${log.memo ? `<p class="text-sm text-gray-700 bg-gray-50 border-2 border-dashed border-gray-400 p-2 rounded-xl mt-1 font-bold break-words">📝 ${log.memo}</p>` : ''}</div>`; }).join(''); document.getElementById('btn-load-more-footprints').classList.toggle('hidden', allLogs.length <= this.footprintLimit); },
             loadMoreFootprints() { this.footprintLimit += 10; this.renderFootprints(); },
             showMascotMessage() { document.getElementById('mascot-speech').innerText = Radio.getLine(); },
             pokeMascot() { EasterEggs.handleClick(); this.showMascotMessage(); },
-            showToast(msg) { 
-                const toast = document.getElementById('toast'); document.getElementById('toast-msg').innerText = msg; 
-                toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4'); toast.classList.add('opacity-100', 'translate-y-0'); 
-                setTimeout(() => { toast.classList.remove('opacity-100', 'translate-y-0'); toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4'); }, 3000); 
-            },
+            showToast(msg) { const toast = document.getElementById('toast'); document.getElementById('toast-msg').innerText = msg; toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4'); toast.classList.add('opacity-100', 'translate-y-0'); setTimeout(() => { toast.classList.remove('opacity-100', 'translate-y-0'); toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4'); }, 3000); },
             openModal(id) { document.getElementById(id).classList.remove('hidden'); setTimeout(()=>document.getElementById(id).classList.remove('opacity-0'), 10); },
             closeModal(id) { document.getElementById(id).classList.add('opacity-0'); setTimeout(()=>document.getElementById(id).classList.add('hidden'), 300); },
             toggleHabitMenu() { document.getElementById('habit-dropdown').classList.toggle('hidden'); },
-            updateMailBadge() { 
-                const unread = (getUserData(currentUser.uid).mails || []).filter(m => !m.isRead).length; 
-                document.getElementById('mail-badge').classList.toggle('hidden', unread === 0); 
-                if(unread > 0) document.getElementById('mail-badge').innerText = unread > 9 ? '9+' : unread; 
-            },
+            updateMailBadge() { const unread = (getUserData(currentUser.uid).mails || []).filter(m => !m.isRead).length; document.getElementById('mail-badge').classList.toggle('hidden', unread === 0); if(unread > 0) document.getElementById('mail-badge').innerText = unread > 9 ? '9+' : unread; },
             injectModals() {
                 document.getElementById('modals-container').innerHTML = `
                     <div id="generic-confirm-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-4"><div class="bg-white w-full max-w-[320px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative flex flex-col items-center"><div class="w-24 h-24 mb-2">${SVGs.cryCat}</div><h3 id="confirm-title" class="text-xl font-black text-gray-800 mb-2">確認視窗</h3><p id="confirm-desc" class="text-sm text-gray-600 font-bold mb-6">確定執行嗎？</p><div class="flex gap-3 w-full"><button onclick="UI.closeModal('generic-confirm-modal')" class="flex-1 py-3 rounded-xl font-black text-gray-800 bg-gray-200 border-4 border-gray-800 hand-drawn-btn">取消</button><button id="confirm-btn-do" onclick="Confirm.execute()" class="flex-1 py-3 rounded-xl font-black text-white bg-red-500 border-4 border-gray-800 hand-drawn-btn shadow-[4px_4px_0px_#1f2937]">確認</button></div></div></div>
                     <div id="radio-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[80] transition-opacity opacity-0 px-4"><div class="bg-[#fff9f0] w-full max-w-[500px] h-[80vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] relative flex flex-col overflow-hidden"><div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2"><h3 class="text-2xl font-black">📻 廣播台管理</h3><button onclick="UI.closeModal('radio-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white font-black">✕</button></div><div class="bg-blue-100 border-4 border-gray-800 rounded-xl p-4 mb-4"><div class="flex gap-2 mb-2"><select id="radio-target" class="border-4 border-gray-800 rounded-lg p-2 font-bold"><option value="all">所有人</option><option value="user_dad">狐狸</option><option value="user_mom">綠公主</option><option value="user_son">阿蛇</option></select></div><div class="flex gap-2"><input type="text" id="radio-new-text" placeholder="台詞..." class="flex-1 border-4 border-gray-800 rounded-lg p-2 font-bold"><button onclick="Radio.addLine()" class="bg-green-400 text-white font-black px-4 rounded-lg border-4 border-gray-800 hand-drawn-btn">新增</button></div></div><div id="radio-list" class="flex-1 overflow-y-auto custom-scroll pr-2"></div></div></div>
-                    <div id="shop-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[80] transition-opacity opacity-0 px-4"><div class="bg-[#fff9f0] w-full max-w-[900px] h-[90vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden"><div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2"><h3 class="text-2xl font-black">🎁 兌換商店</h3><button onclick="UI.closeModal('shop-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white">✕</button></div><div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar"><button id="shop-tab-shop" onclick="Shop.switchTab('shop')" class="flex-1 py-2 px-4 font-black rounded-xl border-4 border-gray-800 whitespace-nowrap">🛒 逛商店</button><button id="shop-tab-history" onclick="Shop.switchTab('history')" class="flex-1 py-2 px-4 font-black rounded-xl border-4 border-gray-800 whitespace-nowrap">📜 戰利品</button><button id="shop-tab-edit" onclick="Shop.switchTab('edit')" class="flex-1 py-2 px-4 font-black rounded-xl border-4 border-gray-800 whitespace-nowrap">⚙️ 上架獎品</button></div><div id="shop-area-shop" class="flex-1 overflow-y-auto custom-scroll pr-2 flex flex-col gap-4"><div class="bg-yellow-100 border-4 border-gray-800 rounded-xl p-3 flex justify-between items-center"><span class="font-black">💰 手邊金幣：</span><span class="font-black text-xl text-yellow-600 flex items-center gap-1"><div class="w-6 h-6">${SVGs.coin}</div> <span id="shop-current-coins">0</span></span></div><div id="shop-items-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div></div><div id="shop-area-history" class="flex-1 overflow-y-auto custom-scroll pr-2 hidden flex-col gap-3"><div id="shop-history-list" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div><button id="btn-load-more-shop" onclick="Shop.loadMoreHistory()" class="hidden mt-2 text-sm font-bold bg-gray-100 py-2 rounded-xl border-2 border-dashed border-gray-300">展開歷史戰利品 ▼</button></div><div id="shop-area-edit" class="flex-1 overflow-y-auto hidden flex-col"><button onclick="Shop.openAddItem()" class="w-full mb-4 py-3 bg-green-400 text-white font-black border-4 border-gray-800 rounded-xl">➕ 新增獎品</button><div id="shop-edit-list" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div></div><div id="shop-area-form" class="flex-1 overflow-y-auto hidden flex-col"><h4 id="shop-e-title" class="font-black mb-3">編輯</h4><input type="text" id="shop-e-name" class="w-full border-4 border-gray-800 rounded-lg p-2 font-bold mb-3" placeholder="獎品名稱"><input type="number" id="shop-e-cost" class="w-full border-4 border-gray-800 rounded-lg p-2 font-bold mb-4" placeholder="所需金幣"><div class="bg-pink-50 border-4 border-pink-200 rounded-xl p-3 mb-4"><label class="flex items-center gap-2 font-bold text-sm"><input type="checkbox" id="shop-e-req" class="w-4 h-4"> 🔒 需完成今日習慣才能購買</label></div><div id="shop-e-icons" class="flex flex-wrap gap-2 mb-6 justify-center bg-gray-50 border-4 border-dashed border-gray-300 p-3 rounded-xl max-h-48 overflow-y-auto"></div><div class="flex gap-2 mt-auto"><button onclick="document.getElementById('shop-area-form').classList.add('hidden'); document.getElementById('shop-area-edit').classList.remove('hidden');" class="flex-1 py-3 bg-gray-200 font-black border-4 border-gray-800 rounded-xl">返回</button><button onclick="Shop.saveItem()" class="flex-1 py-3 bg-blue-500 text-white font-black border-4 border-gray-800 rounded-xl">儲存</button></div></div></div></div>
-                    <div id="report-modal" class="fixed inset-0 bg-gray-900/80 hidden flex-col items-center justify-center z-[80] transition-opacity opacity-0 px-4"><div class="bg-[#fef9f0] w-full max-w-[900px] h-[90vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col"><div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2"><h3 class="text-2xl font-black">🗺️ 魔法成就手帳</h3><button onclick="UI.closeModal('report-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white">✕</button></div><div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar"><button id="rep-tab-self" onclick="Report.switchTab('self')" class="flex-1 py-2 px-4 font-black rounded-xl border-4 border-gray-800 whitespace-nowrap">✨ 寶物收藏</button><button id="rep-tab-family" onclick="Report.switchTab('family')" class="flex-1 py-2 px-4 font-black rounded-xl border-4 border-gray-800 whitespace-nowrap">🌳 家庭大樹</button><button id="rep-tab-stats" onclick="Report.switchTab('stats')" class="flex-1 py-2 px-4 font-black rounded-xl border-4 border-gray-800 whitespace-nowrap">📊 我的成就</button></div><div id="rep-area-self" class="flex-1 overflow-y-auto custom-scroll flex flex-col md:flex-row gap-6 pb-6"><div class="flex-1 bg-white border-4 border-gray-800 rounded-3xl p-4 flex flex-col items-center justify-center relative"><div class="absolute -top-3 -left-3 bg-yellow-300 border-2 border-gray-800 px-3 py-1 rounded-lg font-black text-sm">歷史成就</div><div class="text-4xl font-black text-yellow-600 mb-2 flex items-center gap-2"><div class="w-10 h-10">${SVGs.coin}</div> <span id="report-total-points">0</span></div><div class="relative w-48 h-56 md:w-64 md:h-72 mt-2">${SVGs.fatJar}<div id="jar-stars-container" class="absolute bottom-2 left-6 right-6 h-[100px] md:h-[150px] overflow-hidden relative"></div></div></div><div class="flex-1 bg-white border-4 border-gray-800 rounded-3xl p-4 relative flex flex-col"><div class="absolute -top-3 -right-3 bg-pink-300 border-2 border-gray-800 px-3 py-1 rounded-lg font-black text-sm">本月貼紙簿</div><div id="sticker-grid" class="grid grid-cols-5 md:grid-cols-6 lg:grid-cols-5 gap-2 flex-1 overflow-y-auto custom-scroll pr-2 mt-4 content-start"></div></div></div><div id="rep-area-family" class="flex-1 flex-col hidden relative overflow-hidden bg-blue-50 border-4 border-gray-800 rounded-3xl"><div class="absolute inset-0 z-0 flex justify-center items-end">${SVGs.fluffyTree}</div><div id="tree-nodes-container" class="absolute inset-0 z-10 p-4"></div></div><div id="rep-area-stats" class="flex-1 overflow-y-auto hidden flex-col gap-4 pb-4"><div class="bg-white border-4 border-gray-800 rounded-3xl p-4 flex flex-col items-center"><p class="font-black">這月已活躍 <span id="stats-active-days" class="text-3xl text-red-500">0</span> 天</p><div id="stats-apple-mountain" class="w-full min-h-[80px] border-b-4 border-gray-300 mt-2 flex flex-col-reverse items-center pb-1 relative"></div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2"><div class="bg-yellow-50 border-4 border-gray-800 p-4 rounded-2xl flex flex-col"><div class="flex items-center gap-2 mb-3 border-b-2 border-dashed border-gray-300 pb-2"><div class="w-6 h-6">${SVGs.coin}</div><span class="font-black">金幣貢獻榜</span></div><div class="flex gap-4 items-center mb-4"><div class="w-24 h-24 flex-shrink-0" id="stats-coin-pie"></div><div><p class="text-xs font-bold text-gray-500">本月總收穫</p><p class="font-black text-3xl text-yellow-600" id="stats-monthly-coins">0</p></div></div><div id="stats-coin-list" class="flex flex-col flex-1 overflow-y-auto custom-scroll pr-1"></div></div><div class="bg-blue-50 border-4 border-gray-800 p-4 rounded-2xl flex flex-col"><div class="flex items-center gap-2 mb-3 border-b-2 border-dashed border-gray-300 pb-2"><div class="w-6 h-6">${SVGs.icons.star}</div><span class="font-black">狂熱習慣榜</span></div><div class="flex gap-4 items-center mb-4"><div class="w-24 h-24 flex-shrink-0" id="stats-count-pie"></div><div><p class="text-xs font-bold text-gray-500">本月最愛習慣</p><p class="font-black text-xl text-blue-600 truncate max-w-[150px]" id="stats-best-habit">-</p></div></div><div id="stats-count-list" class="flex flex-col flex-1 overflow-y-auto custom-scroll pr-1"></div></div></div></div></div></div>
-                    <div id="mailbox-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[80] transition-opacity opacity-0 px-4"><div class="bg-[#fff0f5] w-full max-w-[900px] rounded-t-[2rem] md:rounded-[2rem] p-6 border-t-8 border-gray-800 md:border-8 h-[85vh] md:h-[auto] md:max-h-[90vh] flex flex-col"><div class="flex justify-between items-center mb-4 pb-3 border-b-4 border-dashed border-gray-300"><h3 class="text-2xl font-black">📬 家庭信箱</h3><button onclick="UI.closeModal('mailbox-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white">✕</button></div><div class="flex gap-2 mb-4"><button id="m-tab-read" onclick="Mail.switchTab('read')" class="flex-1 py-2 font-black rounded-xl border-4 border-gray-800">💌 收信箱</button><button id="m-tab-write" onclick="Mail.switchTab('write')" class="flex-1 py-2 font-black rounded-xl border-4 border-gray-800">✏️ 寫信</button></div><div id="mail-read-area" class="flex-1 overflow-y-auto custom-scroll pr-2 pb-4 flex flex-col gap-3"><div id="mail-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start"></div><button id="btn-load-more-mails" onclick="Mail.loadMore()" class="hidden mt-2 text-sm font-bold bg-gray-100 py-2 rounded-xl border-2 border-dashed border-gray-300">展開歷史信件 ▼</button></div><div id="mail-write-area" class="flex-1 flex-col md:flex-row hidden pb-4 gap-4 overflow-y-auto"><div class="flex-1 flex flex-col"><div class="flex items-center gap-2 mb-3"><p class="font-black">寫給：</p><select id="mail-target-select" class="bg-white border-2 border-gray-800 rounded-lg px-2 py-1 font-bold shadow-[2px_2px_0px_#1f2937]"></select></div><textarea id="mail-input" class="w-full flex-1 min-h-[150px] bg-white border-4 border-gray-800 rounded-xl p-3 font-bold resize-none mb-3" placeholder="說點好聽的喵..."></textarea></div><div class="flex-1 flex flex-col"><div class="bg-pink-50 border-4 border-dashed border-pink-200 p-3 rounded-xl mb-4 flex-1 overflow-y-auto custom-scroll"><p class="text-xs font-black text-pink-500 mb-2">🪄 溫馨短句鍵盤：</p><div class="grid grid-cols-2 lg:grid-cols-3 gap-2"><button onclick="Mail.insertSticker('今天辛苦了！💖')" class="text-xs font-bold bg-white border-2 border-gray-800 rounded-lg py-1.5 shadow-sm active:translate-y-1">今天辛苦了！💖</button><button onclick="Mail.insertSticker('看到你的努力了🌟')" class="text-xs font-bold bg-white border-2 border-gray-800 rounded-lg py-1.5 shadow-sm active:translate-y-1">看到你的努力了🌟</button><button onclick="Mail.insertSticker('哇！太厲害了✨')" class="text-xs font-bold bg-white border-2 border-gray-800 rounded-lg py-1.5 shadow-sm active:translate-y-1">哇！太厲害了✨</button><button onclick="Mail.insertSticker('做得超級棒！👍')" class="text-xs font-bold bg-yellow-100 border-2 border-gray-800 rounded-lg py-1.5 shadow-sm active:translate-y-1">做得超級棒！👍</button><button onclick="Mail.insertSticker('繼續保持喔！🔥')" class="text-xs font-bold bg-yellow-100 border-2 border-gray-800 rounded-lg py-1.5 shadow-sm active:translate-y-1">繼續保持喔！🔥</button><button onclick="Mail.insertSticker('為你感到驕傲！👑')" class="text-xs font-bold bg-yellow-100 border-2 border-gray-800 rounded-lg py-1.5 shadow-sm active:translate-y-1">為你感到驕傲！👑</button><button onclick="Mail.insertSticker('謝謝你的堅持🥰')" class="text-xs font-bold bg-blue-100 border-2 border-gray-800 rounded-lg py-1.5 shadow-sm active:translate-y-1">謝謝你的堅持🥰</button><button onclick="Mail.insertSticker('我們是一家人👨‍👩‍👦')" class="text-xs font-bold bg-blue-100 border-2 border-gray-800 rounded-lg py-1.5 shadow-sm active:translate-y-1">我們是一家人👨‍👩‍👦</button><button onclick="Mail.insertSticker('最愛你了喔！💕')" class="text-xs font-bold bg-blue-100 border-2 border-gray-800 rounded-lg py-1.5 shadow-sm active:translate-y-1">最愛你了喔！💕</button></div></div><button onclick="Mail.sendMail()" class="w-full py-3 bg-blue-500 text-white font-black border-4 border-gray-800 rounded-xl">寄出🕊️</button></div></div></div></div>
+                    <div id="shop-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[80] transition-opacity opacity-0 px-4"><div class="bg-[#fff9f0] w-full max-w-[900px] h-[90vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden"><div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2"><h3 class="text-2xl font-black">🎁 兌換商店</h3><button onclick="UI.closeModal('shop-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white">✕</button></div><div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar"><button id="shop-tab-shop" onclick="Shop.switchTab('shop')" class="flex-1 py-2 px-4 font-black text-white bg-pink-500 border-4 border-gray-800 rounded-xl shadow-[2px_2px_0px_#1f2937] transform scale-105 z-10 transition-all whitespace-nowrap">🛒 逛商店</button><button id="shop-tab-history" onclick="Shop.switchTab('history')" class="flex-1 py-2 px-4 font-black text-gray-500 bg-gray-200 border-4 border-gray-300 rounded-xl opacity-80 transition-all whitespace-nowrap">📜 戰利品</button><button id="shop-tab-edit" onclick="Shop.switchTab('edit')" class="flex-1 py-2 px-4 font-black text-gray-500 bg-gray-200 border-4 border-gray-300 rounded-xl opacity-80 transition-all whitespace-nowrap">⚙️ 上架獎品</button></div><div id="shop-area-shop" class="flex-1 overflow-y-auto custom-scroll pr-2 flex flex-col gap-4"><div class="bg-yellow-100 border-4 border-gray-800 rounded-xl p-3 flex justify-between items-center"><span class="font-black">💰 手邊金幣：</span><span class="font-black text-xl text-yellow-600 flex items-center gap-1"><div class="w-6 h-6">${SVGs.coin}</div> <span id="shop-current-coins">0</span></span></div><div id="shop-items-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div></div><div id="shop-area-history" class="flex-1 overflow-y-auto custom-scroll pr-2 hidden flex-col gap-3"><div id="shop-history-list" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div><button id="btn-load-more-shop" onclick="Shop.loadMoreHistory()" class="hidden mt-2 text-sm font-bold bg-gray-100 py-2 rounded-xl border-2 border-dashed border-gray-300">展開歷史戰利品 ▼</button></div><div id="shop-area-edit" class="flex-1 overflow-y-auto hidden flex-col"><button onclick="Shop.openAddItem()" class="w-full mb-4 py-3 bg-green-400 text-white font-black border-4 border-gray-800 rounded-xl">➕ 新增獎品</button><div id="shop-edit-list" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div></div><div id="shop-area-form" class="flex-1 overflow-y-auto hidden flex-col"><h4 id="shop-e-title" class="font-black mb-3">編輯</h4><input type="text" id="shop-e-name" class="w-full border-4 border-gray-800 rounded-lg p-2 font-bold mb-3" placeholder="獎品名稱"><input type="number" id="shop-e-cost" class="w-full border-4 border-gray-800 rounded-lg p-2 font-bold mb-4" placeholder="所需金幣"><div class="bg-pink-50 border-4 border-pink-200 rounded-xl p-3 mb-4"><label class="flex items-center gap-2 font-bold text-sm"><input type="checkbox" id="shop-e-req" class="w-4 h-4"> 🔒 需完成今日習慣才能購買</label></div><div id="shop-e-icons" class="flex flex-wrap gap-2 mb-6 justify-center bg-gray-50 border-4 border-dashed border-gray-300 p-3 rounded-xl max-h-48 overflow-y-auto"></div><div class="flex gap-2 mt-auto"><button onclick="document.getElementById('shop-area-form').classList.add('hidden'); document.getElementById('shop-area-edit').classList.remove('hidden');" class="flex-1 py-3 bg-gray-200 font-black border-4 border-gray-800 rounded-xl">返回</button><button onclick="Shop.saveItem()" class="flex-1 py-3 bg-blue-500 text-white font-black border-4 border-gray-800 rounded-xl">儲存</button></div></div></div></div>
+                    <div id="report-modal" class="fixed inset-0 bg-gray-900/80 hidden flex-col items-center justify-center z-[80] transition-opacity opacity-0 px-4"><div class="bg-[#fef9f0] w-full max-w-[900px] h-[90vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col"><div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2"><h3 class="text-2xl font-black">🗺️ 魔法成就手帳</h3><button onclick="UI.closeModal('report-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white">✕</button></div><div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar"><button id="rep-tab-self" onclick="Report.switchTab('self')" class="flex-1 py-2 px-4 font-black text-white bg-purple-500 border-4 border-gray-800 rounded-xl shadow-[2px_2px_0px_#1f2937] transform scale-105 z-10 transition-all whitespace-nowrap">✨ 寶物收藏</button><button id="rep-tab-family" onclick="Report.switchTab('family')" class="flex-1 py-2 px-4 font-black text-gray-500 bg-gray-200 border-4 border-gray-300 rounded-xl opacity-80 transition-all whitespace-nowrap">🌳 家庭大樹</button><button id="rep-tab-stats" onclick="Report.switchTab('stats')" class="flex-1 py-2 px-4 font-black text-gray-500 bg-gray-200 border-4 border-gray-300 rounded-xl opacity-80 transition-all whitespace-nowrap">📊 我的成就</button></div><div id="rep-area-self" class="flex-1 overflow-y-auto custom-scroll flex flex-col md:flex-row gap-6 pb-6"><div class="flex-1 bg-white border-4 border-gray-800 rounded-3xl p-4 flex flex-col items-center justify-center relative"><div class="absolute -top-3 -left-3 bg-yellow-300 border-2 border-gray-800 px-3 py-1 rounded-lg font-black text-sm">歷史成就</div><div class="text-4xl font-black text-yellow-600 mb-2 flex items-center gap-2"><div class="w-10 h-10">${SVGs.coin}</div> <span id="report-total-points">0</span></div><div class="relative w-48 h-56 md:w-64 md:h-72 mt-2">${SVGs.fatJar}<div id="jar-stars-container" class="absolute bottom-2 left-6 right-6 h-[100px] md:h-[150px] overflow-hidden relative"></div></div></div><div class="flex-1 bg-white border-4 border-gray-800 rounded-3xl p-4 relative flex flex-col"><div class="absolute -top-3 -right-3 bg-pink-300 border-2 border-gray-800 px-3 py-1 rounded-lg font-black text-sm">本月貼紙簿</div><div id="sticker-grid" class="grid grid-cols-5 md:grid-cols-6 lg:grid-cols-5 gap-2 flex-1 overflow-y-auto custom-scroll pr-2 mt-4 content-start"></div></div></div><div id="rep-area-family" class="flex-1 flex-col hidden relative overflow-hidden bg-blue-50 border-4 border-gray-800 rounded-3xl"><div class="absolute inset-0 z-0 flex justify-center items-end">${SVGs.fluffyTree}</div><div id="tree-nodes-container" class="absolute inset-0 z-10 p-4"></div></div><div id="rep-area-stats" class="flex-1 overflow-y-auto hidden flex-col gap-4 pb-4"><div class="bg-white border-4 border-gray-800 rounded-3xl p-4 flex flex-col items-center"><p class="font-black">這月已活躍 <span id="stats-active-days" class="text-3xl text-red-500">0</span> 天</p><div id="stats-apple-mountain" class="w-full min-h-[80px] border-b-4 border-gray-300 mt-2 flex flex-col-reverse items-center pb-1 relative"></div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2"><div class="bg-yellow-50 border-4 border-gray-800 p-4 rounded-2xl flex flex-col"><div class="flex items-center gap-2 mb-3 border-b-2 border-dashed border-gray-300 pb-2"><div class="w-6 h-6">${SVGs.coin}</div><span class="font-black">金幣貢獻榜</span></div><div class="flex gap-4 items-center mb-4"><div class="w-24 h-24 flex-shrink-0" id="stats-coin-pie"></div><div><p class="text-xs font-bold text-gray-500">本月總收穫</p><p class="font-black text-3xl text-yellow-600" id="stats-monthly-coins">0</p></div></div><div id="stats-coin-list" class="flex flex-col flex-1 overflow-y-auto custom-scroll pr-1"></div></div><div class="bg-blue-50 border-4 border-gray-800 p-4 rounded-2xl flex flex-col"><div class="flex items-center gap-2 mb-3 border-b-2 border-dashed border-gray-300 pb-2"><div class="w-6 h-6">${SVGs.icons.star}</div><span class="font-black">狂熱習慣榜</span></div><div class="flex gap-4 items-center mb-4"><div class="w-24 h-24 flex-shrink-0" id="stats-count-pie"></div><div><p class="text-xs font-bold text-gray-500">本月最愛習慣</p><p class="font-black text-xl text-blue-600 truncate max-w-[150px]" id="stats-best-habit">-</p></div></div><div id="stats-count-list" class="flex flex-col flex-1 overflow-y-auto custom-scroll pr-1"></div></div></div></div></div></div>
+                    <div id="mailbox-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[80] transition-opacity opacity-0 px-4"><div class="bg-[#fff0f5] w-full max-w-[900px] rounded-t-[2rem] md:rounded-[2rem] p-6 border-t-8 border-gray-800 md:border-8 h-[85vh] md:h-[auto] md:max-h-[90vh] flex flex-col"><div class="flex justify-between items-center mb-4 pb-3 border-b-4 border-dashed border-gray-300"><h3 class="text-2xl font-black">📬 家庭信箱</h3><button onclick="UI.closeModal('mailbox-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white">✕</button></div><div class="flex gap-2 mb-4"><button id="m-tab-read" onclick="Mail.switchTab('read')" class="flex-1 py-2 font-black text-gray-800 bg-white border-4 border-gray-800 rounded-xl shadow-[2px_2px_0px_#1f2937] transform scale-105 z-10 transition-all">💌 收信箱</button><button id="m-tab-write" onclick="Mail.switchTab('write')" class="flex-1 py-2 font-black text-gray-500 bg-gray-100 border-4 border-gray-300 rounded-xl opacity-80 transition-all">✏️ 寫信</button></div><div id="mail-read-area" class="flex-1 overflow-y-auto custom-scroll pr-2 pb-4 flex flex-col gap-3"><div id="mail-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start"></div><button id="btn-load-more-mails" onclick="Mail.loadMore()" class="hidden mt-2 text-sm font-bold bg-gray-100 py-2 rounded-xl border-2 border-dashed border-gray-300">展開歷史信件 ▼</button></div><div id="mail-write-area" class="flex-1 flex-col md:flex-row hidden pb-4 gap-4 overflow-y-auto"><div class="flex-1 flex flex-col"><div class="flex items-center gap-2 mb-3"><p class="font-black">寫給：</p><select id="mail-target-select" class="bg-white border-2 border-gray-800 rounded-lg px-2 py-1 font-bold shadow-[2px_2px_0px_#1f2937]"></select></div><textarea id="mail-input" class="w-full flex-1 min-h-[150px] bg-white border-4 border-gray-800 rounded-xl p-3 font-bold resize-none mb-3" placeholder="說點好聽的喵..."></textarea></div><div class="flex-1 flex flex-col"><div class="bg-pink-50 border-4 border-dashed border-pink-200 p-3 rounded-xl mb-4 flex-1 overflow-y-auto custom-scroll"><p class="text-xs font-black text-pink-500 mb-2">🪄 溫馨短句鍵盤：</p><div class="grid grid-cols-2 lg:grid-cols-3 gap-2"><button onclick="Mail.insertSticker('今天辛苦了！💖')" class="text-xs font-bold bg-white border-2 border-gray-800 rounded-lg py-1.5 shadow-sm active:translate-y-1">今天辛苦了！💖</button><button onclick="Mail.insertSticker('看到你的努力了🌟')" class="text-xs font-bold bg-white border-2 border-gray-800 rounded-lg py-1.5 shadow-sm active:translate-y-1">看到你的努力了🌟</button><button onclick="Mail.insertSticker('哇！太厲害了✨')" class="text-xs font-bold bg-white border-2 border-gray-800 rounded-lg py-1.5 shadow-sm active:translate-y-1">哇！太厲害了✨</button><button onclick="Mail.insertSticker('做得超級棒！👍')" class="text-xs font-bold bg-yellow-100 border-2 border-gray-800 rounded-lg py-1.5 shadow-sm active:translate-y-1">做得超級棒！👍</button><button onclick="Mail.insertSticker('繼續保持喔！🔥')" class="text-xs font-bold bg-yellow-100 border-2 border-gray-800 rounded-lg py-1.5 shadow-sm active:translate-y-1">繼續保持喔！🔥</button><button onclick="Mail.insertSticker('為你感到驕傲！👑')" class="text-xs font-bold bg-yellow-100 border-2 border-gray-800 rounded-lg py-1.5 shadow-sm active:translate-y-1">為你感到驕傲！👑</button><button onclick="Mail.insertSticker('謝謝你的堅持🥰')" class="text-xs font-bold bg-blue-100 border-2 border-gray-800 rounded-lg py-1.5 shadow-sm active:translate-y-1">謝謝你的堅持🥰</button><button onclick="Mail.insertSticker('我們是一家人👨‍👩‍👦')" class="text-xs font-bold bg-blue-100 border-2 border-gray-800 rounded-lg py-1.5 shadow-sm active:translate-y-1">我們是一家人👨‍👩‍👦</button><button onclick="Mail.insertSticker('最愛你了喔！💕')" class="text-xs font-bold bg-blue-100 border-2 border-gray-800 rounded-lg py-1.5 shadow-sm active:translate-y-1">最愛你了喔！💕</button></div></div><button onclick="Mail.sendMail()" class="w-full py-3 bg-blue-500 text-white font-black border-4 border-gray-800 rounded-xl">寄出🕊️</button></div></div></div></div>
                     <div id="editor-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[80] transition-opacity opacity-0 px-4"><div class="bg-[#fef9f0] w-full max-w-[900px] h-[90vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden"><div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2"><h3 class="text-2xl font-black">⚙️ 系統與習慣管理</h3><button onclick="UI.closeModal('editor-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white font-black">✕</button></div><div id="editor-view-list" class="flex-1 flex flex-col overflow-hidden"><div id="editor-habit-list" class="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-3 content-start pr-2"></div><button onclick="Editor.createNewHabit()" class="w-full mt-4 py-3 bg-green-400 text-white font-black border-4 border-gray-800 rounded-xl">➕ 建立新習慣</button><div class="mt-4 border-t-4 border-dashed border-gray-300 pt-4 flex gap-2"><button onclick="SystemConfig.downloadBackup()" class="flex-1 bg-gray-100 border-4 border-gray-800 py-3 rounded-xl font-black text-sm">📥 備份進度</button><button onclick="SystemConfig.triggerRestore()" class="flex-1 bg-gray-100 border-4 border-gray-800 py-3 rounded-xl font-black text-sm">📤 還原進度</button></div></div><div id="editor-view-detail" class="flex-1 flex flex-col hidden overflow-y-auto pr-2"><label class="font-black mb-1">📌 習慣名稱</label><input type="text" id="editor-h-title" class="w-full border-4 border-gray-800 rounded-xl p-3 font-bold mb-4"><div class="flex justify-between items-end mb-1"><label class="font-black">👑 角色身分進化</label><button onclick="Editor.addRole()" class="text-xs bg-blue-100 border-2 border-gray-800 rounded px-2 py-0.5 font-bold">+ 新增階段</button></div><div id="editor-h-roles" class="mb-4 bg-gray-50 border-4 border-dashed border-gray-300 p-2 rounded-xl flex flex-col"></div><label class="font-black mb-1">🎨 主題色彩</label><div id="editor-h-colors" class="flex gap-2 mb-6 flex-wrap"></div><label class="font-black mb-2 border-b-2 border-gray-300 pb-1">⚡ 打卡任務按鈕</label><div id="editor-h-actions" class="flex flex-col gap-3 mb-2"></div><button onclick="Editor.createAction()" class="w-full py-2 bg-green-100 border-4 border-dashed border-green-500 rounded-xl font-bold text-green-700 mb-6">➕ 新增打卡任務</button><div class="flex flex-col md:flex-row gap-2 mt-auto"><div class="flex gap-2 w-full md:w-1/2"><button onclick="Editor.renderHabitList()" class="flex-1 py-3 bg-gray-200 font-black border-4 border-gray-800 rounded-xl">返回</button><button onclick="Editor.deleteHabit()" class="flex-1 py-3 bg-red-400 text-white font-black border-4 border-gray-800 rounded-xl">🗑️ 刪除</button></div><button onclick="Editor.saveHabit()" class="w-full md:w-1/2 py-3 bg-blue-500 text-white font-black border-4 border-gray-800 rounded-xl">💾 儲存設定</button></div></div><div id="editor-view-action" class="flex-1 flex flex-col hidden overflow-y-auto pr-2"><div class="grid grid-cols-2 gap-3 mb-4"><div><label class="font-black text-xs mb-1 block">🏷️ 按鈕名稱</label><input type="text" id="editor-a-label" class="w-full border-4 border-gray-800 rounded-lg p-2 font-bold"></div><div><label class="font-black text-xs mb-1 block">📏 單位</label><input type="text" id="editor-a-unit" class="w-full border-4 border-gray-800 rounded-lg p-2 font-bold"></div><div><label class="font-black text-xs mb-1 block">⭐ 獲得金幣</label><input type="number" id="editor-a-points" class="w-full border-4 border-gray-800 rounded-lg p-2 font-bold"></div><div><label class="font-black text-xs mb-1 block">🔗 堆疊小字</label><input type="text" id="editor-a-stack" class="w-full border-4 border-gray-800 rounded-lg p-2 font-bold"></div></div><div class="bg-pink-50 border-4 border-pink-200 rounded-xl p-3 mb-4 flex flex-col gap-2"><p class="font-black text-sm text-pink-800 border-b-2 border-pink-200 pb-1">🚀 任務設定</p><label class="flex items-center gap-2 font-bold text-sm"><input type="checkbox" id="editor-a-oneclick" class="w-4 h-4"> ⚡ 一鍵打卡</label><label class="flex items-center gap-2 font-bold text-sm"><input type="checkbox" id="editor-a-micro" class="w-4 h-4"> 🌱 微習慣標記</label><label class="flex items-center gap-2 font-bold text-sm"><input type="checkbox" id="editor-a-crit" class="w-4 h-4"> 🎲 驚喜爆擊</label></div><label class="font-black mb-2">🪄 魔法貼紙</label><div id="editor-a-icongrid" class="flex flex-wrap gap-2 mb-6 justify-center bg-gray-50 border-4 border-dashed border-gray-300 p-3 rounded-xl max-h-48 overflow-y-auto"></div><div class="flex flex-col md:flex-row gap-2 mt-auto"><div class="flex gap-2 w-full md:w-1/2"><button onclick="document.getElementById('editor-view-action').classList.add('hidden'); document.getElementById('editor-view-detail').classList.remove('hidden');" class="flex-1 py-3 bg-gray-200 font-black border-4 border-gray-800 rounded-xl">返回</button><button onclick="Editor.deleteAction()" class="flex-1 py-3 bg-red-400 text-white font-black border-4 border-gray-800 rounded-xl">🗑️ 刪除</button></div><button onclick="Editor.saveActionConfig()" class="w-full md:w-1/2 py-3 bg-green-500 text-white font-black border-4 border-gray-800 rounded-xl">完成修改</button></div></div></div></div>
                     <div id="input-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[70] transition-opacity opacity-0"><div id="modal-content" class="bg-[#fff9f0] w-full max-w-[480px] rounded-t-[2rem] md:rounded-[2rem] p-6 border-t-8 border-gray-800 md:border-8 relative"><div class="flex justify-between items-center mb-5 border-b-4 border-dashed border-gray-300 pb-3"><h3 class="text-2xl font-black" id="modal-title">紀錄進度</h3><button onclick="UI.closeModal('input-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white font-black">✕</button></div><div class="mb-5"><label class="block text-base font-black mb-2 transform -rotate-1" id="label-title">🎯 相關紀錄項目？</label><input type="text" id="input-book-title" class="w-full bg-white border-4 border-gray-800 rounded-xl px-4 py-3 font-bold"></div><div class="mb-5"><label class="block text-base font-black mb-2 transform rotate-1" id="label-value">📍 數量多少呢？</label><input type="number" min="1" id="input-value" class="w-full bg-white border-4 border-gray-800 rounded-xl px-4 py-3 font-bold"></div><div class="mb-8"><label class="block text-base font-black mb-2 transform -rotate-1">✏️ 簡單心得 (選填)</label><input type="text" id="input-memo" class="w-full bg-white border-4 border-gray-800 rounded-xl px-4 py-3 font-bold"></div><button onclick="Logic.saveAction()" class="w-full py-4 rounded-xl font-black text-2xl text-white bg-purple-500 border-4 border-gray-800 tracking-wider">完成打卡！🚀</button></div></div>
                 `;
             }
         };
 
-        // ==========================================
-        // 🧠 核心操作邏輯
-        // ==========================================
         const Logic = {
             openActionModal(aId) { 
                 if(SyncEngine.isSyncing) return UI.showToast("資料同步中，請稍後操作");
-                UI.init(); 
-                const h = appTemplates[currentHabitId];
-                const act = h.actions.find(a=>a.id===aId); 
-                const today = getTodayStr(); 
-                
-                if(getUserData(currentUser.uid)?.habits?.[currentHabitId]?.logs?.[today]) {
-                    return UI.showToast("今天打過卡囉！可以修改歷史足跡喵"); 
-                }
-                
-                if(act.isOneClick && !recoveryDate) { 
-                    currentActionObj = act; 
-                    isEditMode = false; 
-                    editTargetDate = null; 
-                    this.saveAction(true); 
-                } else { 
-                    currentActionObj = act; 
-                    isEditMode = false; 
-                    editTargetDate = null; 
-                    document.getElementById('input-book-title').value = getUserData(currentUser.uid)?.habits?.[currentHabitId]?.lastBookTitle || ""; 
-                    document.getElementById('input-value').value = ""; 
-                    document.getElementById('input-memo').value = ""; 
-                    this.setupModalUI(act, !!recoveryDate); 
-                    UI.openModal('input-modal'); 
-                } 
+                UI.init(); const h = appTemplates[currentHabitId], act = h.actions.find(a=>a.id===aId), today = getTodayStr(); 
+                if(getUserData(currentUser.uid)?.habits?.[currentHabitId]?.logs?.[today]) return UI.showToast("今天打過卡囉！可以修改歷史足跡喵"); 
+                if(act.isOneClick && !recoveryDate) { currentActionObj = act; isEditMode = false; editTargetDate = null; this.saveAction(true); } 
+                else { currentActionObj = act; isEditMode = false; editTargetDate = null; document.getElementById('input-book-title').value = getUserData(currentUser.uid)?.habits?.[currentHabitId]?.lastBookTitle || ""; document.getElementById('input-value').value = ""; document.getElementById('input-memo').value = ""; this.setupModalUI(act, !!recoveryDate); UI.openModal('input-modal'); } 
             },
             editAction(ts) { 
                 if(SyncEngine.isSyncing) return UI.showToast("資料同步中，請稍後操作");
-                UI.init(); 
-                const uData = getUserData(currentUser.uid);
-                let targetLog = null; 
-                let tDate = null;
-                
-                Object.keys(uData.habits[currentHabitId].logs).forEach(d => {
-                    if (uData.habits[currentHabitId].logs[d].timestamp.toString() === ts.toString()) { 
-                        targetLog = uData.habits[currentHabitId].logs[d]; 
-                        tDate = d; 
-                    }
-                });
-                
-                if (!targetLog) return; 
-                currentActionObj = appTemplates[currentHabitId].actions.find(a => a.id === targetLog.actionId); 
-                if(!currentActionObj) return; 
-                
-                isEditMode = true; 
-                editTargetDate = tDate;
-                document.getElementById('input-book-title').value = targetLog.bookTitle; 
-                document.getElementById('input-value').value = targetLog.val === "..." ? "" : targetLog.val; 
-                document.getElementById('input-memo').value = targetLog.memo || ""; 
-                
-                this.setupModalUI(currentActionObj, false); 
-                UI.openModal('input-modal'); 
+                UI.init(); const uData = getUserData(currentUser.uid); let targetLog = null, tDate = null;
+                Object.keys(uData.habits[currentHabitId].logs).forEach(d => { if (uData.habits[currentHabitId].logs[d].timestamp.toString() === ts.toString()) { targetLog = uData.habits[currentHabitId].logs[d]; tDate = d; } });
+                if (!targetLog) return; currentActionObj = appTemplates[currentHabitId].actions.find(a => a.id === targetLog.actionId); if(!currentActionObj) return; 
+                isEditMode = true; editTargetDate = tDate; document.getElementById('input-book-title').value = targetLog.bookTitle; document.getElementById('input-value').value = targetLog.val === "..." ? "" : targetLog.val; document.getElementById('input-memo').value = targetLog.memo || ""; this.setupModalUI(currentActionObj, false); UI.openModal('input-modal'); 
             },
             setupModalUI(act, isRec) { 
                 document.getElementById('modal-title').innerHTML = isRec ? `⏳ 補救：${act.label}` : (isEditMode ? `✏️ 修改：${act.label}` : `✨ 紀錄：${act.label}`); 
-                const iVal = document.getElementById('input-value'); 
-                document.getElementById('label-title').innerHTML = `<div class="w-5 h-5 inline-block align-middle mr-1">${SVGs.icons.target}</div> 相關紀錄項目？(選填)`; 
-                
-                if(act.isQuote) { 
-                    document.getElementById('label-value').innerHTML = `<div class="w-5 h-5 inline-block align-middle mr-1">${SVGs.editPen}</div> 寫下精選內容吧：`; 
-                    iVal.type = "text"; iVal.placeholder = "輸入內容..."; iVal.removeAttribute("min"); 
-                } else { 
-                    document.getElementById('label-value').innerHTML = `<div class="w-5 h-5 inline-block align-middle mr-1">${SVGs.editPen}</div> 完成了多少${act.unit}呢？`; 
-                    iVal.type = "number"; iVal.min = "1"; iVal.placeholder = "輸入數字(最少為1)"; 
-                } 
+                const iVal = document.getElementById('input-value'); document.getElementById('label-title').innerHTML = `<div class="w-5 h-5 inline-block align-middle mr-1">${SVGs.icons.target}</div> 相關紀錄項目？(選填)`; 
+                if(act.isQuote) { document.getElementById('label-value').innerHTML = `<div class="w-5 h-5 inline-block align-middle mr-1">${SVGs.editPen}</div> 寫下精選內容吧：`; iVal.type = "text"; iVal.placeholder = "輸入內容..."; iVal.removeAttribute("min"); } 
+                else { document.getElementById('label-value').innerHTML = `<div class="w-5 h-5 inline-block align-middle mr-1">${SVGs.editPen}</div> 完成了多少${act.unit}呢？`; iVal.type = "number"; iVal.min = "1"; iVal.placeholder = "輸入數字(最少為1)"; } 
             },
             saveAction(auto = false) {
                 if(SyncEngine.isSyncing) return UI.showToast("資料同步中，請稍後操作");
-                
                 let title = "無標題", val = "1", memo = ""; 
-                if (!auto) { 
-                    title = document.getElementById('input-book-title').value.trim() || title; 
-                    val = document.getElementById('input-value').value.trim(); 
-                    memo = document.getElementById('input-memo').value.trim(); 
-                } 
-                if(!currentActionObj.isQuote) { 
-                    let num = parseInt(val, 10); 
-                    val = (isNaN(num) || num < 1) ? "1" : num.toString(); 
-                } else { 
-                    if(!val) val = "..."; 
-                }
-                
-                const uData = getUserData(currentUser.uid);
-                const habit = uData.habits[currentHabitId]; 
-                let pts = currentActionObj.points; 
-                let msgs = [];
-                
-                if(!isEditMode && !recoveryDate) { 
-                    const h = new Date().getHours(); 
-                    if(h < 7) { pts += 15; msgs.push(`☀️ 早鳥彩蛋 +15`); } 
-                    else if(h >= 23) { pts += 10; msgs.push(`🌙 夜貓彩蛋 +10`); } 
-                }
-                
+                if (!auto) { title = document.getElementById('input-book-title').value.trim() || title; val = document.getElementById('input-value').value.trim(); memo = document.getElementById('input-memo').value.trim(); } 
+                if(!currentActionObj.isQuote) { let num = parseInt(val, 10); val = (isNaN(num) || num < 1) ? "1" : num.toString(); } else { if(!val) val = "..."; }
+                const uData = getUserData(currentUser.uid), habit = uData.habits[currentHabitId]; let pts = currentActionObj.points, msgs = [];
+                if(!isEditMode && !recoveryDate) { const h = new Date().getHours(); if(h < 7) { pts += 15; msgs.push(`☀️ 早鳥彩蛋 +15`); } else if(h >= 23) { pts += 10; msgs.push(`🌙 夜貓彩蛋 +10`); } }
                 let isGoldenRain = false; 
-                if(!isEditMode && currentActionObj.isCrit && Math.random() < 0.15) { 
-                    pts *= 2; AudioEngine.playCoin(); msgs.push(`🔥 爆擊雙倍`); 
-                } 
-                if(!isEditMode && Math.random() < 0.01) { 
-                    pts += 50; isGoldenRain = true; msgs.push(`👑 黃金雨 +50`); 
-                }
-                if(!isEditMode && !recoveryDate && isFamilyBondActive()) { 
-                    pts = Math.round(pts * 1.2); msgs.push(`👨‍👩‍👦 全家 x1.2`); 
-                }
-                
-                if(!isEditMode) { 
-                    uData.currentCoins += pts; 
-                    uData.totalCoins += pts; 
-                    habit.streak++; 
-                    if(habit.streak % 30 === 0) habit.goldApples = (habit.goldApples||0) + 1; 
-                }
-                
+                if(!isEditMode && currentActionObj.isCrit && Math.random() < 0.15) { pts *= 2; AudioEngine.playCoin(); msgs.push(`🔥 爆擊雙倍`); } 
+                if(!isEditMode && Math.random() < 0.01) { pts += 50; isGoldenRain = true; msgs.push(`👑 黃金雨 +50`); }
+                if(!isEditMode && !recoveryDate && isFamilyBondActive()) { pts = Math.round(pts * 1.2); msgs.push(`👨‍👩‍👦 全家 x1.2`); }
+                if(!isEditMode) { uData.currentCoins += pts; uData.totalCoins += pts; habit.streak++; if(habit.streak % 30 === 0) habit.goldApples = (habit.goldApples||0) + 1; }
                 const targetKey = isEditMode ? editTargetDate : (recoveryDate || getTodayStr());
-                habit.logs[targetKey] = { 
-                    actionId: currentActionObj.id, 
-                    timestamp: (isEditMode && habit.logs[targetKey]) ? habit.logs[targetKey].timestamp : Date.now(), 
-                    pointsEarned: (isEditMode && habit.logs[targetKey]) ? habit.logs[targetKey].pointsEarned : pts, 
-                    val: val, bookTitle: title, memo: memo, 
-                    isRecovery: isEditMode ? habit.logs[targetKey].isRecovery : !!recoveryDate 
-                }; 
-                
+                habit.logs[targetKey] = { actionId: currentActionObj.id, timestamp: (isEditMode && habit.logs[targetKey]) ? habit.logs[targetKey].timestamp : Date.now(), pointsEarned: (isEditMode && habit.logs[targetKey]) ? habit.logs[targetKey].pointsEarned : pts, val: val, bookTitle: title, memo: memo, isRecovery: isEditMode ? habit.logs[targetKey].isRecovery : !!recoveryDate }; 
                 if(!isEditMode) habit.lastBookTitle = title;
                 saveLocal(); UI.closeModal('input-modal'); UI.renderAll(); editTargetDate = null;
-                
-                if(!isEditMode) { 
-                    if(isGoldenRain) EasterEggs.triggerGoldenRain(); 
-                    AudioEngine.playLevelUp(); 
-                    UI.showToast(`獲得 ${pts} 金幣！ ` + msgs.join(' | ')); 
-                } else {
-                    UI.showToast("紀錄修改成功！");
-                }
+                if(!isEditMode) { if(isGoldenRain) EasterEggs.triggerGoldenRain(); AudioEngine.playLevelUp(); UI.showToast(`獲得 ${pts} 金幣！ ` + msgs.join(' | ')); } else UI.showToast("紀錄修改成功！");
             },
             triggerDelete(ts) { 
                 if(SyncEngine.isSyncing) return UI.showToast("資料同步中，請稍後操作");
-                Confirm.show("刪除紀錄？", "這會扣回金幣與連勝喔！", "刪除", () => { 
-                    const uData = getUserData(currentUser.uid);
-                    const habit = uData.habits[currentHabitId]; 
-                    Object.keys(habit.logs).forEach(k => { 
-                        if(habit.logs[k].timestamp.toString() === ts.toString()) { 
-                            uData.currentCoins -= habit.logs[k].pointsEarned; 
-                            uData.totalCoins -= habit.logs[k].pointsEarned; 
-                            habit.streak = Math.max(0, habit.streak-1); 
-                            delete habit.logs[k]; 
-                        } 
-                    }); 
-                    saveLocal(); UI.renderAll(); UI.showToast("紀錄已刪除"); 
-                }); 
+                Confirm.show("刪除紀錄？", "這會扣回金幣與連勝喔！", "刪除", () => { const uData = getUserData(currentUser.uid), habit = uData.habits[currentHabitId]; Object.keys(habit.logs).forEach(k => { if(habit.logs[k].timestamp.toString() === ts.toString()) { uData.currentCoins -= habit.logs[k].pointsEarned; uData.totalCoins -= habit.logs[k].pointsEarned; habit.streak = Math.max(0, habit.streak-1); delete habit.logs[k]; } }); saveLocal(); UI.renderAll(); UI.showToast("紀錄已刪除"); }); 
             },
             startRecovery(d) { recoveryDate = d; UI.showToast("補救模式已啟動"); UI.renderCalendar(); },
             cancelRecovery() { recoveryDate = null; UI.renderCalendar(); }
         };
 
-        // ==========================================
-        // 🏪 商店系統
-        // ==========================================
         const Shop = {
             historyLimit: 10,
             open() { UI.init(); this.historyLimit = 10; this.switchTab('shop'); UI.openModal('shop-modal'); },
@@ -862,60 +418,29 @@
                 if(tab === 'shop') this.renderItems(); 
             },
             renderItems() { 
-                const uData = getUserData(currentUser.uid); 
+                const uData = getUserData(currentUser.uid), hasTodayLog = Object.values(uData.habits||{}).some(h => h?.logs?.[getTodayStr()]); 
                 document.getElementById('shop-current-coins').innerText = uData.currentCoins; 
-                
-                // 檢查是否完成今日任何習慣 (鎖定判斷)
-                const hasTodayLog = Object.values(uData.habits||{}).some(h => h?.logs?.[getTodayStr()]);
-                
                 document.getElementById('shop-items-list').innerHTML = shopItems.map(i => {
                     const isLocked = i.reqLog && !hasTodayLog;
-                    return `
-                    <div class="bg-white border-4 border-gray-800 p-3 rounded-xl flex justify-between items-center ${isLocked ? 'opacity-50' : ''}">
-                        <div class="flex flex-col">
-                            <span class="font-black truncate max-w-[150px]">${i.name}</span>
-                            ${isLocked ? '<span class="text-[10px] font-bold text-red-500">🔒 需完成今日習慣</span>' : ''}
-                        </div>
-                        <button onclick="${isLocked ? `UI.showToast('這個獎勵被鎖住了！請先去完成今天的習慣喔喵！')` : `Shop.buyItem('${i.id}')`}" class="${isLocked ? 'bg-gray-200 text-gray-400' : 'bg-yellow-200'} border-2 border-gray-800 px-3 py-1 font-black rounded-lg flex-shrink-0">${i.cost}</button>
-                    </div>`;
+                    return `<div class="bg-white border-4 border-gray-800 p-3 rounded-xl flex justify-between items-center ${isLocked ? 'opacity-50' : ''}"><div class="flex flex-col"><span class="font-black truncate max-w-[150px]">${i.name}</span>${isLocked ? '<span class="text-[10px] font-bold text-red-500">🔒 需完成今日習慣</span>' : ''}</div><button onclick="${isLocked ? `UI.showToast('這個獎勵被鎖住了！請先去完成今天的習慣喔喵！')` : `Shop.buyItem('${i.id}')`}" class="${isLocked ? 'bg-gray-200 text-gray-400' : 'bg-yellow-200'} border-2 border-gray-800 px-3 py-1 font-black rounded-lg flex-shrink-0">${i.cost}</button></div>`;
                 }).join(''); 
-                
                 this.renderHistory(); this.renderEditList(); 
             },
             buyItem(id) { 
                 if(SyncEngine.isSyncing) return UI.showToast("資料同步中，請稍後操作");
-                const uData = getUserData(currentUser.uid);
-                const i = shopItems.find(x=>x.id===id); 
+                const uData = getUserData(currentUser.uid), i = shopItems.find(x=>x.id===id); 
                 if(uData.currentCoins < i.cost) return UI.showToast("金幣不夠！"); 
-                uData.currentCoins -= i.cost; 
-                uData.shopHistory.unshift({ itemName: i.name, cost: i.cost, timestamp: Date.now() }); 
-                saveLocal(); UI.renderAll(); UI.closeModal('shop-modal'); AudioEngine.playCoin(); 
-                UI.showToast(`兌換「${i.name}」成功！`); 
-                document.getElementById('mascot-speech').innerText = "換了禮物別太高興，明天還要繼續賺回來喵！"; 
+                uData.currentCoins -= i.cost; uData.shopHistory.unshift({ itemName: i.name, cost: i.cost, timestamp: Date.now() }); 
+                saveLocal(); UI.renderAll(); UI.closeModal('shop-modal'); AudioEngine.playCoin(); UI.showToast(`兌換「${i.name}」成功！`); document.getElementById('mascot-speech').innerText = "換了禮物別太高興，明天還要繼續賺回來喵！"; 
             },
-            renderHistory() { 
-                const u = getUserData(currentUser.uid); 
-                const display = u.shopHistory.slice(0, this.historyLimit); 
-                document.getElementById('shop-history-list').innerHTML = display.map(h => `<div class="bg-gray-50 border-2 border-dashed border-gray-400 p-3 rounded-xl flex justify-between"><div><p class="font-black">${h.itemName}</p><p class="text-xs">${formatFootprintDate(h.timestamp)}</p></div><span class="font-black text-red-500">-${h.cost}</span></div>`).join(''); 
-                document.getElementById('btn-load-more-shop').classList.toggle('hidden', u.shopHistory.length <= this.historyLimit); 
-            },
+            renderHistory() { const u = getUserData(currentUser.uid), display = u.shopHistory.slice(0, this.historyLimit); document.getElementById('shop-history-list').innerHTML = display.map(h => `<div class="bg-gray-50 border-2 border-dashed border-gray-400 p-3 rounded-xl flex justify-between"><div><p class="font-black">${h.itemName}</p><p class="text-xs">${formatFootprintDate(h.timestamp)}</p></div><span class="font-black text-red-500">-${h.cost}</span></div>`).join(''); document.getElementById('btn-load-more-shop').classList.toggle('hidden', u.shopHistory.length <= this.historyLimit); },
             loadMoreHistory() { this.historyLimit += 10; this.renderHistory(); },
             renderEditList() { document.getElementById('shop-edit-list').innerHTML = shopItems.map(i => `<div class="bg-white border-2 border-gray-800 p-2 rounded-xl flex justify-between"><span class="font-black truncate max-w-[60%]">${i.name} (${i.cost})</span><button onclick="Shop.deleteItem('${i.id}')" class="w-8 h-8 p-1.5 bg-red-100 border border-gray-800 rounded hand-drawn-btn flex-shrink-0">${SVGs.trash}</button></div>`).join(''); },
             openAddItem() { this.tempShopId = null; document.getElementById('shop-area-edit').classList.add('hidden'); document.getElementById('shop-area-form').classList.remove('hidden'); },
-            saveItem() { 
-                const n = document.getElementById('shop-e-name').value;
-                const c = parseInt(document.getElementById('shop-e-cost').value); 
-                const req = document.getElementById('shop-e-req').checked;
-                if(!n || !c) return UI.showToast("資料不齊全！"); 
-                shopItems.push({ id: "s_"+Date.now(), name: n, cost: c, reqLog: req, icon: 'star' }); 
-                saveLocal(); document.getElementById('shop-area-form').classList.add('hidden'); document.getElementById('shop-area-edit').classList.remove('hidden'); this.renderItems(); UI.showToast("獎品已上架！"); 
-            },
+            saveItem() { const n = document.getElementById('shop-e-name').value, c = parseInt(document.getElementById('shop-e-cost').value), req = document.getElementById('shop-e-req').checked; if(!n || !c) return UI.showToast("資料不齊全！"); shopItems.push({ id: "s_"+Date.now(), name: n, cost: c, reqLog: req, icon: 'star' }); saveLocal(); document.getElementById('shop-area-form').classList.add('hidden'); document.getElementById('shop-area-edit').classList.remove('hidden'); this.renderItems(); UI.showToast("獎品已上架！"); },
             deleteItem(id) { Confirm.show("刪除獎品", "確定下架？", "刪除", () => { shopItems = shopItems.filter(i=>i.id !== id); saveLocal(); this.renderItems(); }); }
         };
 
-        // ==========================================
-        // 📬 信箱系統
-        // ==========================================
         const Mail = {
             mailLimit: 10,
             switchTab(tab) { 
@@ -928,18 +453,15 @@
             },
             sendMail() { 
                 if(SyncEngine.isSyncing) return UI.showToast("資料同步中，請稍後操作");
-                const c = document.getElementById('mail-input').value.trim();
-                const t = document.getElementById('mail-target-select').value; 
+                const c = document.getElementById('mail-input').value.trim(), t = document.getElementById('mail-target-select').value; 
                 if(!c) return; 
-                const other = getUserData(t); 
-                other.mails.unshift({ id: Date.now().toString(), from: currentUser.name, fromAvatarKey: currentUser.svgKey, content: c, timestamp: Date.now(), isRead: false }); 
+                const other = getUserData(t); other.mails.unshift({ id: Date.now().toString(), from: currentUser.name, fromAvatarKey: currentUser.svgKey, content: c, timestamp: Date.now(), isRead: false }); 
                 saveLocal(); UI.showToast("信件已寄出！"); this.switchTab('read'); document.getElementById('mail-input').value=""; 
             },
             renderMails() { 
                 const u = getUserData(currentUser.uid); 
                 document.getElementById('mail-list').innerHTML = u.mails.slice(0, this.mailLimit).map(m => `<div class="bg-white border-4 border-gray-800 p-4 rounded-xl shadow-sm"><div class="flex justify-between items-start mb-2"><p class="font-black text-blue-600">來自 ${m.from}</p><button onclick="Mail.deleteMail('${m.id}')" class="w-6 h-6 p-1 bg-red-50 rounded border border-gray-300">${SVGs.trash}</button></div><p class="text-gray-700 whitespace-pre-wrap">${m.content}</p></div>`).join(''); 
-                u.mails.forEach(m => m.isRead = true); 
-                saveLocal(); UI.updateMailBadge(); 
+                u.mails.forEach(m => m.isRead = true); saveLocal(); UI.updateMailBadge(); 
                 document.getElementById('btn-load-more-mails').classList.toggle('hidden', u.mails.length <= this.mailLimit); 
             },
             loadMore() { this.mailLimit += 10; this.renderMails(); },
@@ -947,9 +469,6 @@
             insertSticker(t) { document.getElementById('mail-input').value += t; }
         };
 
-        // ==========================================
-        // 📊 統計報表
-        // ==========================================
         const Report = {
             switchTab(tab) { 
                 ['self','family','stats'].forEach(t => {
@@ -957,86 +476,67 @@
                     document.getElementById(`rep-area-${t}`).classList.toggle('hidden', tab !== t);
                     if(tab === t && t !== 'family') document.getElementById(`rep-area-${t}`).classList.add('flex');
                 });
-                if(tab==='stats') this.renderStats(); 
-                if(tab==='self') this.renderSelf(); 
-                if(tab==='family') this.renderFamily(); 
+                if(tab==='stats') this.renderStats(); if(tab==='self') this.renderSelf(); if(tab==='family') this.renderFamily(); 
             },
-            renderSelf() { 
-                const u = getUserData(currentUser.uid); 
-                document.getElementById('report-total-points').innerText = u.totalCoins || 0; 
-                document.getElementById('jar-stars-container').innerHTML = `<div class="absolute inset-0 flex items-center justify-center text-4xl opacity-20">💰</div>`; 
-            },
-            renderFamily() { 
-                document.getElementById('tree-nodes-container').innerHTML = users.map((u,i) => `<div class="absolute w-12 h-12" style="bottom:${20+i*20}%; left:${30+i*15}%">${SVGs[u.svgKey]}</div>`).join(''); 
-            },
+            renderSelf() { const u = getUserData(currentUser.uid); document.getElementById('report-total-points').innerText = u.totalCoins || 0; document.getElementById('jar-stars-container').innerHTML = `<div class="absolute inset-0 flex items-center justify-center text-4xl opacity-20">💰</div>`; },
+            renderFamily() { document.getElementById('tree-nodes-container').innerHTML = users.map((u,i) => `<div class="absolute w-12 h-12" style="bottom:${20+i*20}%; left:${30+i*15}%">${SVGs[u.svgKey]}</div>`).join(''); },
             renderStats() {
-                const u = getUserData(currentUser.uid);
-                const currentM = new Date().getMonth(); 
-                const currentY = new Date().getFullYear();
-                
-                let coinData = []; let countData = []; let activeDays = new Set();
-                
+                const u = getUserData(currentUser.uid), currentM = new Date().getMonth(), currentY = new Date().getFullYear();
+                let coinData = [], countData = [], activeDays = new Set();
                 Object.keys(u.habits||{}).forEach(hId => {
                     let c = 0, p = 0;
-                    Object.keys(u.habits[hId]?.logs||{}).forEach(dateStr => {
-                        const d = new Date(dateStr);
-                        if(d.getMonth() === currentM && d.getFullYear() === currentY) {
-                            c++; p += u.habits[hId].logs[dateStr].pointsEarned;
-                            activeDays.add(dateStr);
-                        }
-                    });
-                    if (c > 0 || p > 0) {
-                        const hConfig = appTemplates[hId];
-                        if (hConfig) {
-                            const theme = THEMES.find(t=>t.id===hConfig.themeId);
-                            coinData.push({ title: hConfig.title, value: p, color: theme.hex });
-                            countData.push({ title: hConfig.title, value: c, color: theme.hex });
-                        }
-                    }
+                    Object.keys(u.habits[hId]?.logs||{}).forEach(dateStr => { const d = new Date(dateStr); if(d.getMonth() === currentM && d.getFullYear() === currentY) { c++; p += u.habits[hId].logs[dateStr].pointsEarned; activeDays.add(dateStr); } });
+                    if (c > 0 || p > 0) { const hConfig = appTemplates[hId]; if (hConfig) { const theme = THEMES.find(t=>t.id===hConfig.themeId); coinData.push({ title: hConfig.title, value: p, color: theme.hex }); countData.push({ title: hConfig.title, value: c, color: theme.hex }); } }
                 });
-                
                 coinData.sort((a,b)=>b.value - a.value); countData.sort((a,b)=>b.value - a.value);
-                
-                document.getElementById('stats-coin-pie').innerHTML = createPieChartSVG(coinData);
-                document.getElementById('stats-count-pie').innerHTML = createPieChartSVG(countData);
-                document.getElementById('stats-coin-list').innerHTML = renderLeaderboard(coinData, '金幣');
-                document.getElementById('stats-count-list').innerHTML = renderLeaderboard(countData, '次');
-                
-                document.getElementById('stats-active-days').innerText = activeDays.size;
-                document.getElementById('stats-monthly-coins').innerText = coinData.reduce((s,x)=>s+x.value, 0);
-                document.getElementById('stats-best-habit').innerText = countData.length > 0 ? countData[0].title : '🐾 尚未開始';
+                document.getElementById('stats-coin-pie').innerHTML = createPieChartSVG(coinData); document.getElementById('stats-count-pie').innerHTML = createPieChartSVG(countData);
+                document.getElementById('stats-coin-list').innerHTML = renderLeaderboard(coinData, '金幣'); document.getElementById('stats-count-list').innerHTML = renderLeaderboard(countData, '次');
+                document.getElementById('stats-active-days').innerText = activeDays.size; document.getElementById('stats-monthly-coins').innerText = coinData.reduce((s,x)=>s+x.value, 0); document.getElementById('stats-best-habit').innerText = countData.length > 0 ? countData[0].title : '🐾 尚未開始';
             }
         };
 
-        // ==========================================
-        // ⚙️ 系統習慣管理介面
-        // ==========================================
         const Editor = {
             open() { UI.init(); UI.toggleHabitMenu(); this.renderHabitList(); UI.openModal('editor-modal'); },
-            renderHabitList() {
-                document.getElementById('editor-habit-list').innerHTML = Object.values(appTemplates).map(h => `<div class="bg-white border-4 border-gray-800 rounded-xl p-3 flex justify-between items-center shadow-sm mb-3"><div class="flex items-center gap-2 max-w-[70%]"><div class="w-4 h-4 flex-shrink-0 rounded-full ${THEMES.find(t=>t.id===h.themeId)?.dot || 'bg-gray-400'} border-2 border-gray-800"></div><span class="font-black text-lg text-gray-800 truncate max-w-[120px] md:max-w-[250px]">${h.title}</span></div><button onclick="Editor.editHabit('${h.id}')" class="w-10 h-10 p-2 bg-blue-100 border-2 border-gray-800 rounded-lg hand-drawn-btn hover:bg-blue-200 flex-shrink-0">${SVGs.editPen}</button></div>`).join('');
-                document.getElementById('editor-view-list').classList.remove('hidden'); document.getElementById('editor-view-detail').classList.add('hidden'); document.getElementById('editor-view-action').classList.add('hidden');
-            },
+            renderHabitList() { document.getElementById('editor-habit-list').innerHTML = Object.values(appTemplates).map(h => `<div class="bg-white border-4 border-gray-800 rounded-xl p-3 flex justify-between items-center shadow-sm mb-3"><div class="flex items-center gap-2 max-w-[70%]"><div class="w-4 h-4 flex-shrink-0 rounded-full ${THEMES.find(t=>t.id===h.themeId)?.dot || 'bg-gray-400'} border-2 border-gray-800"></div><span class="font-black text-lg text-gray-800 truncate max-w-[120px] md:max-w-[250px]">${h.title}</span></div><button onclick="Editor.editHabit('${h.id}')" class="w-10 h-10 p-2 bg-blue-100 border-2 border-gray-800 rounded-lg hand-drawn-btn hover:bg-blue-200 flex-shrink-0">${SVGs.editPen}</button></div>`).join(''); document.getElementById('editor-view-list').classList.remove('hidden'); document.getElementById('editor-view-detail').classList.add('hidden'); document.getElementById('editor-view-action').classList.add('hidden'); },
             createNewHabit() { const newId = "h_" + Date.now(); appTemplates[newId] = { id: newId, title: "新習慣", themeId: "blue", roles: [{threshold:0, title:"新手"}], actions: [{ id: newId+"_a1", label: "任務一", unit: "次", icon: "star", points: 10 }] }; users.forEach(u => { if(!dailyHabitData[u.uid].habits[newId]) dailyHabitData[u.uid].habits[newId] = { logs: {}, points: 0, streak: 0, goldApples: 0 }; }); saveLocal(); this.editHabit(newId); },
             deleteHabit() { if(Object.keys(appTemplates).length <= 1) return UI.showToast("至少保留一個習慣！"); Confirm.show("刪除習慣", "紀錄會跟著消失喔！", "刪除", () => { delete appTemplates[this.tempHabitId]; saveLocal(); currentHabitId = Object.keys(appTemplates)[0]; localStorage.setItem('lastHabitId_v13', currentHabitId); UI.closeModal('editor-modal'); UI.init(); }); },
             editHabit(hId) { const h = appTemplates[hId]; document.getElementById('editor-h-title').value = h.title; this.tempRoles = JSON.parse(JSON.stringify(h.roles || [{threshold:0, title:"新手"}])); this.renderRolesEditor(); document.getElementById('editor-h-colors').innerHTML = THEMES.map(t => `<button onclick="Editor.tempTheme='${t.id}'; Editor.renderThemeSelection()" class="w-8 h-8 rounded-full ${t.dot} border-4 ${h.themeId === t.id ? 'border-gray-800 scale-110 shadow-md' : 'border-white opacity-60'}" id="col-btn-${t.id}"></button>`).join(''); this.tempTheme = h.themeId; this.tempHabitId = hId; this.renderActionListInEditor(h); document.getElementById('editor-view-list').classList.add('hidden'); document.getElementById('editor-view-detail').classList.remove('hidden'); document.getElementById('editor-view-action').classList.add('hidden'); },
             renderRolesEditor() { document.getElementById('editor-h-roles').innerHTML = this.tempRoles.map((r, i) => `<div class="flex gap-2 items-center mb-2"><span class="text-xs font-bold w-12 text-center">Lv.${i+1}</span><input type="text" value="${r.title}" onchange="Editor.tempRoles[${i}].title=this.value" class="flex-1 border-4 border-gray-800 rounded-lg p-1.5 font-bold text-xs"><input type="number" value="${r.threshold}" ${i===0?'disabled':''} onchange="Editor.tempRoles[${i}].threshold=parseInt(this.value)||0" class="w-16 border-4 border-gray-800 rounded-lg p-1.5 font-bold text-xs ${i===0?'bg-gray-200':''}" min="0">${i>0 ? `<button onclick="Editor.tempRoles.splice(${i},1); Editor.renderRolesEditor()" class="w-8 h-8 p-1.5 bg-red-100 border border-gray-800 rounded hand-drawn-btn">${SVGs.trash}</button>` : `<div class="w-8"></div>`}</div>`).join(''); },
             addRole() { this.tempRoles.push({threshold: 50, title: "新稱號"}); this.renderRolesEditor(); },
-            renderThemeSelection() { THEMES.forEach(t => { const btn = document.getElementById(`col-btn-${t.id}`); btn.className = `w-8 h-8 rounded-full ${t.dot} border-4 ${this.tempTheme === t.id ? 'border-gray-800 scale-110 shadow-md' : 'border-white opacity-60'}`; }); },
+            renderThemeSelection() { THEMES.forEach(t => { document.getElementById(`col-btn-${t.id}`).className = `w-8 h-8 rounded-full ${t.dot} border-4 ${this.tempTheme === t.id ? 'border-gray-800 scale-110 shadow-md' : 'border-white opacity-60'}`; }); },
             renderActionListInEditor(h) { const th = THEMES.find(t => t.id === this.tempTheme) || THEMES[0]; document.getElementById('editor-h-actions').innerHTML = h.actions.map(a => `<div onclick="Editor.editAction('${a.id}')" class="${th.btn} border-4 border-gray-800 rounded-xl p-3 flex items-center gap-3 cursor-pointer hand-drawn-btn mb-2"><div class="w-8 h-8">${SVGs.icons[a.icon]}</div><div class="flex-1"><p class="font-black text-sm">${a.label}</p></div><div class="w-8 h-8 p-1">${SVGs.editPen}</div></div>`).join(''); },
             saveHabit() { const h = appTemplates[this.tempHabitId]; h.title = document.getElementById('editor-h-title').value.trim() || "未命名"; h.themeId = this.tempTheme; h.roles = [...this.tempRoles].sort((a,b)=>a.threshold - b.threshold); saveLocal(); UI.renderHabitDropdown(); if(currentHabitId === h.id) UI.switchHabit(h.id); this.renderHabitList(); UI.showToast("設定儲存成功！"); },
-            createAction() { const h = appTemplates[this.tempHabitId]; const newId = this.tempHabitId + "_a" + Date.now(); h.actions.push({ id: newId, label: "新任務", unit: "次", icon: "star", points: 10 }); saveLocal(); this.editAction(newId); },
+            createAction() { const h = appTemplates[this.tempHabitId], newId = this.tempHabitId + "_a" + Date.now(); h.actions.push({ id: newId, label: "新任務", unit: "次", icon: "star", points: 10 }); saveLocal(); this.editAction(newId); },
             deleteAction() { const h = appTemplates[this.tempHabitId]; if(h.actions.length <= 1) return UI.showToast("至少保留一個任務！"); Confirm.show("刪除任務", "確定刪除？", "刪除", () => { h.actions = h.actions.filter(a => a.id !== this.tempActionId); saveLocal(); this.editHabit(this.tempHabitId); }); },
-            editAction(aId) { const h = appTemplates[this.tempHabitId]; const a = h.actions.find(act => act.id === aId); this.tempActionId = aId; document.getElementById('editor-a-label').value = a.label; document.getElementById('editor-a-unit').value = a.unit || ""; document.getElementById('editor-a-points').value = a.points; document.getElementById('editor-a-oneclick').checked = !!a.isOneClick; document.getElementById('editor-a-micro').checked = !!a.isMicro; document.getElementById('editor-a-crit').checked = !!a.isCrit; document.getElementById('editor-a-stack').value = a.stackingText || ""; this.tempIcon = a.icon || "star"; this.renderIconSelection(); document.getElementById('editor-view-detail').classList.add('hidden'); document.getElementById('editor-view-action').classList.remove('hidden'); },
+            editAction(aId) { const h = appTemplates[this.tempHabitId], a = h.actions.find(act => act.id === aId); this.tempActionId = aId; document.getElementById('editor-a-label').value = a.label; document.getElementById('editor-a-unit').value = a.unit || ""; document.getElementById('editor-a-points').value = a.points; document.getElementById('editor-a-oneclick').checked = !!a.isOneClick; document.getElementById('editor-a-micro').checked = !!a.isMicro; document.getElementById('editor-a-crit').checked = !!a.isCrit; document.getElementById('editor-a-stack').value = a.stackingText || ""; this.tempIcon = a.icon || "star"; this.renderIconSelection(); document.getElementById('editor-view-detail').classList.add('hidden'); document.getElementById('editor-view-action').classList.remove('hidden'); },
             renderIconSelection() { document.getElementById('editor-a-icongrid').innerHTML = Object.keys(SVGs.icons).map(key => `<div onclick="Editor.tempIcon='${key}'; Editor.renderIconSelection()" class="w-12 h-12 p-2 border-4 rounded-xl cursor-pointer ${this.tempIcon === key ? 'border-gray-800 bg-yellow-200 scale-110' : 'border-transparent bg-gray-100 opacity-60'}">${SVGs.icons[key]}</div>`).join(''); },
-            saveActionConfig() { const h = appTemplates[this.tempHabitId]; const a = h.actions.find(act => act.id === this.tempActionId); a.label = document.getElementById('editor-a-label').value.trim() || "按鈕"; a.unit = document.getElementById('editor-a-unit').value.trim(); a.points = parseInt(document.getElementById('editor-a-points').value) || 1; a.icon = this.tempIcon; a.isOneClick = document.getElementById('editor-a-oneclick').checked; a.isMicro = document.getElementById('editor-a-micro').checked; a.isCrit = document.getElementById('editor-a-crit').checked; a.stackingText = document.getElementById('editor-a-stack').value.trim(); if(a.isQuote) a.isOneClick = false; saveLocal(); this.editHabit(this.tempHabitId); }
+            saveActionConfig() { const h = appTemplates[this.tempHabitId], a = h.actions.find(act => act.id === this.tempActionId); a.label = document.getElementById('editor-a-label').value.trim() || "按鈕"; a.unit = document.getElementById('editor-a-unit').value.trim(); a.points = parseInt(document.getElementById('editor-a-points').value) || 1; a.icon = this.tempIcon; a.isOneClick = document.getElementById('editor-a-oneclick').checked; a.isMicro = document.getElementById('editor-a-micro').checked; a.isCrit = document.getElementById('editor-a-crit').checked; a.stackingText = document.getElementById('editor-a-stack').value.trim(); if(a.isQuote) a.isOneClick = false; saveLocal(); this.editHabit(this.tempHabitId); }
         };
 
-        window.addEventListener('DOMContentLoaded', async () => { 
-            await initDB(); 
-            UI.init(); 
-        });
-        
+        const Radio = {
+            pools: {}, shuffle(a) { let c=a.length, r; while(c!=0){ r=Math.floor(Math.random()*c); c--; [a[c],a[r]]=[a[r],a[c]]; } return a; },
+            getLine() {
+                const uid = currentUser.uid, uData = getUserData(uid), streak = getOverallStreak(uid);
+                if(!this.pools[uid] || this.pools[uid].length === 0) {
+                    let lines = [];
+                    if (uid === 'user_dad') lines = [`穩紮穩打，今天也是好榜樣！`, `連勝 ${streak} 天了，繼續保持！`, `【綠公主廣播】老公辛苦了，真帥氣！`, `口袋裡有 ${uData.currentCoins} 金幣。`];
+                    else if (uid === 'user_mom') lines = [`優雅地打卡了！給自己一個大大的擁抱～✨`, `已經累積 ${uData.totalCoins} 枚金幣了！`, `【狐狸廣播】老婆今天也閃閃發光！`];
+                    else lines = [`跑這麼快，後面有狗在追喵？`, `連勝 ${streak} 天？算你有乖乖完成任務喵。`, `【狐狸廣播】阿蛇今天也超棒的！`, `口袋有 ${uData.currentCoins} 金幣了喵？`];
+                    const valid = customRadios.filter(r => r.target === 'all' || r.target === uid).map(r=>r.text); 
+                    lines = lines.concat(valid); this.pools[uid] = this.shuffle(lines);
+                } 
+                return this.pools[uid].pop();
+            },
+            openCMS() { UI.init(); UI.toggleHabitMenu(); this.renderList(); UI.openModal('radio-modal'); },
+            renderList() { document.getElementById('radio-list').innerHTML = customRadios.map(r => `<div class="bg-white border-2 border-gray-800 rounded-xl p-3 mb-2 flex justify-between items-center"><div class="max-w-[80%]"><span class="text-[10px] bg-gray-200 px-1 rounded">${r.target==='all'?'所有人':users.find(u=>u.uid===r.target).name}</span><p class="font-bold text-sm mt-1 truncate">${r.text}</p></div><button onclick="Radio.deleteLine('${r.id}')" class="w-8 h-8 p-1.5 bg-red-100 border border-gray-800 rounded hand-drawn-btn">${SVGs.trash}</button></div>`).join(''); },
+            addLine() { const text = document.getElementById('radio-new-text').value.trim(), target = document.getElementById('radio-target').value; if(!text) return; customRadios.push({id: "r_"+Date.now(), text, target}); saveLocal(); document.getElementById('radio-new-text').value = ""; this.renderList(); this.pools = {}; UI.showToast("廣播台詞新增成功！"); },
+            deleteLine(id) { customRadios = customRadios.filter(r => r.id !== id); saveLocal(); this.pools = {}; this.renderList(); }
+        };
+
+        const Confirm = { execute() { if(this.cb) this.cb(); UI.closeModal('generic-confirm-modal'); }, show(t, d, bt, cb) { document.getElementById('confirm-title').innerText = t; document.getElementById('confirm-desc').innerText = d; document.getElementById('confirm-btn-do').innerText = bt; this.cb = cb; UI.openModal('generic-confirm-modal'); } };
+        function getUserData(uid) { return dailyHabitData[uid]; }
+
+        window.addEventListener('DOMContentLoaded', async () => { await initDB(); UI.init(); });
     </script>
 </body>
 </html>
