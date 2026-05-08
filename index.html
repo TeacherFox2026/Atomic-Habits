@@ -35,7 +35,7 @@
             #main-header { border-top-left-radius: calc(2rem - 4px); border-top-right-radius: calc(2rem - 4px); }
         }
         @media (max-width: 767px) {
-            .app-wrapper { background-color: #ffffff; border-left: 4px solid #1f2937; border-right: 4px solid #1f2937; }
+            .app-wrapper { background-color: #ffffff; border-left: 4px solid #1f2937; border-right: 4px solid #1f2937; overflow-x: hidden; }
             .panel-right { padding: 20px; padding-top: 0; flex: 1; }
         }
 
@@ -49,8 +49,6 @@
         .mascot-float { animation: float 3s infinite ease-in-out; }
         @keyframes popIn { 0% { transform: scale(0.8) rotate(5deg); opacity: 0; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
         .pop-in { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        @keyframes dropCoin { 0% { transform: translateY(-30px) scale(0.5); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
-        .coin-drop { animation: dropCoin 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes fireFlicker { 0%, 100% { transform: scale(1) rotate(-2deg); } 50% { transform: scale(1.1) rotate(2deg); } }
         .fire-anim { animation: fireFlicker 1s infinite alternate; }
         @keyframes heartRise { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-60px) scale(1.5); opacity: 0; } }
@@ -99,7 +97,8 @@
     <div class="app-wrapper">
         <!-- ================= 左半邊：操作儀表板 ================= -->
         <div class="panel-left">
-            <header id="main-header" class="bg-theme-transition text-white p-5 pb-10 relative z-30 md:rounded-none rounded-b-[2rem]">
+            <!-- 【UI優化】pb-20 給吉祥物保留完美防擋空間 -->
+            <header id="main-header" class="bg-theme-transition text-white p-5 pb-20 relative z-30 md:rounded-none rounded-b-[2rem]">
                 
                 <!-- Row 1: 標題與角色切換 -->
                 <div class="flex justify-between items-start w-full relative z-50">
@@ -133,8 +132,8 @@
                     </div>
                 </div>
                 
-                <!-- Row 2: 按鈕群與狀態列 (防重疊完美佈局) -->
-                <div class="flex flex-row justify-between items-end w-full relative z-40 mt-4">
+                <!-- Row 2: 按鈕群與狀態列 -->
+                <div class="flex flex-row justify-between items-end w-full relative z-40 mt-4 md:mt-6">
                     <div class="flex items-center gap-2">
                         <button onclick="Report.open()" id="trophy-btn" class="w-12 h-12 bg-yellow-200 rounded-xl hand-drawn-border flex items-center justify-center shadow-[2px_2px_0px_#1f2937] transition-all hover:bg-yellow-300 p-2"></button>
                         <button onclick="Mail.open()" id="mailbox-btn" class="w-12 h-12 bg-white rounded-xl hand-drawn-border flex items-center justify-center relative shadow-[2px_2px_0px_#1f2937] transition-all p-1.5">
@@ -156,8 +155,8 @@
                     </div>
                 </div>
 
-                <!-- 廣播對話框與吉祥物 (移至邊界防遮擋) -->
-                <div class="absolute -bottom-10 right-2 flex flex-row items-end justify-end z-20 pointer-events-none">
+                <!-- 【UI優化】吉祥物向下移動至 -bottom-24 防止遮蔽按鈕 -->
+                <div class="absolute -bottom-24 right-2 flex flex-row items-end justify-end z-20 pointer-events-none">
                     <div class="bg-white border-4 border-gray-800 text-gray-800 px-4 py-3 rounded-2xl rounded-br-none shadow-[4px_4px_0px_#1f2937] mb-8 mr-[-10px] pop-in text-sm font-black text-left w-[180px] md:w-[200px] pointer-events-auto relative z-10 transform -rotate-2" id="mascot-speech"></div>
                     <div class="w-24 h-24 md:w-28 md:h-28 mascot-float cursor-pointer pointer-events-auto relative z-20 select-none" id="mascot-img" 
                          onmousedown="EasterEggs.startPress(event)" onmouseup="EasterEggs.endPress(event)" onmouseleave="EasterEggs.cancelPress(event)"
@@ -210,24 +209,13 @@
         <span id="toast-msg">提示！</span>
     </div>
 
-    <!-- iOS PWA 安裝教學彈窗 -->
-    <div id="ios-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0 px-4 pb-10 md:pb-0">
-        <div class="bg-[#fff9f0] w-full max-w-[360px] rounded-[2rem] p-6 border-8 border-gray-800 transform transition-transform translate-y-full md:translate-y-0 text-center shadow-[8px_8px_0px_#1f2937] relative">
-            <h3 class="text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6" id="pwa-m-icon1"></div> 安裝至桌面</h3>
-            <p class="font-bold text-gray-600 mb-4 text-left leading-relaxed">蘋果設備專屬魔法：<br>1. 點擊下方工具列的 <b class="text-blue-500">分享圖示</b><br>2. 往下滑選擇 <b class="text-gray-800">「加入主畫面」</b></p>
-            <div class="text-4xl mb-6 flex justify-center w-8 h-8 mx-auto" id="pwa-icon"></div>
-            <button onclick="UI.closeModal('ios-pwa-modal')" class="w-full py-3 rounded-xl font-black text-gray-800 bg-yellow-300 border-4 border-gray-800 hand-drawn-btn shadow-[4px_4px_0px_#1f2937]">我知道了！</button>
-        </div>
-    </div>
-
     <input type="file" id="backup-file-input" class="hidden" accept=".json" onchange="SystemConfig.handleRestoreBackup(event)">
 
     <script>
         // ==========================================
-        // 🎨 純手繪 SVG 圖庫 (修復所有缺漏，阿蛇與狐狸重塑)
+        // 🎨 純手繪 SVG 圖庫
         // ==========================================
         const SVGs = {
-            // 細長挑眼與閃電鬍鬚的狐狸爸爸
             fox: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
                 <polygon points="15,45 20,15 40,30" fill="#fb923c" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
                 <polygon points="85,45 80,15 60,30" fill="#fb923c" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
@@ -238,13 +226,13 @@
                 <polyline points="10,55 18,58 12,62" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
                 <polyline points="90,55 82,58 88,62" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>`,
-            // 帥氣自信的阿蛇
+            // 【UI優化】阿蛇眼睛根據要求旋轉 30度/ -30度
             cat: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
                 <polygon points="15,40 25,10 45,30" fill="#a855f7" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
                 <polygon points="85,40 75,10 55,30" fill="#a855f7" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
                 <path d="M15,40 Q10,80 50,85 Q90,80 85,40 Q65,30 50,35 Q35,30 15,40 Z" fill="#c084fc" stroke="#1f2937" stroke-width="3"/>
-                <path d="M20,56 L36,52 L32,60 Z" fill="#1f2937" stroke="#1f2937" stroke-width="2" stroke-linejoin="round"/>
-                <path d="M80,56 L64,52 L68,60 Z" fill="#1f2937" stroke="#1f2937" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M20,56 L36,52 L32,60 Z" fill="#1f2937" stroke="#1f2937" stroke-width="2" stroke-linejoin="round" transform="rotate(30 29 56)"/>
+                <path d="M80,56 L64,52 L68,60 Z" fill="#1f2937" stroke="#1f2937" stroke-width="2" stroke-linejoin="round" transform="rotate(-30 71 56)"/>
                 <path d="M40,72 Q50,80 65,65" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
                 <ellipse cx="22" cy="65" rx="4" ry="2" fill="#fbcfe8"/>
                 <ellipse cx="78" cy="65" rx="4" ry="2" fill="#fbcfe8"/>
@@ -255,7 +243,6 @@
                 <line x1="94" y1="65" x2="82" y2="65" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
                 <line x1="90" y1="72" x2="78" y2="70" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
             </svg>`,
-            // 哭泣的阿蛇 (確認視窗用)
             cryCat: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
                 <polygon points="15,40 25,10 45,30" fill="#a855f7" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
                 <polygon points="85,40 75,10 55,30" fill="#a855f7" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
@@ -273,7 +260,6 @@
             flame: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M50,90 C20,90 20,50 50,20 C50,20 35,40 45,50 C45,50 60,30 65,40 C75,55 70,90 50,90 Z" fill="#fb923c" stroke="#1f2937" stroke-width="4"/></svg>`,
             paw: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M50 90 C15 90 15 50 50 50 C85 50 85 90 50 90 Z" fill="#93c5fd" stroke="#1f2937" stroke-width="6"/></svg>`,
             crown: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M15,80 L85,80 L90,30 L70,50 L50,15 L30,50 L10,30 Z" fill="CROWN_COLOR" stroke="#1f2937" stroke-width="6"/></svg>`,
-            // 胖玻璃瓶
             fatJar: `<svg viewBox="0 0 100 120" class="absolute inset-0 w-full h-full drop-shadow-md z-10 pointer-events-none">
                 <path d="M35,15 L65,15 L60,30 L40,30 Z" fill="#d4a373" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
                 <path d="M40,30 C10,30 -5,70 10,105 C15,125 85,125 90,105 C105,70 90,30 60,30 Z" fill="rgba(255,255,255,0.4)" stroke="#1f2937" stroke-width="4" stroke-linejoin="round"/>
@@ -305,7 +291,6 @@
                 magicWand: `<svg viewBox="0 0 100 100" class="w-full h-full"><line x1="20" y1="80" x2="70" y2="30" stroke="#d1d5db" stroke-width="8" stroke-linecap="round"/><polygon points="80,10 85,25 100,25 88,35 92,50 80,40 68,50 72,35 60,25 75,25" fill="#fde047" stroke="#1f2937" stroke-width="4"/><circle cx="30" cy="70" r="3" fill="#1f2937"/><circle cx="45" cy="55" r="3" fill="#1f2937"/></svg>`
             },
 
-            // 20 種魔法貼紙圖庫 (可在習慣任務與信箱中使用)
             icons: {
                 book: `<svg viewBox="0 0 100 100"><path d="M20 20 L45 25 L45 80 L20 75 Z" fill="#ffb3ba" stroke="#1f2937" stroke-width="4"/><path d="M80 20 L55 25 L55 80 L80 75 Z" fill="#ffb3ba" stroke="#1f2937" stroke-width="4"/></svg>`,
                 read: `<svg viewBox="0 0 100 100"><path d="M30 10 L70 10 L70 90 L50 70 L30 90 Z" fill="#bae1ff" stroke="#1f2937" stroke-width="4"/></svg>`,
@@ -363,6 +348,7 @@
         let isEditMode = false; 
         let currentActionObj = null;
         let editTargetDate = null;
+        let isProcessing = false;
 
         // ==========================================
         // 💾 資料庫與智慧維運系統
@@ -424,7 +410,6 @@
             pruneAllData();
             localStorage.setItem('daily-habit-v13', JSON.stringify(dailyHabitData));
             
-            // 雲端為空時，主動上傳初始資料
             if(cloudSync === 'empty' || !cloudSync) saveLocal();
             
             document.getElementById('sync-overlay').style.opacity = '0';
@@ -433,7 +418,6 @@
             }, 500);
         }
 
-        // 防爆無感瘦身：只抽乾字串，保留腳印物件算連勝
         function pruneAllData() {
             const cutOffTime = Date.now() - (40 * 24 * 60 * 60 * 1000); 
             users.forEach(u => {
@@ -455,7 +439,7 @@
             });
         }
 
-        // 【優化】同步儲存本機並在背景觸發雲端同步 (樂觀 UI 核心)
+        // 【邏輯修復】修正樂觀 UI 覆蓋漏洞：背景儲存時只 Push 不 Pull
         function saveLocal() {
             pruneAllData();
             localStorage.setItem('appTemplates_v13', JSON.stringify(appTemplates));
@@ -463,13 +447,8 @@
             localStorage.setItem('customRadios_v13', JSON.stringify(customRadios));
             localStorage.setItem('daily-habit-v13', JSON.stringify(dailyHabitData));
             
-            // 非同步發送至雲端，絕不阻擋 UI 執行緒
             if(!SyncEngine.isSyncing) {
-                SyncEngine.pull().then(status => {
-                    if (status === 'success' || status === 'empty') {
-                        SyncEngine.push();
-                    }
-                }).catch(e => console.error("Background sync failed:", e));
+                SyncEngine.push().catch(e => console.error("Background sync push failed:", e));
             }
         }
 
@@ -606,23 +585,123 @@
         };
 
         // ==========================================
-        // 📲 PWA
+        // 📲 PWA 系統優化
         // ==========================================
         const PWA = {
             deferredPrompt: null,
             init() { 
-                if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) { this.hide(); return; } 
+                // 【PWA優化】原生事件攔截，成功加入主畫面就完美隱藏所有安裝提示
+                window.addEventListener('appinstalled', (e) => {
+                    localStorage.setItem('pwa_installed_v14', 'true');
+                    this.hide();
+                    UI.closeModal('ios-pwa-modal');
+                    UI.closeModal('android-pwa-modal');
+                });
+
+                if (localStorage.getItem('pwa_installed_v14') === 'true' || window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) { 
+                    this.hide(); return; 
+                } 
+                
                 window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); this.deferredPrompt = e; this.show(); }); 
                 const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
                 if (isIos() && !(('standalone' in window.navigator) && window.navigator.standalone)) this.show(); 
+                // Android 若未觸發原生的 prompt 也能強制顯示 banner 供用戶手動安裝
+                if (!isIos() && !this.deferredPrompt) this.show();
             },
             show() { document.getElementById('pwa-banner').classList.remove('hidden'); }, 
             hide() { document.getElementById('pwa-banner').classList.add('hidden'); },
             install() { 
                 const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-                if(isIos()) { UI.openModal('ios-pwa-modal'); } 
-                else if (this.deferredPrompt) { this.deferredPrompt.prompt(); this.deferredPrompt.userChoice.then((c) => { if (c.outcome === 'accepted') this.hide(); this.deferredPrompt = null; }); } 
-                else { UI.showToast("請從瀏覽器的設定選單加入主畫面！"); } 
+                if(isIos()) { 
+                    UI.openModal('ios-pwa-modal'); 
+                } else if (this.deferredPrompt) { 
+                    this.deferredPrompt.prompt(); 
+                    this.deferredPrompt.userChoice.then((c) => { if (c.outcome === 'accepted') this.hide(); this.deferredPrompt = null; }); 
+                } else { 
+                    // 【PWA優化】為 Android 設計的專屬手動教學彈窗
+                    UI.openModal('android-pwa-modal'); 
+                } 
+            }
+        };
+
+        // ==========================================
+        // 👆 全域手勢滑動切換引擎 (User & Tabs)
+        // ==========================================
+        const SwipeDetector = {
+            init() {
+                this.bindGlobalSwipe();
+                this.bindModalSwipes();
+            },
+            bindGlobalSwipe() {
+                let startX = 0, startY = 0;
+                const wrapper = document.querySelector('.app-wrapper');
+                wrapper.addEventListener('touchstart', e => {
+                    startX = e.changedTouches[0].screenX; startY = e.changedTouches[0].screenY;
+                }, {passive: true});
+                wrapper.addEventListener('touchend', e => {
+                    // 若有彈窗開啟時，阻擋全域切換角色
+                    if (!document.getElementById('modals-container').innerText.includes('hidden') && Array.from(document.getElementById('modals-container').children).some(m => !m.classList.contains('hidden'))) return;
+                    
+                    let endX = e.changedTouches[0].screenX, endY = e.changedTouches[0].screenY;
+                    let dx = endX - startX, dy = endY - startY;
+                    
+                    if(Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+                        const currentIndex = users.findIndex(u => u.uid === currentUser.uid);
+                        if(dx > 0) { // 向右滑 -> 上一個角色
+                            let prev = currentIndex - 1 < 0 ? users.length - 1 : currentIndex - 1;
+                            UI.switchUser(users[prev].uid);
+                        } else { // 向左滑 -> 下一個角色
+                            let next = currentIndex + 1 >= users.length ? 0 : currentIndex + 1;
+                            UI.switchUser(users[next].uid);
+                        }
+                    }
+                }, {passive: true});
+            },
+            bindModalSwipes() {
+                const attachSwipe = (modalId, tabsArray, switchFn) => {
+                    let startX = 0, startY = 0;
+                    const modal = document.getElementById(modalId);
+                    if(!modal) return;
+                    modal.addEventListener('touchstart', e => {
+                        startX = e.changedTouches[0].screenX; startY = e.changedTouches[0].screenY;
+                    }, {passive: true});
+                    modal.addEventListener('touchend', e => {
+                        // 如果是在操作輸入框、文字區塊，就不要觸發切換
+                        if(['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest('[contenteditable="true"]')) return;
+                        
+                        let endX = e.changedTouches[0].screenX, endY = e.changedTouches[0].screenY;
+                        let dx = endX - startX, dy = endY - startY;
+                        if(Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+                            let activeIdx = tabsArray.findIndex(t => document.getElementById(`${t.prefix}-tab-${t.id}`).classList.contains(t.activeClass));
+                            if(activeIdx === -1) activeIdx = 0;
+                            if(dx > 0) { // 向右滑 -> 顯示前一個頁籤
+                                if(activeIdx > 0) switchFn(tabsArray[activeIdx - 1].id);
+                            } else { // 向左滑 -> 顯示下一個頁籤
+                                if(activeIdx < tabsArray.length - 1) switchFn(tabsArray[activeIdx + 1].id);
+                            }
+                        }
+                    }, {passive: true});
+                };
+
+                // 綁定三個主要彈窗的滑動
+                setTimeout(() => {
+                    attachSwipe('shop-modal', [
+                        {id: 'shop', prefix: 'shop', activeClass: 'bg-pink-500'},
+                        {id: 'history', prefix: 'shop', activeClass: 'bg-pink-500'},
+                        {id: 'edit', prefix: 'shop', activeClass: 'bg-pink-500'}
+                    ], (id) => Shop.switchTab(id));
+                    
+                    attachSwipe('mailbox-modal', [
+                        {id: 'read', prefix: 'm', activeClass: 'bg-pink-300'},
+                        {id: 'write', prefix: 'm', activeClass: 'bg-pink-300'}
+                    ], (id) => Mail.switchTab(id));
+                    
+                    attachSwipe('report-modal', [
+                        {id: 'self', prefix: 'rep', activeClass: 'bg-purple-500'},
+                        {id: 'family', prefix: 'rep', activeClass: 'bg-purple-500'},
+                        {id: 'stats', prefix: 'rep', activeClass: 'bg-purple-500'}
+                    ], (id) => Report.switchTab(id));
+                }, 500); // 確保 UI 初始化完成
             }
         };
 
@@ -725,13 +804,27 @@
         };
 
         // ==========================================
-        // 📊 日期與共用函式
+        // 📊 日期與共用安全防護函式
         // ==========================================
         function getTodayStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
         function formatFootprintDate(ts) {
             const d = new Date(ts); const m = d.getMonth() + 1; const day = d.getDate(); const w = ['日','一','二','三','四','五','六'][d.getDay()];
             let h = d.getHours(); const min = d.getMinutes().toString().padStart(2, '0'); const ampm = h >= 12 ? '下午' : '上午';
             if (h > 12) h -= 12; if (h === 0) h = 12; return `${m}月${day}日(${w}) ${ampm}${h.toString().padStart(2, '0')}:${min}`;
+        }
+        
+        // 【防爆版】完善的跳脫字元防護 (修正單雙引號造成的排版破裂)
+        function escapeHTML(str) {
+            if (!str) return "";
+            return str.replace(/[&<>"']/g, function(m) {
+                switch (m) {
+                    case '&': return '&amp;';
+                    case '<': return '&lt;';
+                    case '>': return '&gt;';
+                    case '"': return '&quot;';
+                    case "'": return '&#39;';
+                }
+            });
         }
         
         function getOverallStreak(uid) {
@@ -766,7 +859,6 @@
             return currentRole;
         }
 
-        // CSS 圓錐漸層圓餅圖 (純淨版，保證不爆框)
         function createPieChartSVG(data) {
             let total = data.reduce((sum, d) => sum + d.value, 0);
             if (total === 0) return `<div class="w-full h-full bg-gray-100 rounded-full border-4 border-gray-800 flex items-center justify-center text-xs font-bold text-gray-400">無數據</div>`;
@@ -802,7 +894,6 @@
             }).join('');
         }
 
-        // 月度結算幫手
         function getMonthlyCoinsForUser(uid, currentM, currentY) {
             const u = getUserData(uid);
             let coins = 0;
@@ -825,6 +916,7 @@
             
             init() {
                 PWA.init(); 
+                SwipeDetector.init();
                 this.injectModals();
                 
                 document.getElementById('shop-btn').innerHTML = SVGs.ui.shopStand; 
@@ -920,8 +1012,8 @@
                 document.getElementById('action-buttons').innerHTML = habit.actions.map(a => `
                     <button onclick='Logic.openActionModal("${a.id}")' class="${th.btn} hand-drawn-border hand-drawn-btn p-3 flex flex-col items-center justify-center gap-1 relative active:scale-95 w-full">
                         <div class="w-12 h-12 mb-1">${SVGs.icons[a.icon] || SVGs.icons.star}</div>
-                        <span class="text-sm font-black text-gray-800">${a.label}</span>
-                        ${a.stackingText ? `<span class="text-[10px] font-bold text-gray-500 bg-white/50 px-1 rounded truncate max-w-full">${a.stackingText}</span>` : ''}
+                        <span class="text-sm font-black text-gray-800">${escapeHTML(a.label)}</span>
+                        ${a.stackingText ? `<span class="text-[10px] font-bold text-gray-500 bg-white/50 px-1 rounded truncate max-w-full">${escapeHTML(a.stackingText)}</span>` : ''}
                     </button>
                 `).join('');
             },
@@ -963,7 +1055,7 @@
                             }
                         }
                         statusClass = "bg-green-400 border-4 border-gray-800 text-gray-900 shadow-[2px_2px_0px_#1f2937] scale-110"; 
-                        iconContent = `<span class="font-black text-lg">${charStr}</span>`; 
+                        iconContent = `<span class="font-black text-lg">${escapeHTML(charStr)}</span>`; 
                     } 
                     else if (!isToday) { 
                         statusClass = "bg-gray-100 border-4 border-dashed border-gray-400 text-gray-500 cursor-pointer hover:bg-gray-200"; 
@@ -1009,10 +1101,10 @@
                             </div>
                         </div>
                         <p class="font-black text-gray-800 mt-1 flex flex-wrap gap-2 items-center">
-                            <span class="bg-purple-100 px-2 py-1 border-2 border-gray-800 rounded-lg text-xs truncate max-w-[120px]">項目：${log.bookTitle}</span>
-                            <span>共 <span class="text-blue-600">${log.val}</span> ${action.unit||''}</span>
+                            <span class="bg-purple-100 px-2 py-1 border-2 border-gray-800 rounded-lg text-xs truncate max-w-[120px]">項目：${escapeHTML(log.bookTitle)}</span>
+                            <span>共 <span class="text-blue-600">${escapeHTML(String(log.val))}</span> ${escapeHTML(action.unit||'')}</span>
                         </p>
-                        ${log.memo ? `<p class="text-sm text-gray-700 bg-gray-50 border-2 border-dashed border-gray-400 p-2 rounded-xl mt-1 font-bold break-words">📝 ${log.memo}</p>` : ''}
+                        ${log.memo ? `<p class="text-sm text-gray-700 bg-gray-50 border-2 border-dashed border-gray-400 p-2 rounded-xl mt-1 font-bold break-words">📝 ${escapeHTML(log.memo)}</p>` : ''}
                     </div>`;
                 }).join('');
                 document.getElementById('btn-load-more-footprints').classList.toggle('hidden', allLogs.length <= this.footprintLimit);
@@ -1064,9 +1156,10 @@
                                         <option value="all">所有人</option><option value="user_dad">狐狸</option><option value="user_mom">綠公主</option><option value="user_son">阿蛇</option>
                                     </select>
                                 </div>
-                                <div class="flex gap-2">
-                                    <input type="text" id="radio-new-text" placeholder="台詞..." class="w-full box-border flex-1 border-4 border-gray-800 rounded-lg p-2 font-bold">
-                                    <button onclick="Radio.addLine()" class="bg-green-400 text-white font-black px-4 rounded-lg border-4 border-gray-800 hand-drawn-btn">儲存</button>
+                                <!-- 【UI優化】台詞輸入變為多行文字框 (Textarea) -->
+                                <div class="flex flex-col gap-2">
+                                    <textarea id="radio-new-text" placeholder="台詞..." class="w-full box-border flex-1 border-4 border-gray-800 rounded-lg p-2 font-bold resize-none custom-scroll" rows="3"></textarea>
+                                    <button onclick="Radio.addLine()" class="w-full bg-green-400 text-white font-black py-2 rounded-lg border-4 border-gray-800 hand-drawn-btn">儲存</button>
                                 </div>
                             </div>
                             <div id="radio-list" class="flex-1 overflow-y-auto custom-scroll pr-2"></div>
@@ -1080,9 +1173,9 @@
                                 <button onclick="UI.closeModal('shop-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1">${SVGs.ui.cross}</button>
                             </div>
                             <div class="flex flex-wrap gap-2 mb-4">
-                                <button id="shop-tab-shop" onclick="Shop.switchTab('shop')" class="flex-auto py-2 px-4 font-black rounded-xl border-4 border-gray-800">逛商店</button>
-                                <button id="shop-tab-history" onclick="Shop.switchTab('history')" class="flex-auto py-2 px-4 font-black rounded-xl border-4 border-gray-800 inline-flex justify-center items-center gap-1"><div class="w-4 h-4">${SVGs.ui.history}</div> 戰利品</button>
-                                <button id="shop-tab-edit" onclick="Shop.switchTab('edit')" class="flex-auto py-2 px-4 font-black rounded-xl border-4 border-gray-800 inline-flex justify-center items-center gap-1"><div class="w-4 h-4">${SVGs.ui.setting}</div> 上架獎品</button>
+                                <button id="shop-tab-shop" onclick="Shop.switchTab('shop')" class="flex-auto py-2 px-4 font-black rounded-xl border-4 border-gray-800 transition-colors">逛商店</button>
+                                <button id="shop-tab-history" onclick="Shop.switchTab('history')" class="flex-auto py-2 px-4 font-black rounded-xl border-4 border-gray-800 inline-flex justify-center items-center gap-1 transition-colors"><div class="w-4 h-4">${SVGs.ui.history}</div> 戰利品</button>
+                                <button id="shop-tab-edit" onclick="Shop.switchTab('edit')" class="flex-auto py-2 px-4 font-black rounded-xl border-4 border-gray-800 inline-flex justify-center items-center gap-1 transition-colors"><div class="w-4 h-4">${SVGs.ui.setting}</div> 上架獎品</button>
                             </div>
                             
                             <div id="shop-area-shop" class="flex-1 overflow-y-auto custom-scroll pr-2 flex flex-col gap-4">
@@ -1125,24 +1218,23 @@
                                 <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.ui.magicBook}</div> 魔法成就手帳</h3>
                                 <button onclick="UI.closeModal('report-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1">${SVGs.ui.cross}</button>
                             </div>
+                            <!-- 【UI優化】精簡手帳標籤文字，避免擠壓換行或需左右滑動 -->
                             <div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
-                                <button id="rep-tab-self" onclick="Report.switchTab('self')" class="flex-1 py-2 px-4 font-black rounded-xl border-4 border-gray-800 whitespace-nowrap bg-purple-500 text-white inline-flex justify-center items-center gap-1"><div class="w-4 h-4">${SVGs.ui.sparkle}</div> 寶物收藏</button>
-                                <button id="rep-tab-family" onclick="Report.switchTab('family')" class="flex-1 py-2 px-4 font-black rounded-xl border-4 border-gray-800 whitespace-nowrap inline-flex justify-center items-center gap-1"><div class="w-4 h-4">${SVGs.ui.tree}</div> 家庭大樹</button>
-                                <button id="rep-tab-stats" onclick="Report.switchTab('stats')" class="flex-1 py-2 px-4 font-black rounded-xl border-4 border-gray-800 whitespace-nowrap inline-flex justify-center items-center gap-1"><div class="w-4 h-4">${SVGs.ui.chart}</div> 我的成就</button>
+                                <button id="rep-tab-self" onclick="Report.switchTab('self')" class="flex-1 py-2 px-2 font-black rounded-xl border-4 border-gray-800 whitespace-nowrap bg-purple-500 text-white inline-flex justify-center items-center gap-1 transition-colors"><div class="w-4 h-4">${SVGs.ui.sparkle}</div> 收藏</button>
+                                <button id="rep-tab-family" onclick="Report.switchTab('family')" class="flex-1 py-2 px-2 font-black rounded-xl border-4 border-gray-800 whitespace-nowrap inline-flex justify-center items-center gap-1 transition-colors"><div class="w-4 h-4">${SVGs.ui.tree}</div> 大樹</button>
+                                <button id="rep-tab-stats" onclick="Report.switchTab('stats')" class="flex-1 py-2 px-2 font-black rounded-xl border-4 border-gray-800 whitespace-nowrap inline-flex justify-center items-center gap-1 transition-colors"><div class="w-4 h-4">${SVGs.ui.chart}</div> 成就</button>
                             </div>
                             
                             <div id="rep-area-self" class="flex-1 overflow-y-auto custom-scroll flex flex-col md:flex-row gap-6 pb-6">
                                 <div class="flex-1 bg-white border-4 border-gray-800 rounded-3xl p-4 flex flex-col items-center justify-center relative">
                                     <div class="absolute -top-3 -left-3 bg-yellow-300 border-2 border-gray-800 px-3 py-1 rounded-lg font-black text-sm z-20">無盡寶物瓶</div>
                                     <div class="text-3xl font-black text-yellow-600 mb-2 flex items-center gap-2 z-20"><div class="w-8 h-8">${SVGs.coin}</div> <span id="report-total-points">0</span></div>
-                                    <!-- 歷史成就金幣水位動畫 -->
                                     <div class="relative w-48 h-56 md:w-64 md:h-72 mt-2">
                                         ${SVGs.fatJar}
                                         <div class="absolute bottom-0 left-0 w-full h-full" style="clip-path: polygon(15% 100%, 85% 100%, 100% 60%, 100% 30%, 0% 30%, 0% 60%);">
                                             <div id="jar-liquid-level" class="bg-yellow-300/80 absolute bottom-0 w-full liquid-fill" style="height: 0%;"></div>
                                         </div>
                                     </div>
-                                    <!-- 裝滿的輪迴寶箱堆 -->
                                     <div id="cycle-treasures" class="absolute bottom-4 right-4 flex flex-col-reverse gap-1 items-center justify-center z-20"></div>
                                 </div>
                                 <div class="flex-1 bg-white border-4 border-gray-800 rounded-3xl p-4 relative flex flex-col">
@@ -1191,8 +1283,8 @@
                                 <button onclick="UI.closeModal('mailbox-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1">${SVGs.ui.cross}</button>
                             </div>
                             <div class="flex-none flex gap-2 mb-4">
-                                <button id="m-tab-read" onclick="Mail.switchTab('read')" class="flex-1 py-2 font-black rounded-xl border-4 border-gray-800 bg-pink-300">收信箱</button>
-                                <button id="m-tab-write" onclick="Mail.switchTab('write')" class="flex-1 py-2 font-black rounded-xl border-4 border-gray-800 inline-flex justify-center items-center gap-1"><div class="w-4 h-4">${SVGs.ui.editPen}</div> 寫信</button>
+                                <button id="m-tab-read" onclick="Mail.switchTab('read')" class="flex-1 py-2 font-black rounded-xl border-4 border-gray-800 bg-pink-300 transition-colors">收信箱</button>
+                                <button id="m-tab-write" onclick="Mail.switchTab('write')" class="flex-1 py-2 font-black rounded-xl border-4 border-gray-800 inline-flex justify-center items-center gap-1 transition-colors"><div class="w-4 h-4">${SVGs.ui.editPen}</div> 寫信</button>
                             </div>
                             
                             <div id="mail-read-area" class="flex-1 overflow-y-auto custom-scroll pr-2 pb-4 flex flex-col gap-3">
@@ -1206,7 +1298,6 @@
                                         <p class="font-black">寫給：</p>
                                         <select id="mail-target-select" class="w-full box-border bg-white border-2 border-gray-800 rounded-lg px-2 py-1 font-bold shadow-[2px_2px_0px_#1f2937]"></select>
                                     </div>
-                                    <!-- 限制輸入框高度，確保在手機上不會擠掉下方的貼紙區 -->
                                     <div id="mail-input" contenteditable="true" onpaste="Mail.handlePaste(event)" class="w-full min-h-[100px] max-h-[150px] md:flex-1 md:max-h-none bg-white border-4 border-gray-800 rounded-xl p-3 font-bold mb-3 overflow-y-auto focus:outline-none" placeholder="說點好聽的喵..."></div>
                                 </div>
                                 <div class="flex-1 flex flex-col overflow-hidden">
@@ -1314,19 +1405,38 @@
                             <button onclick="Logic.saveAction()" class="w-full py-4 rounded-xl font-black text-2xl text-white bg-purple-500 border-4 border-gray-800 tracking-wider">完成打卡！</button>
                         </div>
                     </div>
+                    
+                    <!-- 【PWA優化】iOS 安裝教學彈窗 -->
+                    <div id="ios-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0 px-4 pb-10 md:pb-0">
+                        <div class="bg-[#fff9f0] w-full max-w-[360px] rounded-[2rem] p-6 border-8 border-gray-800 transform transition-transform translate-y-full md:translate-y-0 text-center shadow-[8px_8px_0px_#1f2937] relative">
+                            <h3 class="text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.bulb}</div> 安裝至桌面</h3>
+                            <p class="font-bold text-gray-600 mb-4 text-left leading-relaxed">蘋果設備專屬魔法：<br>1. 點擊下方工具列的 <b class="text-blue-500">分享圖示</b><br>2. 往下滑選擇 <b class="text-gray-800">「加入主畫面」</b></p>
+                            <div class="text-4xl mb-6 flex justify-center w-8 h-8 mx-auto">${SVGs.icons.star}</div>
+                            <button onclick="UI.closeModal('ios-pwa-modal')" class="w-full py-3 rounded-xl font-black text-gray-800 bg-yellow-300 border-4 border-gray-800 hand-drawn-btn shadow-[4px_4px_0px_#1f2937]">我知道了！</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 【PWA優化】Android 專屬安裝教學彈窗 -->
+                    <div id="android-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0 px-4 pb-10 md:pb-0">
+                        <div class="bg-[#fff9f0] w-full max-w-[360px] rounded-[2rem] p-6 border-8 border-gray-800 transform transition-transform translate-y-full md:translate-y-0 text-center shadow-[8px_8px_0px_#1f2937] relative">
+                            <h3 class="text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.bulb}</div> 安裝至桌面</h3>
+                            <p class="font-bold text-gray-600 mb-4 text-left leading-relaxed">安卓設備魔法：<br>1. 點擊瀏覽器右上角 <b class="text-blue-500">⋮ (設定)</b><br>2. 選擇 <b class="text-gray-800">「加到主畫面」</b> 即可全螢幕體驗！</p>
+                            <div class="text-4xl mb-6 flex justify-center w-8 h-8 mx-auto">${SVGs.icons.star}</div>
+                            <button onclick="UI.closeModal('android-pwa-modal')" class="w-full py-3 rounded-xl font-black text-gray-800 bg-yellow-300 border-4 border-gray-800 hand-drawn-btn shadow-[4px_4px_0px_#1f2937]">我知道了！</button>
+                        </div>
+                    </div>
                 `;
             }
         };
 
         // ==========================================
-        // 🧠 核心操作邏輯 (精準時間校正與無延遲 UI)
+        // 🧠 核心操作邏輯
         // ==========================================
         const Logic = {
             openActionModal(aId) { 
                 const today = getTodayStr(); 
                 const targetDateStr = recoveryDate || today;
                 
-                // 防呆：精確檢查這天是否已經打卡 (幽靈 Bug A 修復：前移阻擋)
                 if(getUserData(currentUser.uid)?.habits?.[currentHabitId]?.logs?.[targetDateStr]) {
                     return UI.showToast(recoveryDate ? "補救的這天已經有打卡紀錄囉！" : "今天打過卡囉！可以修改歷史足跡喵"); 
                 }
@@ -1376,7 +1486,7 @@
             },
             
             setupModalUI(act, isRec) { 
-                document.getElementById('modal-title').innerHTML = isRec ? `⏳ 補救：${act.label}` : (isEditMode ? `✏️ 修改：${act.label}` : `✨ 紀錄：${act.label}`); 
+                document.getElementById('modal-title').innerHTML = isRec ? `⏳ 補救：${escapeHTML(act.label)}` : (isEditMode ? `✏️ 修改：${escapeHTML(act.label)}` : `✨ 紀錄：${escapeHTML(act.label)}`); 
                 const iVal = document.getElementById('input-value'); 
                 document.getElementById('label-title').innerHTML = `<div class="w-5 h-5 inline-block align-middle mr-1">${SVGs.icons.star}</div> 相關紀錄項目？(選填)`; 
                 
@@ -1384,7 +1494,7 @@
                     document.getElementById('label-value').innerHTML = `<div class="w-5 h-5 inline-block align-middle mr-1">${SVGs.ui.editPen}</div> 寫下精選內容吧：`; 
                     iVal.type = "text"; iVal.placeholder = "輸入內容..."; iVal.removeAttribute("min"); 
                 } else { 
-                    document.getElementById('label-value').innerHTML = `<div class="w-5 h-5 inline-block align-middle mr-1">${SVGs.ui.editPen}</div> 完成了多少${act.unit}呢？`; 
+                    document.getElementById('label-value').innerHTML = `<div class="w-5 h-5 inline-block align-middle mr-1">${SVGs.ui.editPen}</div> 完成了多少${escapeHTML(act.unit)}呢？`; 
                     iVal.type = "number"; iVal.min = "1"; iVal.placeholder = "輸入數字(最少為1)"; 
                 } 
             },
@@ -1396,9 +1506,10 @@
                 try {
                     let title = "無標題", val = "1", memo = ""; 
                     if (!auto) { 
-                        title = document.getElementById('input-book-title').value.replace(/</g, "&lt;").trim() || title; 
+                        // 【防爆版轉碼】保證任何單雙引號都不會造成 HTML 破版
+                        title = escapeHTML(document.getElementById('input-book-title').value.trim()) || title; 
                         val = document.getElementById('input-value').value.trim(); 
-                        memo = document.getElementById('input-memo').value.replace(/</g, "&lt;").trim(); 
+                        memo = escapeHTML(document.getElementById('input-memo').value.trim()); 
                     } 
                     
                     if(!currentActionObj.isQuote) { 
@@ -1443,7 +1554,6 @@
                     }; 
                     if(!isEditMode) habit.lastBookTitle = title;
                     
-                    // Optimistic UI：同步更新本地資料與畫面，背景執行雲端同步
                     saveLocal(); 
                     
                     UI.closeModal('input-modal'); 
@@ -1458,7 +1568,7 @@
                         UI.showToast("紀錄修改成功！");
                     }
                 } finally {
-                    setTimeout(() => isProcessing = false, 300); // 短暫 debounce 防極限連點
+                    setTimeout(() => isProcessing = false, 300);
                 }
             },
             
@@ -1506,12 +1616,12 @@
                 const uData = getUserData(currentUser.uid); 
                 document.getElementById('shop-current-coins').innerText = uData.currentCoins; 
                 document.getElementById('shop-items-list').innerHTML = shopItems.map(i => `
-                    <div class="bg-white border-4 border-gray-800 p-3 rounded-xl flex justify-between items-center">
+                    <div class="bg-white border-4 border-gray-800 p-3 rounded-xl flex justify-between items-center shadow-sm">
                         <div class="flex flex-col">
-                            <span class="font-black truncate max-w-[150px] inline-flex items-center gap-1"><div class="w-5 h-5">${SVGs.icons[i.icon] || SVGs.icons.star}</div> ${i.name}</span>
+                            <span class="font-black truncate max-w-[150px] inline-flex items-center gap-1"><div class="w-5 h-5">${SVGs.icons[i.icon] || SVGs.icons.star}</div> ${escapeHTML(i.name)}</span>
                             ${i.reqLog ? `<span class="text-[10px] text-pink-600 font-bold inline-flex items-center gap-1"><div class="w-3 h-3">${SVGs.ui.lock}</div> 需打卡解鎖</span>` : ''}
                         </div>
-                        <button onclick="Shop.buyItem('${i.id}')" class="bg-yellow-200 border-2 border-gray-800 px-3 py-1 font-black rounded-lg flex-shrink-0 active:scale-95">${i.cost}</button>
+                        <button onclick="Shop.buyItem('${i.id}')" class="bg-yellow-200 border-2 border-gray-800 px-3 py-1 font-black rounded-lg flex-shrink-0 active:scale-95 shadow-sm">${i.cost}</button>
                     </div>
                 `).join(''); 
                 this.renderHistory(); this.renderEditList(); 
@@ -1539,7 +1649,7 @@
                 document.getElementById('shop-history-list').innerHTML = display.map(h => `
                     <div class="bg-gray-50 border-2 border-dashed border-gray-400 p-3 rounded-xl flex justify-between items-center">
                         <div>
-                            <p class="font-black">${h.itemName}</p>
+                            <p class="font-black">${escapeHTML(h.itemName)}</p>
                             <p class="text-xs text-gray-500">${formatFootprintDate(h.timestamp)}</p>
                         </div>
                         <span class="font-black text-yellow-600 flex items-center gap-1">${h.cost} <div class="w-4 h-4">${SVGs.coin}</div></span>
@@ -1550,8 +1660,8 @@
             loadMoreHistory() { this.historyLimit += 10; this.renderHistory(); },
             renderEditList() { 
                 document.getElementById('shop-edit-list').innerHTML = shopItems.map(i => `
-                    <div class="bg-white border-2 border-gray-800 p-2 rounded-xl flex justify-between items-center">
-                        <span class="font-black truncate max-w-[60%] inline-flex items-center gap-1"><div class="w-4 h-4">${SVGs.icons[i.icon] || SVGs.icons.star}</div> ${i.name} (${i.cost})</span>
+                    <div class="bg-white border-2 border-gray-800 p-2 rounded-xl flex justify-between items-center shadow-sm">
+                        <span class="font-black truncate max-w-[60%] inline-flex items-center gap-1"><div class="w-4 h-4">${SVGs.icons[i.icon] || SVGs.icons.star}</div> ${escapeHTML(i.name)} (${i.cost})</span>
                         <button onclick="Shop.deleteItem('${i.id}')" class="w-8 h-8 p-1.5 bg-red-100 border border-gray-800 rounded hand-drawn-btn flex-shrink-0">${SVGs.ui.trash}</button>
                     </div>
                 `).join(''); 
@@ -1562,7 +1672,7 @@
             },
             renderIconSelection() { 
                 document.getElementById('shop-e-icons').innerHTML = Object.keys(SVGs.icons).map(key => `
-                    <div onclick="Shop.tempIcon='${key}'; Shop.renderIconSelection()" class="w-10 h-10 p-1.5 border-4 rounded-xl cursor-pointer ${this.tempIcon === key ? 'border-gray-800 bg-yellow-200 scale-110' : 'border-transparent bg-gray-100 opacity-60'}">
+                    <div onclick="Shop.tempIcon='${key}'; Shop.renderIconSelection()" class="w-10 h-10 p-1.5 border-4 rounded-xl cursor-pointer ${this.tempIcon === key ? 'border-gray-800 bg-yellow-200 scale-110 shadow-sm' : 'border-transparent bg-gray-100 opacity-60'}">
                         ${SVGs.icons[key]}
                     </div>
                 `).join(''); 
@@ -1581,7 +1691,7 @@
         };
 
         // ==========================================
-        // 📬 信箱系統 (內含溫馨詞庫)
+        // 📬 信箱系統與資安防護
         // ==========================================
         const Mail = {
             mailLimit: 10,
@@ -1608,11 +1718,10 @@
                 document.getElementById('mail-text-shortcuts').innerHTML = M_TEXTS.map(t => `<button onclick="Mail.insertText('${t.text}')" class="text-xs font-bold ${t.bg} border-2 border-gray-800 rounded-lg py-1.5 shadow-sm active:translate-y-1">${t.text}</button>`).join('');
                 document.getElementById('mail-icon-shortcuts').innerHTML = Object.keys(SVGs.icons).map(key => `<button onclick="Mail.insertIcon('${key}')" class="w-8 h-8 p-1 bg-white border-2 border-gray-800 rounded-lg shadow-sm active:translate-y-1">${SVGs.icons[key]}</button>`).join('');
             },
-            // 安全防 XSS 的剪貼簿貼上處理
             handlePaste(e) {
                 e.preventDefault();
                 const text = (e.clipboardData || window.clipboardData).getData('text/plain');
-                document.execCommand('insertText', false, text);
+                document.execCommand('insertText', false, escapeHTML(text));
             },
             sendMail() { 
                 if(SyncEngine.isSyncing || isProcessing) return UI.showToast("系統處理中，請稍後操作");
@@ -1621,9 +1730,23 @@
                     let rawHtml = document.getElementById('mail-input').innerHTML.trim(); 
                     if(!rawHtml || rawHtml === '<br>') return UI.showToast("信件內容不能是空的喔！"); 
                     
+                    // 【資安防護 XSS】使用 DOMParser 過濾不安全的標籤與事件綁定，僅保留純文本與我們貼紙產生的安全結構
+                    const div = document.createElement('div');
+                    div.innerHTML = rawHtml;
+                    div.querySelectorAll('script, iframe, img, object, embed, link, style, base, meta').forEach(el => el.remove());
+                    div.querySelectorAll('*').forEach(el => {
+                        for (let i = el.attributes.length - 1; i >= 0; i--) {
+                            const attrName = el.attributes[i].name.toLowerCase();
+                            if (attrName.startsWith('on') || (attrName === 'href' && el.attributes[i].value.toLowerCase().startsWith('javascript:'))) {
+                                el.removeAttribute(attrName);
+                            }
+                        }
+                    });
+                    const safeHtml = div.innerHTML;
+
                     const t = document.getElementById('mail-target-select').value; 
                     const other = getUserData(t); 
-                    other.mails.unshift({ id: Date.now().toString(), from: currentUser.name, fromAvatarKey: currentUser.svgKey, content: rawHtml, timestamp: Date.now(), isRead: false }); 
+                    other.mails.unshift({ id: Date.now().toString(), from: currentUser.name, fromAvatarKey: currentUser.svgKey, content: safeHtml, timestamp: Date.now(), isRead: false }); 
                     
                     saveLocal(); UI.showToast("信件已寄出！"); this.switchTab('read'); document.getElementById('mail-input').innerHTML=""; 
                 } finally { setTimeout(() => isProcessing = false, 300); }
@@ -1647,7 +1770,7 @@
             deleteMail(id) { Confirm.show("刪除信件", "確定要刪除這封信喵？", "刪除", () => { const u = getUserData(currentUser.uid); u.mails = u.mails.filter(m => m.id !== id); saveLocal(); this.renderMails(); }); },
             insertText(t) { 
                 const el = document.getElementById('mail-input'); el.focus();
-                if(!document.execCommand('insertText', false, t)) el.innerHTML += t; 
+                if(!document.execCommand('insertText', false, t)) el.innerHTML += escapeHTML(t); 
             },
             insertIcon(key) {
                 const el = document.getElementById('mail-input'); el.focus();
@@ -1674,7 +1797,6 @@
                 const safeTotal = Math.max(0, u.totalCoins || 0);
                 document.getElementById('report-total-points').innerText = safeTotal; 
                 
-                // 動態金幣水位計算 (每1000滿一瓶)
                 const cycle = Math.floor(safeTotal / 1000);
                 const currentLevel = safeTotal % 1000;
                 const percent = Math.max(5, (currentLevel / 1000) * 100); 
@@ -1692,7 +1814,6 @@
                     if(liquid) liquid.style.height = `${percent}%`;
                 }, 100);
                 
-                // 本月滿版貼紙簿動態生成 (日曆窗格法響應式升級)
                 const currentM = new Date().getMonth(); const currentY = new Date().getFullYear();
                 const daysInMonth = new Date(currentY, currentM + 1, 0).getDate();
                 
@@ -1711,8 +1832,6 @@
                         stickersHtml += `<div class="w-full aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-300 font-black text-sm md:text-base bg-gray-50/50">${day}</div>`;
                     }
                 }
-                
-                document.getElementById('sticker-grid').className = "grid grid-cols-5 gap-2 flex-1 overflow-y-auto custom-scroll pr-2 mt-4 content-start";
                 document.getElementById('sticker-grid').innerHTML = stickersHtml;
             },
             
@@ -1738,7 +1857,7 @@
                     
                     let crownHtml = (u.uid === lmWinnerId) ? `<div class="absolute -top-4 -right-2 w-6 h-6 transform rotate-12">${SVGs.crown.replace('CROWN_COLOR', '#fde047')}</div>` : '';
                     
-                    return `<div class="absolute w-12 h-12 hover:scale-125 transition-transform cursor-pointer" style="bottom:${h}%; left:${left}%" onclick="Report.clickTreeCharacter('${myRank}', '${u.name}')">
+                    return `<div class="absolute w-12 h-12 hover:scale-125 transition-transform cursor-pointer drop-shadow-md" style="bottom:${h}%; left:${left}%" onclick="Report.clickTreeCharacter('${myRank}', '${u.name}')">
                         ${SVGs[u.svgKey]}
                         ${crownHtml}
                     </div>`;
@@ -1794,9 +1913,9 @@
                     <div class="bg-white border-4 border-gray-800 rounded-xl p-3 flex justify-between items-center shadow-sm mb-3">
                         <div class="flex items-center gap-2 max-w-[70%]">
                             <div class="w-4 h-4 flex-shrink-0 rounded-full ${THEMES.find(t=>t.id===h.themeId)?.dot || 'bg-gray-400'} border-2 border-gray-800"></div>
-                            <span class="font-black text-lg text-gray-800 truncate max-w-[120px] md:max-w-[250px]">${h.title}</span>
+                            <span class="font-black text-lg text-gray-800 truncate max-w-[120px] md:max-w-[250px]">${escapeHTML(h.title)}</span>
                         </div>
-                        <button onclick="Editor.editHabit('${h.id}')" class="w-10 h-10 p-2 bg-blue-100 border-2 border-gray-800 rounded-lg hand-drawn-btn hover:bg-blue-200 flex-shrink-0">${SVGs.ui.editPen}</button>
+                        <button onclick="Editor.editHabit('${h.id}')" class="w-10 h-10 p-2 bg-blue-100 border-2 border-gray-800 rounded-lg hand-drawn-btn hover:bg-blue-200 flex-shrink-0 shadow-sm">${SVGs.ui.editPen}</button>
                     </div>
                 `).join('');
                 document.getElementById('editor-view-list').classList.remove('hidden'); document.getElementById('editor-view-detail').classList.add('hidden'); document.getElementById('editor-view-action').classList.add('hidden');
@@ -1824,7 +1943,7 @@
                 document.getElementById('editor-h-roles').innerHTML = this.tempRoles.map((r, i) => `
                     <div class="flex gap-2 items-center mb-2 w-full box-border">
                         <span class="text-xs font-bold w-12 text-center">Lv.${i+1}</span>
-                        <input type="text" value="${r.title}" onchange="Editor.tempRoles[${i}].title=this.value" class="flex-1 w-full box-border border-4 border-gray-800 rounded-lg p-1.5 font-bold text-xs">
+                        <input type="text" value="${escapeHTML(r.title)}" onchange="Editor.tempRoles[${i}].title=this.value" class="flex-1 w-full box-border border-4 border-gray-800 rounded-lg p-1.5 font-bold text-xs">
                         <input type="number" value="${r.threshold}" ${i===0?'disabled':''} onchange="Editor.tempRoles[${i}].threshold=parseInt(this.value)||0" class="w-16 box-border border-4 border-gray-800 rounded-lg p-1.5 font-bold text-xs ${i===0?'bg-gray-200':''}" min="0">
                         ${i>0 ? `<button onclick="Editor.deleteRole(${i})" class="w-8 h-8 p-1.5 bg-red-100 border border-gray-800 rounded hand-drawn-btn flex items-center justify-center flex-shrink-0">${SVGs.ui.trash}</button>` : `<div class="w-8 flex-shrink-0"></div>`}
                     </div>
@@ -1838,7 +1957,7 @@
                 document.getElementById('editor-h-actions').innerHTML = h.actions.map(a => `
                     <div onclick="Editor.editAction('${a.id}')" class="${th.btn} border-4 border-gray-800 rounded-xl p-3 flex items-center gap-3 cursor-pointer hand-drawn-btn mb-2">
                         <div class="w-8 h-8">${SVGs.icons[a.icon] || SVGs.icons.star}</div>
-                        <div class="flex-1"><p class="font-black text-sm">${a.label}</p></div>
+                        <div class="flex-1"><p class="font-black text-sm">${escapeHTML(a.label)}</p></div>
                         <div class="w-8 h-8 p-1.5">${SVGs.ui.editPen}</div>
                     </div>
                 `).join(''); 
@@ -1867,7 +1986,7 @@
             },
             renderIconSelection() { 
                 document.getElementById('editor-a-icongrid').innerHTML = Object.keys(SVGs.icons).map(key => `
-                    <div onclick="Editor.tempIcon='${key}'; Editor.renderIconSelection()" class="w-10 h-10 p-1.5 border-4 rounded-xl cursor-pointer ${this.tempIcon === key ? 'border-gray-800 bg-yellow-200 scale-110' : 'border-transparent bg-gray-100 opacity-60'}">
+                    <div onclick="Editor.tempIcon='${key}'; Editor.renderIconSelection()" class="w-10 h-10 p-1.5 border-4 rounded-xl cursor-pointer ${this.tempIcon === key ? 'border-gray-800 bg-yellow-200 scale-110 shadow-sm' : 'border-transparent bg-gray-100 opacity-60'}">
                         ${SVGs.icons[key]}
                     </div>
                 `).join(''); 
@@ -1884,7 +2003,7 @@
         };
 
         // ==========================================
-        // 📻 廣播台 CMS (防白畫面與幽靈刪除)
+        // 📻 廣播台 CMS
         // ==========================================
         const Radio = {
             pools: {}, 
@@ -1905,8 +2024,6 @@
             renderList() { 
                 document.getElementById('radio-list').innerHTML = customRadios.map(r => {
                     let labelClass = "bg-gray-200 text-gray-800"; let labelText = "所有人";
-                    
-                    // 防呆：確認使用者是否存在
                     const targetUser = users.find(u=>u.uid===r.target);
                     if (r.target === 'user_son') { labelClass = "bg-purple-200 text-purple-800"; labelText = targetUser ? targetUser.name : '阿蛇'; }
                     else if (r.target === 'user_dad') { labelClass = "bg-orange-200 text-orange-800"; labelText = targetUser ? targetUser.name : '狐狸'; }
@@ -1914,10 +2031,10 @@
                     else if (r.target !== 'all') { labelText = targetUser ? targetUser.name : '未知'; }
                     
                     return `
-                    <div class="bg-white border-2 border-gray-800 rounded-xl p-3 mb-2 flex justify-between items-center">
+                    <div class="bg-white border-2 border-gray-800 rounded-xl p-3 mb-2 flex justify-between items-center shadow-sm">
                         <div class="max-w-[70%] flex flex-col items-start gap-1">
                             <span class="text-[10px] ${labelClass} px-2 py-0.5 rounded font-black">給${labelText}</span>
-                            <p class="font-bold text-sm truncate w-full">${r.text}</p>
+                            <p class="font-bold text-sm break-words w-full">${escapeHTML(r.text)}</p>
                         </div>
                         <div class="flex gap-2">
                             <button onclick="Radio.editLine('${r.id}')" class="w-8 h-8 p-1.5 bg-blue-100 border border-gray-800 rounded hand-drawn-btn flex items-center justify-center">${SVGs.ui.editPen}</button>
@@ -1943,7 +2060,6 @@
 
         const Confirm = { 
             execute() { 
-                // 防幽靈連點 Bug：取出後立刻將 this.cb 設為 null
                 if(this.cb) { const action = this.cb; this.cb = null; action(); } 
                 UI.closeModal('generic-confirm-modal'); 
             }, 
