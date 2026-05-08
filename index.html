@@ -44,8 +44,7 @@
         .hand-drawn-btn:active { transform: translate(4px, 4px) !important; box-shadow: 0px 0px 0px #1f2937 !important; }
         .bg-theme-transition { transition: background 0.5s ease-in-out; border-bottom: 4px solid #1f2937; }
 
-        /* 圓餅圖與特效 */
-        .pie-chart { transform: rotate(-90deg); border-radius: 50%; background: #fff; overflow: hidden; }
+        /* 動畫區 */
         @keyframes float { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(2deg); } }
         .mascot-float { animation: float 3s infinite ease-in-out; }
         @keyframes popIn { 0% { transform: scale(0.8) rotate(5deg); opacity: 0; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
@@ -89,10 +88,10 @@
     </div>
 
     <!-- 📲 PWA 安裝提示 Banner -->
-    <div id="pwa-banner" class="hidden bg-blue-500 text-white font-black p-3 text-center text-sm border-b-4 border-gray-800 relative z-50 shadow-md">
-        <span class="mr-2 inline-flex items-center gap-1"><div class="w-4 h-4" id="pwa-bulb-icon"></div> 想要全螢幕體驗嗎？</span>
-        <button onclick="PWA.install()" class="bg-yellow-300 text-gray-900 px-3 py-1 rounded-lg border-2 border-gray-800 shadow-sm active:translate-y-1">安裝至桌面</button>
-        <button onclick="PWA.hide()" class="absolute right-3 top-3 text-white font-bold opacity-80">✕</button>
+    <div id="pwa-banner" class="hidden bg-blue-500 text-white font-black p-3 text-center text-sm border-b-4 border-gray-800 relative z-50 shadow-md flex items-center justify-center gap-4">
+        <span class="inline-flex items-center gap-1"><div class="w-4 h-4" id="pwa-bulb-icon"></div> 想要全螢幕體驗嗎？</span>
+        <button onclick="PWA.install()" class="bg-yellow-300 text-gray-900 px-3 py-1 rounded-lg border-2 border-gray-800 shadow-sm active:translate-y-1">安裝 App</button>
+        <button onclick="PWA.hide()" class="text-white font-bold opacity-80 absolute right-3">✕</button>
     </div>
     
     <div id="golden-rain"></div>
@@ -101,8 +100,10 @@
         <!-- ================= 左半邊：操作儀表板 ================= -->
         <div class="panel-left">
             <header id="main-header" class="bg-theme-transition text-white p-5 pb-10 relative z-30 md:rounded-none rounded-b-[2rem]">
-                <div class="flex justify-between items-start mb-4 relative z-50">
-                    <div class="relative max-w-[60%] md:max-w-[70%]">
+                
+                <!-- Row 1: 標題與角色切換 -->
+                <div class="flex justify-between items-start w-full relative z-50">
+                    <div class="relative max-w-[65%]">
                         <button onclick="UI.toggleHabitMenu()" class="text-3xl font-black tracking-wide drop-shadow-md text-white flex items-center gap-1 active:scale-95 transition-transform" style="text-shadow: 2px 2px 0 #1f2937; max-width: 100%;">
                             <span id="app-title" class="truncate inline-block align-bottom max-w-[150px] md:max-w-[250px]">載入中...</span><span class="text-xl flex-shrink-0">▼</span>
                         </button>
@@ -132,37 +133,40 @@
                     </div>
                 </div>
                 
-                <div class="flex flex-col items-start gap-2 relative z-40 max-w-[65%] mt-1">
+                <!-- Row 2: 按鈕群與狀態列 (防重疊完美佈局) -->
+                <div class="flex flex-row justify-between items-end w-full relative z-40 mt-4">
                     <div class="flex items-center gap-2">
-                        <button onclick="Shop.open()" id="shop-btn" class="w-12 h-12 bg-pink-200 rounded-xl hand-drawn-border flex items-center justify-center shadow-[2px_2px_0px_#1f2937] transition-all hover:bg-pink-300 p-2"></button>
                         <button onclick="Report.open()" id="trophy-btn" class="w-12 h-12 bg-yellow-200 rounded-xl hand-drawn-border flex items-center justify-center shadow-[2px_2px_0px_#1f2937] transition-all hover:bg-yellow-300 p-2"></button>
                         <button onclick="Mail.open()" id="mailbox-btn" class="w-12 h-12 bg-white rounded-xl hand-drawn-border flex items-center justify-center relative shadow-[2px_2px_0px_#1f2937] transition-all p-1.5">
                             <span id="mail-badge" class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-black w-5 h-5 rounded-full border-2 border-gray-800 flex items-center justify-center z-10">!</span>
                         </button>
+                        <button onclick="Shop.open()" id="shop-btn" class="w-12 h-12 bg-pink-200 rounded-xl hand-drawn-border flex items-center justify-center shadow-[2px_2px_0px_#1f2937] transition-all hover:bg-pink-300 p-2"></button>
                     </div>
-                    <div class="flex items-center gap-3 bg-white/40 px-3 py-1.5 rounded-xl border-2 border-gray-800 shadow-[2px_2px_0px_#1f2937] mt-1">
-                        <div class="flex items-center gap-1.5" title="手邊金幣">
+                    
+                    <div class="flex items-center gap-2 bg-white/40 px-3 py-1.5 rounded-xl border-2 border-gray-800 shadow-[2px_2px_0px_#1f2937]">
+                        <div class="flex items-center gap-1" title="手邊金幣">
                             <div class="w-5 h-5" id="coin-icon"></div>
                             <span class="text-xl font-black drop-shadow-md text-gray-800" id="current-coins">0</span>
                         </div>
-                        <div class="w-px h-5 bg-gray-800 opacity-30"></div>
-                        <div class="flex items-center gap-1.5" title="綜合活躍連勝">
+                        <div class="w-px h-5 bg-gray-800 opacity-30 mx-1"></div>
+                        <div class="flex items-center gap-1" title="綜合活躍連勝">
                             <div class="w-5 h-5 fire-anim" id="flame-icon"></div>
                             <span class="text-xl font-black drop-shadow-md text-gray-800" id="overall-streak">0</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="absolute -bottom-8 -right-2 flex flex-row items-end justify-end z-20 pointer-events-none w-[120%]">
-                    <div class="bg-white border-4 border-gray-800 text-gray-800 px-4 py-3 rounded-2xl rounded-br-none shadow-[4px_4px_0px_#1f2937] mb-10 mr-[-15px] pop-in text-sm font-black text-left w-[200px] pointer-events-auto relative z-10 transform -rotate-2" id="mascot-speech"></div>
-                    <div class="w-28 h-28 mascot-float cursor-pointer pointer-events-auto relative z-20 select-none" id="mascot-img" 
+                <!-- 廣播對話框與吉祥物 (移至邊界防遮擋) -->
+                <div class="absolute -bottom-10 right-2 flex flex-row items-end justify-end z-20 pointer-events-none">
+                    <div class="bg-white border-4 border-gray-800 text-gray-800 px-4 py-3 rounded-2xl rounded-br-none shadow-[4px_4px_0px_#1f2937] mb-8 mr-[-10px] pop-in text-sm font-black text-left w-[180px] md:w-[200px] pointer-events-auto relative z-10 transform -rotate-2" id="mascot-speech"></div>
+                    <div class="w-24 h-24 md:w-28 md:h-28 mascot-float cursor-pointer pointer-events-auto relative z-20 select-none" id="mascot-img" 
                          onmousedown="EasterEggs.startPress(event)" onmouseup="EasterEggs.endPress(event)" onmouseleave="EasterEggs.cancelPress(event)"
                          ontouchstart="EasterEggs.startPress(event)" ontouchend="EasterEggs.endPress(event)" ontouchcancel="EasterEggs.cancelPress(event)"></div>
                 </div>
             </header>
 
-            <div class="p-5 pt-10 flex-1 bg-white md:bg-transparent flex flex-col">
-                <div id="family-buff-banner" class="hidden w-full mb-4 bg-red-500 text-white font-black text-sm px-4 py-2 rounded-xl border-4 border-gray-800 shadow-[2px_2px_0px_#1f2937] transform rotate-1 pop-in text-center flex items-center justify-center gap-2">
+            <div class="p-5 pt-14 flex-1 bg-white md:bg-transparent flex flex-col relative z-10">
+                <div id="family-buff-banner" class="hidden w-full mb-4 bg-red-500 text-white font-black text-sm px-4 py-2 rounded-xl border-4 border-gray-800 shadow-[2px_2px_0px_#1f2937] transform rotate-1 pop-in flex items-center justify-center gap-2">
                     <div class="w-5 h-5" id="buff-tree-icon"></div> 全家連擊中！今日金幣 x1.2 倍
                 </div>
                 
@@ -220,10 +224,10 @@
 
     <script>
         // ==========================================
-        // 🎨 純手繪 SVG 圖庫
+        // 🎨 純手繪 SVG 圖庫 (修復所有缺漏，阿蛇與狐狸重塑)
         // ==========================================
         const SVGs = {
-            // 細長挑眼與閃電鬍鬚的狐狸爸爸 (無嘴)
+            // 細長挑眼與閃電鬍鬚的狐狸爸爸
             fox: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
                 <polygon points="15,45 20,15 40,30" fill="#fb923c" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
                 <polygon points="85,45 80,15 60,30" fill="#fb923c" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
@@ -234,16 +238,16 @@
                 <polyline points="10,55 18,58 12,62" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
                 <polyline points="90,55 82,58 88,62" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>`,
-            // 邪惡倒半月眼與壞笑的阿蛇
+            // 帥氣自信的阿蛇
             cat: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
                 <polygon points="15,40 25,10 45,30" fill="#a855f7" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
                 <polygon points="85,40 75,10 55,30" fill="#a855f7" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
                 <path d="M15,40 Q10,80 50,85 Q90,80 85,40 Q65,30 50,35 Q35,30 15,40 Z" fill="#c084fc" stroke="#1f2937" stroke-width="3"/>
-                <path d="M25,50 Q30,60 35,50" fill="none" stroke="#1f2937" stroke-width="4" stroke-linecap="round" transform="rotate(-30 30 50)" />
-                <path d="M65,50 Q70,60 75,50" fill="none" stroke="#1f2937" stroke-width="4" stroke-linecap="round" transform="rotate(30 70 50)" />
+                <path d="M20,56 L36,52 L32,60 Z" fill="#1f2937" stroke="#1f2937" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M80,56 L64,52 L68,60 Z" fill="#1f2937" stroke="#1f2937" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M40,72 Q50,80 65,65" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
                 <ellipse cx="22" cy="65" rx="4" ry="2" fill="#fbcfe8"/>
                 <ellipse cx="78" cy="65" rx="4" ry="2" fill="#fbcfe8"/>
-                <path d="M40,75 Q50,80 65,65" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
                 <line x1="8" y1="58" x2="20" y2="60" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
                 <line x1="6" y1="65" x2="18" y2="65" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
                 <line x1="10" y1="72" x2="22" y2="70" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
@@ -359,7 +363,6 @@
         let isEditMode = false; 
         let currentActionObj = null;
         let editTargetDate = null;
-        let isProcessing = false;
 
         // ==========================================
         // 💾 資料庫與智慧維運系統
@@ -421,6 +424,7 @@
             pruneAllData();
             localStorage.setItem('daily-habit-v13', JSON.stringify(dailyHabitData));
             
+            // 雲端為空時，主動上傳初始資料
             if(cloudSync === 'empty' || !cloudSync) saveLocal();
             
             document.getElementById('sync-overlay').style.opacity = '0';
@@ -429,6 +433,7 @@
             }, 500);
         }
 
+        // 防爆無感瘦身：只抽乾字串，保留腳印物件算連勝
         function pruneAllData() {
             const cutOffTime = Date.now() - (40 * 24 * 60 * 60 * 1000); 
             users.forEach(u => {
@@ -450,15 +455,21 @@
             });
         }
 
-        async function saveLocal() {
+        // 【優化】同步儲存本機並在背景觸發雲端同步 (樂觀 UI 核心)
+        function saveLocal() {
             pruneAllData();
             localStorage.setItem('appTemplates_v13', JSON.stringify(appTemplates));
             localStorage.setItem('shopItems_v13', JSON.stringify(shopItems));
             localStorage.setItem('customRadios_v13', JSON.stringify(customRadios));
             localStorage.setItem('daily-habit-v13', JSON.stringify(dailyHabitData));
+            
+            // 非同步發送至雲端，絕不阻擋 UI 執行緒
             if(!SyncEngine.isSyncing) {
-                await SyncEngine.pull(); 
-                SyncEngine.push(); 
+                SyncEngine.pull().then(status => {
+                    if (status === 'success' || status === 'empty') {
+                        SyncEngine.push();
+                    }
+                }).catch(e => console.error("Background sync failed:", e));
             }
         }
 
@@ -706,7 +717,7 @@
                         if(parsed.shopItems_v13) shopItems = parsed.shopItems_v13;
                         if(parsed.customRadios_v13) customRadios = parsed.customRadios_v13;
                         if(parsed['daily-habit-v13']) dailyHabitData = parsed['daily-habit-v13'];
-                        await saveLocal(); UI.init(); UI.showToast("備份還原成功並已排入同步！");
+                        saveLocal(); UI.init(); UI.showToast("備份還原成功並已排入同步！");
                     } catch(err) { UI.showToast("備份檔讀取失敗，格式錯誤"); }
                 };
                 reader.readAsText(file);
@@ -755,19 +766,20 @@
             return currentRole;
         }
 
-        // SVG 圓餅圖 (純淨版，無爆框)
+        // CSS 圓錐漸層圓餅圖 (純淨版，保證不爆框)
         function createPieChartSVG(data) {
             let total = data.reduce((sum, d) => sum + d.value, 0);
             if (total === 0) return `<div class="w-full h-full bg-gray-100 rounded-full border-4 border-gray-800 flex items-center justify-center text-xs font-bold text-gray-400">無數據</div>`;
             
-            let svg = `<svg viewBox="0 0 31.83 31.83" class="w-full h-full pie-chart border-4 border-gray-800 shadow-[4px_4px_0px_#1f2937]">`;
-            let offset = 0;
-            data.forEach(d => {
-                let slice = (d.value / total) * 100;
-                svg += `<circle cx="15.915" cy="15.915" r="15.915" fill="none" stroke="${d.color}" stroke-width="31.83" stroke-dasharray="${slice} 100" stroke-dashoffset="${-offset}"></circle>`;
-                offset += slice;
+            let gradientStr = "";
+            let currentAngle = 0;
+            data.forEach((d, i) => {
+                let percentage = (d.value / total) * 100;
+                gradientStr += `${d.color} ${currentAngle}% ${currentAngle + percentage}%`;
+                if (i < data.length - 1) gradientStr += ", ";
+                currentAngle += percentage;
             });
-            return svg + `</svg>`;
+            return `<div class="w-full h-full rounded-full border-4 border-gray-800 shadow-[4px_4px_0px_#1f2937]" style="background: conic-gradient(${gradientStr});"></div>`;
         }
         
         function renderLeaderboard(data, unit) {
@@ -924,7 +936,6 @@
                     let isActive = false;
                     let lastLog = null;
                     
-                    // 尋找當日最後一筆紀錄來擷取首字
                     Object.values(uData.habits||{}).forEach(h => {
                         if(h?.logs?.[dateStr] && !h.logs[dateStr].isPruned) {
                             isActive = true;
@@ -1049,12 +1060,12 @@
                             </div>
                             <div class="bg-blue-100 border-4 border-gray-800 rounded-xl p-4 mb-4">
                                 <div class="flex gap-2 mb-2">
-                                    <select id="radio-target" class="border-4 border-gray-800 rounded-lg p-2 font-bold flex-1">
+                                    <select id="radio-target" class="w-full box-border border-4 border-gray-800 rounded-lg p-2 font-bold flex-1">
                                         <option value="all">所有人</option><option value="user_dad">狐狸</option><option value="user_mom">綠公主</option><option value="user_son">阿蛇</option>
                                     </select>
                                 </div>
                                 <div class="flex gap-2">
-                                    <input type="text" id="radio-new-text" placeholder="台詞..." class="flex-1 border-4 border-gray-800 rounded-lg p-2 font-bold">
+                                    <input type="text" id="radio-new-text" placeholder="台詞..." class="w-full box-border flex-1 border-4 border-gray-800 rounded-lg p-2 font-bold">
                                     <button onclick="Radio.addLine()" class="bg-green-400 text-white font-black px-4 rounded-lg border-4 border-gray-800 hand-drawn-btn">儲存</button>
                                 </div>
                             </div>
@@ -1068,10 +1079,10 @@
                                 <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-8 h-8">${SVGs.ui.shopStand}</div> 兌換商店</h3>
                                 <button onclick="UI.closeModal('shop-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1">${SVGs.ui.cross}</button>
                             </div>
-                            <div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
-                                <button id="shop-tab-shop" onclick="Shop.switchTab('shop')" class="flex-1 py-2 px-4 font-black rounded-xl border-4 border-gray-800 whitespace-nowrap">逛商店</button>
-                                <button id="shop-tab-history" onclick="Shop.switchTab('history')" class="flex-1 py-2 px-4 font-black rounded-xl border-4 border-gray-800 whitespace-nowrap inline-flex justify-center items-center gap-1"><div class="w-4 h-4">${SVGs.ui.history}</div> 戰利品</button>
-                                <button id="shop-tab-edit" onclick="Shop.switchTab('edit')" class="flex-1 py-2 px-4 font-black rounded-xl border-4 border-gray-800 whitespace-nowrap inline-flex justify-center items-center gap-1"><div class="w-4 h-4">${SVGs.ui.setting}</div> 上架獎品</button>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <button id="shop-tab-shop" onclick="Shop.switchTab('shop')" class="flex-auto py-2 px-4 font-black rounded-xl border-4 border-gray-800">逛商店</button>
+                                <button id="shop-tab-history" onclick="Shop.switchTab('history')" class="flex-auto py-2 px-4 font-black rounded-xl border-4 border-gray-800 inline-flex justify-center items-center gap-1"><div class="w-4 h-4">${SVGs.ui.history}</div> 戰利品</button>
+                                <button id="shop-tab-edit" onclick="Shop.switchTab('edit')" class="flex-auto py-2 px-4 font-black rounded-xl border-4 border-gray-800 inline-flex justify-center items-center gap-1"><div class="w-4 h-4">${SVGs.ui.setting}</div> 上架獎品</button>
                             </div>
                             
                             <div id="shop-area-shop" class="flex-1 overflow-y-auto custom-scroll pr-2 flex flex-col gap-4">
@@ -1094,8 +1105,8 @@
                             
                             <div id="shop-area-form" class="flex-1 overflow-y-auto hidden flex-col">
                                 <h4 id="shop-e-title" class="font-black mb-3">編輯</h4>
-                                <input type="text" id="shop-e-name" class="w-full border-4 border-gray-800 rounded-lg p-2 font-bold mb-3" placeholder="獎品名稱">
-                                <input type="number" id="shop-e-cost" class="w-full border-4 border-gray-800 rounded-lg p-2 font-bold mb-4" placeholder="所需金幣">
+                                <input type="text" id="shop-e-name" class="w-full box-border border-4 border-gray-800 rounded-lg p-2 font-bold mb-3" placeholder="獎品名稱">
+                                <input type="number" id="shop-e-cost" class="w-full box-border border-4 border-gray-800 rounded-lg p-2 font-bold mb-4" placeholder="所需金幣">
                                 <div class="bg-pink-50 border-4 border-pink-200 rounded-xl p-3 mb-4">
                                     <label class="flex items-center gap-2 font-bold text-sm"><input type="checkbox" id="shop-e-req" class="w-4 h-4"> <div class="w-4 h-4">${SVGs.ui.lock}</div> 需完成今日習慣才能購買</label>
                                 </div>
@@ -1154,7 +1165,7 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                                     <div class="bg-yellow-50 border-4 border-gray-800 p-4 rounded-2xl flex flex-col">
                                         <div class="flex items-center gap-2 mb-3 border-b-2 border-dashed border-gray-300 pb-2"><div class="w-6 h-6">${SVGs.coin}</div><span class="font-black">金幣貢獻榜</span></div>
-                                        <div class="flex gap-4 items-center mb-4">
+                                        <div class="flex gap-4 items-center justify-center mb-4">
                                             <div class="w-24 h-24 flex-shrink-0" id="stats-coin-pie"></div>
                                             <div><p class="text-xs font-bold text-gray-500">本月總收穫</p><p class="font-black text-3xl text-yellow-600" id="stats-monthly-coins">0</p></div>
                                         </div>
@@ -1162,7 +1173,7 @@
                                     </div>
                                     <div class="bg-blue-50 border-4 border-gray-800 p-4 rounded-2xl flex flex-col">
                                         <div class="flex items-center gap-2 mb-3 border-b-2 border-dashed border-gray-300 pb-2"><div class="w-6 h-6">${SVGs.icons.star}</div><span class="font-black">狂熱習慣榜</span></div>
-                                        <div class="flex gap-4 items-center mb-4">
+                                        <div class="flex gap-4 items-center justify-center mb-4">
                                             <div class="w-24 h-24 flex-shrink-0" id="stats-count-pie"></div>
                                             <div><p class="text-xs font-bold text-gray-500">本月最愛習慣</p><p class="font-black text-xl text-blue-600 truncate max-w-[150px]" id="stats-best-habit">-</p></div>
                                         </div>
@@ -1174,12 +1185,12 @@
                     </div>
                     
                     <div id="mailbox-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[80] transition-opacity opacity-0 px-4">
-                        <div class="bg-[#fff0f5] w-full max-w-[900px] rounded-t-[2rem] md:rounded-[2rem] p-6 border-t-8 border-gray-800 md:border-8 h-[85vh] md:h-[auto] md:max-h-[90vh] flex flex-col">
-                            <div class="flex justify-between items-center mb-4 pb-3 border-b-4 border-dashed border-gray-300">
+                        <div class="bg-[#fff0f5] w-full max-w-[900px] rounded-t-[2rem] md:rounded-[2rem] p-6 border-t-8 border-gray-800 md:border-8 h-[85vh] md:h-[auto] md:max-h-[90vh] flex flex-col overflow-hidden">
+                            <div class="flex-none flex justify-between items-center mb-4 pb-3 border-b-4 border-dashed border-gray-300">
                                 <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.mailbox}</div> 家庭信箱</h3>
                                 <button onclick="UI.closeModal('mailbox-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1">${SVGs.ui.cross}</button>
                             </div>
-                            <div class="flex gap-2 mb-4">
+                            <div class="flex-none flex gap-2 mb-4">
                                 <button id="m-tab-read" onclick="Mail.switchTab('read')" class="flex-1 py-2 font-black rounded-xl border-4 border-gray-800 bg-pink-300">收信箱</button>
                                 <button id="m-tab-write" onclick="Mail.switchTab('write')" class="flex-1 py-2 font-black rounded-xl border-4 border-gray-800 inline-flex justify-center items-center gap-1"><div class="w-4 h-4">${SVGs.ui.editPen}</div> 寫信</button>
                             </div>
@@ -1189,15 +1200,16 @@
                                 <button id="btn-load-more-mails" onclick="Mail.loadMore()" class="hidden mt-2 text-sm font-bold bg-gray-100 py-2 rounded-xl border-2 border-dashed border-gray-300">展開歷史信件 ▼</button>
                             </div>
                             
-                            <div id="mail-write-area" class="flex-1 flex-col md:flex-row hidden pb-4 gap-4 overflow-y-auto">
-                                <div class="flex-1 flex flex-col">
+                            <div id="mail-write-area" class="flex-1 flex-col md:flex-row hidden pb-4 gap-4 overflow-hidden h-full">
+                                <div class="flex-none md:flex-1 flex flex-col">
                                     <div class="flex items-center gap-2 mb-3">
                                         <p class="font-black">寫給：</p>
-                                        <select id="mail-target-select" class="bg-white border-2 border-gray-800 rounded-lg px-2 py-1 font-bold shadow-[2px_2px_0px_#1f2937]"></select>
+                                        <select id="mail-target-select" class="w-full box-border bg-white border-2 border-gray-800 rounded-lg px-2 py-1 font-bold shadow-[2px_2px_0px_#1f2937]"></select>
                                     </div>
-                                    <div id="mail-input" contenteditable="true" onpaste="Mail.handlePaste(event)" class="w-full flex-1 min-h-[150px] bg-white border-4 border-gray-800 rounded-xl p-3 font-bold mb-3 overflow-y-auto focus:outline-none" placeholder="說點好聽的喵..."></div>
+                                    <!-- 限制輸入框高度，確保在手機上不會擠掉下方的貼紙區 -->
+                                    <div id="mail-input" contenteditable="true" onpaste="Mail.handlePaste(event)" class="w-full min-h-[100px] max-h-[150px] md:flex-1 md:max-h-none bg-white border-4 border-gray-800 rounded-xl p-3 font-bold mb-3 overflow-y-auto focus:outline-none" placeholder="說點好聽的喵..."></div>
                                 </div>
-                                <div class="flex-1 flex flex-col">
+                                <div class="flex-1 flex flex-col overflow-hidden">
                                     <div class="bg-pink-50 border-4 border-dashed border-pink-200 p-3 rounded-xl mb-4 flex-1 overflow-y-auto custom-scroll">
                                         <p class="text-xs font-black text-pink-500 mb-2 inline-flex items-center gap-1"><div class="w-4 h-4">${SVGs.ui.sparkle}</div> 溫馨短句：</p>
                                         <div class="grid grid-cols-2 gap-2 mb-4" id="mail-text-shortcuts"></div>
@@ -1205,7 +1217,7 @@
                                         <p class="text-xs font-black text-pink-500 mb-2 inline-flex items-center gap-1"><div class="w-4 h-4">${SVGs.icons.star}</div> 魔法貼紙：</p>
                                         <div class="flex flex-wrap gap-2" id="mail-icon-shortcuts"></div>
                                     </div>
-                                    <button onclick="Mail.sendMail()" class="w-full py-3 bg-blue-500 text-white font-black border-4 border-gray-800 rounded-xl inline-flex justify-center items-center gap-2"><div class="w-5 h-5">${SVGs.ui.send}</div> 寄出</button>
+                                    <button onclick="Mail.sendMail()" class="w-full flex-none py-3 bg-blue-500 text-white font-black border-4 border-gray-800 rounded-xl inline-flex justify-center items-center gap-2"><div class="w-5 h-5">${SVGs.ui.send}</div> 寄出</button>
                                 </div>
                             </div>
                         </div>
@@ -1222,21 +1234,22 @@
                                 <div id="editor-habit-list" class="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-3 content-start pr-2"></div>
                                 <button onclick="Editor.createNewHabit()" class="w-full mt-4 py-3 bg-green-400 text-white font-black border-4 border-gray-800 rounded-xl inline-flex justify-center items-center gap-2"><div class="w-5 h-5">${SVGs.ui.plus}</div> 建立新習慣</button>
                                 
-                                <div class="mt-4 border-t-4 border-dashed border-gray-300 pt-4 flex gap-2">
-                                    <button onclick="SystemConfig.downloadBackup()" class="flex-1 bg-sky-300 border-4 border-gray-800 py-3 rounded-xl font-black text-sm shadow-[2px_2px_0px_#1f2937]">📥 備份進度</button>
-                                    <button onclick="SystemConfig.triggerRestore()" class="flex-1 bg-rose-300 border-4 border-gray-800 py-3 rounded-xl font-black text-sm shadow-[2px_2px_0px_#1f2937]">📤 還原進度</button>
+                                <div class="mt-4 border-t-4 border-dashed border-gray-300 pt-4 flex flex-wrap gap-2">
+                                    <button onclick="SystemConfig.downloadBackup()" class="flex-auto bg-sky-300 border-4 border-gray-800 py-3 px-2 rounded-xl font-black text-sm shadow-[2px_2px_0px_#1f2937]">📥 備份進度</button>
+                                    <button onclick="SystemConfig.triggerRestore()" class="flex-auto bg-rose-300 border-4 border-gray-800 py-3 px-2 rounded-xl font-black text-sm shadow-[2px_2px_0px_#1f2937]">📤 還原進度</button>
+                                    <button onclick="PWA.install()" class="flex-auto bg-green-300 border-4 border-gray-800 py-3 px-2 rounded-xl font-black text-sm shadow-[2px_2px_0px_#1f2937]">📲 安裝 App</button>
                                 </div>
                             </div>
                             
                             <div id="editor-view-detail" class="flex-1 flex flex-col hidden overflow-y-auto pr-2">
                                 <label class="font-black mb-1">習慣名稱</label>
-                                <input type="text" id="editor-h-title" class="w-full border-4 border-gray-800 rounded-xl p-3 font-bold mb-4">
+                                <input type="text" id="editor-h-title" class="w-full box-border border-4 border-gray-800 rounded-xl p-3 font-bold mb-4">
                                 
                                 <div class="flex justify-between items-end mb-1">
                                     <label class="font-black inline-flex items-center gap-1"><div class="w-4 h-4">${SVGs.crown.replace('CROWN_COLOR', '#fde047')}</div> 角色身分進化</label>
                                     <button onclick="Editor.addRole()" class="text-xs bg-blue-100 border-2 border-gray-800 rounded px-2 py-0.5 font-bold inline-flex items-center gap-1"><div class="w-3 h-3">${SVGs.ui.plus}</div> 新增階段</button>
                                 </div>
-                                <div id="editor-h-roles" class="mb-4 bg-gray-50 border-4 border-dashed border-gray-300 p-2 rounded-xl flex flex-col"></div>
+                                <div id="editor-h-roles" class="mb-4 bg-gray-50 border-4 border-dashed border-gray-300 p-2 rounded-xl flex flex-col w-full box-border"></div>
                                 
                                 <label class="font-black mb-1">主題色彩</label>
                                 <div id="editor-h-colors" class="flex gap-2 mb-6 flex-wrap"></div>
@@ -1256,10 +1269,10 @@
                             
                             <div id="editor-view-action" class="flex-1 flex flex-col hidden overflow-y-auto pr-2">
                                 <div class="grid grid-cols-2 gap-3 mb-4">
-                                    <div><label class="font-black text-xs mb-1 block">按鈕名稱</label><input type="text" id="editor-a-label" class="w-full border-4 border-gray-800 rounded-lg p-2 font-bold"></div>
-                                    <div><label class="font-black text-xs mb-1 block">單位</label><input type="text" id="editor-a-unit" class="w-full border-4 border-gray-800 rounded-lg p-2 font-bold"></div>
-                                    <div><label class="font-black text-xs mb-1 block inline-flex items-center gap-1"><div class="w-3 h-3">${SVGs.icons.star}</div> 獲得金幣</label><input type="number" id="editor-a-points" class="w-full border-4 border-gray-800 rounded-lg p-2 font-bold"></div>
-                                    <div><label class="font-black text-xs mb-1 block">堆疊小字</label><input type="text" id="editor-a-stack" class="w-full border-4 border-gray-800 rounded-lg p-2 font-bold"></div>
+                                    <div><label class="font-black text-xs mb-1 block">按鈕名稱</label><input type="text" id="editor-a-label" class="w-full box-border border-4 border-gray-800 rounded-lg p-2 font-bold"></div>
+                                    <div><label class="font-black text-xs mb-1 block">單位</label><input type="text" id="editor-a-unit" class="w-full box-border border-4 border-gray-800 rounded-lg p-2 font-bold"></div>
+                                    <div><label class="font-black text-xs mb-1 block inline-flex items-center gap-1"><div class="w-3 h-3">${SVGs.icons.star}</div> 獲得金幣</label><input type="number" id="editor-a-points" class="w-full box-border border-4 border-gray-800 rounded-lg p-2 font-bold"></div>
+                                    <div><label class="font-black text-xs mb-1 block">堆疊小字</label><input type="text" id="editor-a-stack" class="w-full box-border border-4 border-gray-800 rounded-lg p-2 font-bold"></div>
                                 </div>
                                 <div class="bg-pink-50 border-4 border-pink-200 rounded-xl p-3 mb-4 flex flex-col gap-2">
                                     <p class="font-black text-sm text-pink-800 border-b-2 border-pink-200 pb-1">任務設定</p>
@@ -1288,15 +1301,15 @@
                             </div>
                             <div class="mb-5">
                                 <label class="block text-base font-black mb-2 transform -rotate-1 inline-flex items-center gap-1" id="label-title"><div class="w-5 h-5">${SVGs.icons.star}</div> 相關紀錄項目？</label>
-                                <input type="text" id="input-book-title" class="w-full bg-white border-4 border-gray-800 rounded-xl px-4 py-3 font-bold">
+                                <input type="text" id="input-book-title" class="w-full box-border bg-white border-4 border-gray-800 rounded-xl px-4 py-3 font-bold">
                             </div>
                             <div class="mb-5">
                                 <label class="block text-base font-black mb-2 transform rotate-1 inline-flex items-center gap-1" id="label-value"><div class="w-5 h-5">${SVGs.ui.editPen}</div> 數量多少呢？</label>
-                                <input type="number" min="1" id="input-value" class="w-full bg-white border-4 border-gray-800 rounded-xl px-4 py-3 font-bold">
+                                <input type="number" min="1" id="input-value" class="w-full box-border bg-white border-4 border-gray-800 rounded-xl px-4 py-3 font-bold">
                             </div>
                             <div class="mb-8">
                                 <label class="block text-base font-black mb-2 transform -rotate-1 inline-flex items-center gap-1"><div class="w-5 h-5">${SVGs.ui.editPen}</div> 簡單心得 (選填)</label>
-                                <input type="text" id="input-memo" class="w-full bg-white border-4 border-gray-800 rounded-xl px-4 py-3 font-bold">
+                                <input type="text" id="input-memo" class="w-full box-border bg-white border-4 border-gray-800 rounded-xl px-4 py-3 font-bold">
                             </div>
                             <button onclick="Logic.saveAction()" class="w-full py-4 rounded-xl font-black text-2xl text-white bg-purple-500 border-4 border-gray-800 tracking-wider">完成打卡！</button>
                         </div>
@@ -1306,21 +1319,22 @@
         };
 
         // ==========================================
-        // 🧠 核心操作邏輯 (精準時間校正與鎖定防護)
+        // 🧠 核心操作邏輯 (精準時間校正與無延遲 UI)
         // ==========================================
         const Logic = {
             openActionModal(aId) { 
-                if(SyncEngine.isSyncing || isProcessing) return UI.showToast("資料同步中，請稍後操作");
-                
-                const h = appTemplates[currentHabitId];
-                const act = h.actions.find(a=>a.id===aId); 
                 const today = getTodayStr(); 
                 const targetDateStr = recoveryDate || today;
                 
-                // 防呆：精確檢查這天是否已經打卡 (包含被 prune 的腳印)
+                // 防呆：精確檢查這天是否已經打卡 (幽靈 Bug A 修復：前移阻擋)
                 if(getUserData(currentUser.uid)?.habits?.[currentHabitId]?.logs?.[targetDateStr]) {
                     return UI.showToast(recoveryDate ? "補救的這天已經有打卡紀錄囉！" : "今天打過卡囉！可以修改歷史足跡喵"); 
                 }
+
+                if(SyncEngine.isSyncing || isProcessing) return UI.showToast("系統處理中，請稍後操作");
+                
+                const h = appTemplates[currentHabitId];
+                const act = h.actions.find(a=>a.id===aId); 
                 
                 if(act.isOneClick && !recoveryDate) { 
                     currentActionObj = act; isEditMode = false; editTargetDate = null; this.saveAction(true); 
@@ -1335,7 +1349,7 @@
             },
             
             editAction(ts) { 
-                if(SyncEngine.isSyncing || isProcessing) return UI.showToast("資料同步中，請稍後操作");
+                if(SyncEngine.isSyncing || isProcessing) return UI.showToast("系統處理中，請稍後操作");
                 
                 const uData = getUserData(currentUser.uid);
                 let targetLog = null; let tDate = null;
@@ -1375,14 +1389,13 @@
                 } 
             },
             
-            async saveAction(auto = false) {
-                if(SyncEngine.isSyncing || isProcessing) return UI.showToast("資料同步中，請稍後操作");
+            saveAction(auto = false) {
+                if(SyncEngine.isSyncing || isProcessing) return UI.showToast("系統處理中，請稍後操作");
                 isProcessing = true; 
                 
                 try {
                     let title = "無標題", val = "1", memo = ""; 
                     if (!auto) { 
-                        // 過濾不當 html 標籤避免注入
                         title = document.getElementById('input-book-title').value.replace(/</g, "&lt;").trim() || title; 
                         val = document.getElementById('input-value').value.trim(); 
                         memo = document.getElementById('input-memo').value.replace(/</g, "&lt;").trim(); 
@@ -1430,7 +1443,9 @@
                     }; 
                     if(!isEditMode) habit.lastBookTitle = title;
                     
-                    await saveLocal(); 
+                    // Optimistic UI：同步更新本地資料與畫面，背景執行雲端同步
+                    saveLocal(); 
+                    
                     UI.closeModal('input-modal'); 
                     this.cancelRecovery(); 
                     UI.renderAll(); 
@@ -1443,13 +1458,13 @@
                         UI.showToast("紀錄修改成功！");
                     }
                 } finally {
-                    isProcessing = false; 
+                    setTimeout(() => isProcessing = false, 300); // 短暫 debounce 防極限連點
                 }
             },
             
             triggerDelete(ts) { 
-                if(SyncEngine.isSyncing || isProcessing) return UI.showToast("資料同步中，請稍後操作");
-                Confirm.show("刪除紀錄？", "這會扣回金幣與連勝喔！", "刪除", async () => { 
+                if(SyncEngine.isSyncing || isProcessing) return UI.showToast("系統處理中，請稍後操作");
+                Confirm.show("刪除紀錄？", "這會扣回金幣與連勝喔！", "刪除", () => { 
                     isProcessing = true;
                     try {
                         const uData = getUserData(currentUser.uid);
@@ -1462,13 +1477,13 @@
                                 delete habit.logs[k]; 
                             } 
                         }); 
-                        await saveLocal(); UI.renderAll(); UI.showToast("紀錄已刪除"); 
+                        saveLocal(); UI.renderAll(); UI.showToast("紀錄已刪除"); 
                     } finally {
-                        isProcessing = false;
+                        setTimeout(() => isProcessing = false, 300);
                     }
                 }); 
             },
-            startRecovery(d) { recoveryDate = d; UI.renderAll(); }, // 隱藏原本的Toast，透過UI呈現
+            startRecovery(d) { recoveryDate = d; UI.renderAll(); }, 
             cancelRecovery() { recoveryDate = null; UI.renderAll(); }
         };
 
@@ -1501,8 +1516,8 @@
                 `).join(''); 
                 this.renderHistory(); this.renderEditList(); 
             },
-            async buyItem(id) { 
-                if(SyncEngine.isSyncing || isProcessing) return UI.showToast("資料同步中，請稍後操作");
+            buyItem(id) { 
+                if(SyncEngine.isSyncing || isProcessing) return UI.showToast("系統處理中，請稍後操作");
                 isProcessing = true;
                 try {
                     const uData = getUserData(currentUser.uid); const i = shopItems.find(x=>x.id===id); 
@@ -1513,10 +1528,11 @@
                     if(uData.currentCoins < i.cost) return UI.showToast("金幣不夠！"); 
                     uData.currentCoins -= i.cost; 
                     uData.shopHistory.unshift({ itemName: i.name, cost: i.cost, timestamp: Date.now() }); 
-                    await saveLocal(); UI.renderAll(); UI.closeModal('shop-modal'); AudioEngine.playCoin(); 
+                    
+                    saveLocal(); UI.renderAll(); UI.closeModal('shop-modal'); AudioEngine.playCoin(); 
                     UI.showToast(`兌換「${i.name}」成功！`); 
                     document.getElementById('mascot-speech').innerText = "換了禮物別太高興，明天還要繼續賺回來喵！"; 
-                } finally { isProcessing = false; }
+                } finally { setTimeout(() => isProcessing = false, 300); }
             },
             renderHistory() { 
                 const u = getUserData(currentUser.uid); const display = u.shopHistory.slice(0, this.historyLimit); 
@@ -1551,17 +1567,17 @@
                     </div>
                 `).join(''); 
             },
-            async saveItem() { 
+            saveItem() { 
                 const n = document.getElementById('shop-e-name').value; const c = parseInt(document.getElementById('shop-e-cost').value); 
                 const req = document.getElementById('shop-e-req').checked;
                 if(!n || !c) return UI.showToast("資料不齊全！"); 
                 shopItems.push({ id: "s_"+Date.now(), name: n, cost: c, reqLog: req, icon: this.tempIcon || 'star' }); 
-                await saveLocal(); 
+                saveLocal(); 
                 document.getElementById('shop-area-form').classList.add('hidden'); document.getElementById('shop-area-edit').classList.remove('hidden'); 
                 document.getElementById('shop-e-name').value = ''; document.getElementById('shop-e-cost').value = ''; document.getElementById('shop-e-req').checked = false;
                 this.renderItems(); UI.showToast("獎品已上架！"); 
             },
-            deleteItem(id) { Confirm.show("刪除獎品", "確定下架？", "刪除", async () => { shopItems = shopItems.filter(i=>i.id !== id); await saveLocal(); this.renderItems(); }); }
+            deleteItem(id) { Confirm.show("刪除獎品", "確定下架？", "刪除", () => { shopItems = shopItems.filter(i=>i.id !== id); saveLocal(); this.renderItems(); }); }
         };
 
         // ==========================================
@@ -1583,7 +1599,6 @@
             },
             renderTargetOptions() { document.getElementById('mail-target-select').innerHTML = users.filter(u => u.uid !== currentUser.uid).map(u => `<option value="${u.uid}">${u.name}</option>`).join(''); },
             renderShortcuts() {
-                // 區分四種顏色類型的鼓勵文字
                 const M_TEXTS = [
                     { text: "今天辛苦了！", bg: "bg-pink-50" }, { text: "萬事起頭難，你做到了！", bg: "bg-pink-50" }, { text: "一點一滴累積，超棒的！", bg: "bg-pink-50" },
                     { text: "哇！太厲害了", bg: "bg-yellow-50" }, { text: "為你感到驕傲！", bg: "bg-yellow-50" }, { text: "我都有看到你的努力喔！", bg: "bg-yellow-50" },
@@ -1599,8 +1614,8 @@
                 const text = (e.clipboardData || window.clipboardData).getData('text/plain');
                 document.execCommand('insertText', false, text);
             },
-            async sendMail() { 
-                if(SyncEngine.isSyncing || isProcessing) return UI.showToast("資料同步中，請稍後操作");
+            sendMail() { 
+                if(SyncEngine.isSyncing || isProcessing) return UI.showToast("系統處理中，請稍後操作");
                 isProcessing = true;
                 try {
                     let rawHtml = document.getElementById('mail-input').innerHTML.trim(); 
@@ -1609,8 +1624,9 @@
                     const t = document.getElementById('mail-target-select').value; 
                     const other = getUserData(t); 
                     other.mails.unshift({ id: Date.now().toString(), from: currentUser.name, fromAvatarKey: currentUser.svgKey, content: rawHtml, timestamp: Date.now(), isRead: false }); 
-                    await saveLocal(); UI.showToast("信件已寄出！"); this.switchTab('read'); document.getElementById('mail-input').innerHTML=""; 
-                } finally { isProcessing = false; }
+                    
+                    saveLocal(); UI.showToast("信件已寄出！"); this.switchTab('read'); document.getElementById('mail-input').innerHTML=""; 
+                } finally { setTimeout(() => isProcessing = false, 300); }
             },
             renderMails() { 
                 const u = getUserData(currentUser.uid); 
@@ -1628,7 +1644,7 @@
                 document.getElementById('btn-load-more-mails').classList.toggle('hidden', u.mails.length <= this.mailLimit); 
             },
             loadMore() { this.mailLimit += 10; this.renderMails(); },
-            deleteMail(id) { Confirm.show("刪除信件", "確定要刪除這封信喵？", "刪除", async () => { const u = getUserData(currentUser.uid); u.mails = u.mails.filter(m => m.id !== id); await saveLocal(); this.renderMails(); }); },
+            deleteMail(id) { Confirm.show("刪除信件", "確定要刪除這封信喵？", "刪除", () => { const u = getUserData(currentUser.uid); u.mails = u.mails.filter(m => m.id !== id); saveLocal(); this.renderMails(); }); },
             insertText(t) { 
                 const el = document.getElementById('mail-input'); el.focus();
                 if(!document.execCommand('insertText', false, t)) el.innerHTML += t; 
@@ -1692,7 +1708,7 @@
                     if(hasLog) {
                         stickersHtml += `<div class="w-full aspect-square p-1 md:p-2 border-2 border-gray-800 rounded-lg transform rotate-${Math.floor(Math.random()*6)-3} hover:scale-110 cursor-pointer bg-yellow-100 shadow-sm flex items-center justify-center" title="${dateStr}"><div class="w-[80%] h-[80%]">${SVGs[currentUser.svgKey]}</div></div>`;
                     } else {
-                        stickersHtml += `<div class="w-full aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-300 font-black text-sm md:text-base aspect-square bg-gray-50/50">${day}</div>`;
+                        stickersHtml += `<div class="w-full aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-300 font-black text-sm md:text-base bg-gray-50/50">${day}</div>`;
                     }
                 }
                 
@@ -1785,16 +1801,16 @@
                 `).join('');
                 document.getElementById('editor-view-list').classList.remove('hidden'); document.getElementById('editor-view-detail').classList.add('hidden'); document.getElementById('editor-view-action').classList.add('hidden');
             },
-            async createNewHabit() { 
+            createNewHabit() { 
                 const newId = "h_" + Date.now(); 
                 appTemplates[newId] = { id: newId, title: "新習慣", themeId: "blue", roles: [{threshold:0, title:"新手"}], actions: [{ id: newId+"_a1", label: "任務一", unit: "次", icon: "star", points: 10 }] }; 
                 users.forEach(u => { if(!dailyHabitData[u.uid].habits[newId]) dailyHabitData[u.uid].habits[newId] = { logs: {}, points: 0, streak: 0, goldApples: 0 }; }); 
-                await saveLocal(); this.editHabit(newId); 
+                saveLocal(); this.editHabit(newId); 
             },
             deleteHabit() { 
                 if(Object.keys(appTemplates).length <= 1) return UI.showToast("至少保留一個習慣！"); 
-                Confirm.show("刪除習慣", "紀錄會跟著消失喔！", "刪除", async () => { 
-                    delete appTemplates[this.tempHabitId]; await saveLocal(); currentHabitId = Object.keys(appTemplates)[0]; localStorage.setItem('lastHabitId_v13', currentHabitId); UI.closeModal('editor-modal'); UI.init(); 
+                Confirm.show("刪除習慣", "紀錄會跟著消失喔！", "刪除", () => { 
+                    delete appTemplates[this.tempHabitId]; saveLocal(); currentHabitId = Object.keys(appTemplates)[0]; localStorage.setItem('lastHabitId_v13', currentHabitId); UI.closeModal('editor-modal'); UI.init(); 
                 }); 
             },
             editHabit(hId) { 
@@ -1806,11 +1822,11 @@
             },
             renderRolesEditor() { 
                 document.getElementById('editor-h-roles').innerHTML = this.tempRoles.map((r, i) => `
-                    <div class="flex gap-2 items-center mb-2">
+                    <div class="flex gap-2 items-center mb-2 w-full box-border">
                         <span class="text-xs font-bold w-12 text-center">Lv.${i+1}</span>
-                        <input type="text" value="${r.title}" onchange="Editor.tempRoles[${i}].title=this.value" class="flex-1 border-4 border-gray-800 rounded-lg p-1.5 font-bold text-xs">
-                        <input type="number" value="${r.threshold}" ${i===0?'disabled':''} onchange="Editor.tempRoles[${i}].threshold=parseInt(this.value)||0" class="w-16 border-4 border-gray-800 rounded-lg p-1.5 font-bold text-xs ${i===0?'bg-gray-200':''}" min="0">
-                        ${i>0 ? `<button onclick="Editor.deleteRole(${i})" class="w-8 h-8 p-1.5 bg-red-100 border border-gray-800 rounded hand-drawn-btn flex items-center justify-center">${SVGs.ui.trash}</button>` : `<div class="w-8"></div>`}
+                        <input type="text" value="${r.title}" onchange="Editor.tempRoles[${i}].title=this.value" class="flex-1 w-full box-border border-4 border-gray-800 rounded-lg p-1.5 font-bold text-xs">
+                        <input type="number" value="${r.threshold}" ${i===0?'disabled':''} onchange="Editor.tempRoles[${i}].threshold=parseInt(this.value)||0" class="w-16 box-border border-4 border-gray-800 rounded-lg p-1.5 font-bold text-xs ${i===0?'bg-gray-200':''}" min="0">
+                        ${i>0 ? `<button onclick="Editor.deleteRole(${i})" class="w-8 h-8 p-1.5 bg-red-100 border border-gray-800 rounded hand-drawn-btn flex items-center justify-center flex-shrink-0">${SVGs.ui.trash}</button>` : `<div class="w-8 flex-shrink-0"></div>`}
                     </div>
                 `).join(''); 
             },
@@ -1827,18 +1843,18 @@
                     </div>
                 `).join(''); 
             },
-            async saveHabit() { 
+            saveHabit() { 
                 const h = appTemplates[this.tempHabitId]; h.title = document.getElementById('editor-h-title').value.trim() || "未命名"; 
                 h.themeId = this.tempTheme; h.roles = [...this.tempRoles].sort((a,b)=>a.threshold - b.threshold); 
-                await saveLocal(); UI.renderHabitDropdown(); if(currentHabitId === h.id) UI.switchHabit(h.id); this.renderHabitList(); UI.showToast("設定儲存成功！"); 
+                saveLocal(); UI.renderHabitDropdown(); if(currentHabitId === h.id) UI.switchHabit(h.id); this.renderHabitList(); UI.showToast("設定儲存成功！"); 
             },
-            async createAction() { 
+            createAction() { 
                 const h = appTemplates[this.tempHabitId]; const newId = this.tempHabitId + "_a" + Date.now(); 
-                h.actions.push({ id: newId, label: "新任務", unit: "次", icon: "star", points: 10 }); await saveLocal(); this.editAction(newId); 
+                h.actions.push({ id: newId, label: "新任務", unit: "次", icon: "star", points: 10 }); saveLocal(); this.editAction(newId); 
             },
             deleteAction() { 
                 const h = appTemplates[this.tempHabitId]; if(h.actions.length <= 1) return UI.showToast("至少保留一個任務！"); 
-                Confirm.show("刪除任務", "確定刪除？", "刪除", async () => { h.actions = h.actions.filter(a => a.id !== this.tempActionId); await saveLocal(); this.editHabit(this.tempHabitId); }); 
+                Confirm.show("刪除任務", "確定刪除？", "刪除", () => { h.actions = h.actions.filter(a => a.id !== this.tempActionId); saveLocal(); this.editHabit(this.tempHabitId); }); 
             },
             editAction(aId) { 
                 const h = appTemplates[this.tempHabitId]; const a = h.actions.find(act => act.id === aId); this.tempActionId = aId; 
@@ -1856,17 +1872,20 @@
                     </div>
                 `).join(''); 
             },
-            async saveActionConfig() { 
+            saveActionConfig() { 
                 const h = appTemplates[this.tempHabitId]; const a = h.actions.find(act => act.id === this.tempActionId); 
                 a.label = document.getElementById('editor-a-label').value.trim() || "按鈕"; a.unit = document.getElementById('editor-a-unit').value.trim(); 
                 a.points = parseInt(document.getElementById('editor-a-points').value) || 1; a.icon = this.tempIcon; 
                 a.isOneClick = document.getElementById('editor-a-oneclick').checked; a.isMicro = document.getElementById('editor-a-micro').checked; 
                 a.isCrit = document.getElementById('editor-a-crit').checked; a.stackingText = document.getElementById('editor-a-stack').value.trim(); 
                 if(a.isQuote) a.isOneClick = false; 
-                await saveLocal(); this.editHabit(this.tempHabitId); 
+                saveLocal(); this.editHabit(this.tempHabitId); 
             }
         };
 
+        // ==========================================
+        // 📻 廣播台 CMS (防白畫面與幽靈刪除)
+        // ==========================================
         const Radio = {
             pools: {}, 
             shuffle(a) { let c=a.length, r; while(c!=0){ r=Math.floor(Math.random()*c); c--; [a[c],a[r]]=[a[r],a[c]]; } return a; },
@@ -1886,9 +1905,13 @@
             renderList() { 
                 document.getElementById('radio-list').innerHTML = customRadios.map(r => {
                     let labelClass = "bg-gray-200 text-gray-800"; let labelText = "所有人";
-                    if (r.target === 'user_son') { labelClass = "bg-purple-200 text-purple-800"; labelText = "阿蛇"; }
-                    else if (r.target === 'user_dad') { labelClass = "bg-orange-200 text-orange-800"; labelText = "狐狸"; }
-                    else if (r.target === 'user_mom') { labelClass = "bg-green-200 text-green-800"; labelText = "綠公主"; }
+                    
+                    // 防呆：確認使用者是否存在
+                    const targetUser = users.find(u=>u.uid===r.target);
+                    if (r.target === 'user_son') { labelClass = "bg-purple-200 text-purple-800"; labelText = targetUser ? targetUser.name : '阿蛇'; }
+                    else if (r.target === 'user_dad') { labelClass = "bg-orange-200 text-orange-800"; labelText = targetUser ? targetUser.name : '狐狸'; }
+                    else if (r.target === 'user_mom') { labelClass = "bg-green-200 text-green-800"; labelText = targetUser ? targetUser.name : '綠公主'; }
+                    else if (r.target !== 'all') { labelText = targetUser ? targetUser.name : '未知'; }
                     
                     return `
                     <div class="bg-white border-2 border-gray-800 rounded-xl p-3 mb-2 flex justify-between items-center">
@@ -1903,9 +1926,9 @@
                     </div>`
                 }).join(''); 
             },
-            async addLine() { 
+            addLine() { 
                 const text = document.getElementById('radio-new-text').value.trim(); const target = document.getElementById('radio-target').value; 
-                if(!text) return; customRadios.push({id: "r_"+Date.now(), text, target}); await saveLocal(); 
+                if(!text) return; customRadios.push({id: "r_"+Date.now(), text, target}); saveLocal(); 
                 document.getElementById('radio-new-text').value = ""; this.renderList(); this.pools = {}; UI.showToast("廣播台詞儲存成功！"); 
             },
             editLine(id) {
@@ -1915,11 +1938,12 @@
                 customRadios = customRadios.filter(x=>x.id!==id);
                 this.renderList();
             },
-            async deleteLine(id) { Confirm.show("刪除廣播", "確定刪除？", "刪除", async () => { customRadios = customRadios.filter(r => r.id !== id); await saveLocal(); this.pools = {}; this.renderList(); }); }
+            deleteLine(id) { Confirm.show("刪除廣播", "確定刪除？", "刪除", () => { customRadios = customRadios.filter(r => r.id !== id); saveLocal(); this.pools = {}; this.renderList(); }); }
         };
 
         const Confirm = { 
             execute() { 
+                // 防幽靈連點 Bug：取出後立刻將 this.cb 設為 null
                 if(this.cb) { const action = this.cb; this.cb = null; action(); } 
                 UI.closeModal('generic-confirm-modal'); 
             }, 
