@@ -2,7 +2,6 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <!-- STREAMING_CHUNK:Configuring meta tags and viewport -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>原子習慣養成</title>
     
@@ -12,7 +11,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- STREAMING_CHUNK:Styling the layout and animations -->
     <style>
         body {
             font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', 'Segoe UI', sans-serif;
@@ -65,7 +63,7 @@
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .loading-spin { animation: spin 1s linear infinite; }
 
-        /* 👆 滑動切換專屬動畫 (Slide & Fade) */
+        /* 滑動切換專屬動畫 (Slide & Fade) */
         @keyframes slideInRight { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes slideInLeft { from { transform: translateX(-30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .anim-slide-in-right { animation: slideInRight 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
@@ -89,7 +87,6 @@
         .liquid-fill { transition: height 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     </style>
 </head>
-<!-- STREAMING_CHUNK:Rendering body and main layout structure -->
 <body class="antialiased text-gray-800">
 
     <!-- ☁️ 雲端同步鎖定遮罩 -->
@@ -102,7 +99,6 @@
     <div id="golden-rain"></div>
 
     <div class="app-wrapper">
-        <!-- STREAMING_CHUNK:Rendering left panel for dashboard -->
         <!-- ================= 左半邊：操作儀表板 ================= -->
         <div class="panel-left" id="main-panel-left">
             <header id="main-header" class="bg-theme-transition text-white p-5 pb-6 relative z-30 md:rounded-none rounded-b-[2rem] flex flex-col">
@@ -117,13 +113,13 @@
                             <div class="w-3 h-3 flex-shrink-0" id="icon-crown-header"></div> <span id="identity-text" class="truncate">稱號載入中</span>
                         </div>
                         
-                        <!-- 下拉選單 (加入安裝 App 按鈕) -->
+                        <!-- 下拉選單 -->
                         <div id="habit-dropdown" class="absolute top-full left-0 mt-2 bg-white hand-drawn-border p-2 hidden flex-col gap-2 w-56 shadow-[4px_4px_0px_#1f2937] z-[60]">
                             <div id="habit-list-container" class="flex flex-col gap-1 max-h-64 overflow-y-auto custom-scroll"></div>
                             <div class="border-t-2 border-dashed border-gray-300 my-1"></div>
                             
                             <!-- 終極 PWA 安裝按鈕 -->
-                            <button id="menu-install-btn" onclick="PWA.install()" class="w-full text-left px-3 py-2 bg-green-50 hover:bg-green-100 rounded-lg font-black text-green-700 flex items-center gap-2 transition-colors">
+                            <button id="menu-install-btn" onclick="PWA.install()" class="hidden w-full text-left px-3 py-2 bg-green-50 hover:bg-green-100 rounded-lg font-black text-green-700 flex items-center gap-2 transition-colors">
                                 <div class="w-4 h-4" id="icon-install-btn"></div> 安裝至手機桌面
                             </button>
                             
@@ -193,7 +189,6 @@
             </div>
         </div>
 
-        <!-- STREAMING_CHUNK:Rendering right panel for stats and footprint -->
         <!-- ================= 右半邊：數據與日曆 ================= -->
         <div class="panel-right pb-20 md:pb-5 relative z-10">
             <div class="bg-white p-5 hand-drawn-border bg-yellow-50 relative mt-4 md:mt-2">
@@ -216,7 +211,6 @@
         </div>
     </div>
 
-    <!-- STREAMING_CHUNK:Rendering modals container -->
     <div id="modals-container"></div>
     
     <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-gray-800 border-4 border-gray-900 text-white px-6 py-3 rounded-2xl shadow-[4px_4px_0px_rgba(0,0,0,0.3)] transition-all duration-300 opacity-0 pointer-events-none z-[200] font-bold text-center w-max max-w-[90%] flex items-center gap-2">
@@ -225,7 +219,6 @@
 
     <input type="file" id="backup-file-input" class="hidden" accept=".json" onchange="SystemConfig.handleRestoreBackup(event)">
 
-    <!-- STREAMING_CHUNK:Initializing JS context and SVG assets -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -366,7 +359,6 @@
         let editTargetDate = null;
         let isProcessing = false;
 
-        // STREAMING_CHUNK:Loading database and parsing templates
         async function initDB() {
             const cloudSync = await SyncEngine.pull();
             
@@ -402,7 +394,7 @@
             if(savedRadios) customRadios = JSON.parse(savedRadios);
 
             dailyHabitData = JSON.parse(localStorage.getItem('daily-habit-v13')) || {};
-            if (!dailyHabitData.systemFlags) dailyHabitData.systemFlags = {};
+            if (!dailyHabitData.systemFlags) dailyHabitData.systemFlags = {}; 
             
             users.forEach(u => {
                 if (!dailyHabitData[u.uid]) {
@@ -549,7 +541,6 @@
             }
         };
 
-        // STREAMING_CHUNK:Setting up audio functions
         const AudioEngine = {
             muted: false, ctx: null,
             init() { 
@@ -653,7 +644,6 @@
             }
         };
 
-        // STREAMING_CHUNK:Configuring swipe detection
         const SwipeDetector = {
             init() {
                 this.bindGlobalSwipe();
@@ -753,7 +743,6 @@
             }
         };
 
-        // STREAMING_CHUNK:Adding Easter eggs functionality
         const EasterEggs = {
             clickCount: 0, clickTimer: null, pressTimer: null, isPressed: false, pressStartTime: 0, foxQuotes: [],
             startPress(e) { 
@@ -846,7 +835,6 @@
             }
         };
 
-        // STREAMING_CHUNK:Utility functions
         function getTodayStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
         function formatFootprintDate(ts) {
             const d = new Date(ts); const m = d.getMonth() + 1; const day = d.getDate(); const w = ['日','一','二','三','四','五','六'][d.getDay()];
@@ -948,7 +936,6 @@
             return coins;
         }
 
-        // STREAMING_CHUNK:Building the UI rendering engine
         const UI = {
             footprintLimit: 7,
             
@@ -1479,7 +1466,6 @@
             }
         };
 
-        // STREAMING_CHUNK:Building the main logic engine
         const Logic = {
             openActionModal(aId) { 
                 const today = getTodayStr(); 
@@ -1644,7 +1630,6 @@
             cancelRecovery() { recoveryDate = null; UI.renderAll(); }
         };
 
-        // STREAMING_CHUNK:Configuring shop system
         const Shop = {
             historyLimit: 10,
             open() { this.historyLimit = 10; this.switchTab('shop'); UI.openModal('shop-modal'); },
@@ -1738,7 +1723,6 @@
             deleteItem(id) { Confirm.show("刪除獎品", "確定下架？", "刪除", () => { shopItems = shopItems.filter(i=>i.id !== id); saveLocal(); this.renderItems(); }); }
         };
 
-        // STREAMING_CHUNK:Configuring mail system
         const Mail = {
             mailLimit: 10,
             open() { this.mailLimit = 10; this.switchTab('read'); UI.openModal('mailbox-modal'); },
@@ -1795,6 +1779,7 @@
                     const other = getUserData(t); 
                     other.mails.unshift({ 
                         id: "m_"+Date.now().toString(), 
+                        fromUid: currentUser.uid,
                         from: currentUser.name, 
                         fromAvatarKey: currentUser.svgKey, 
                         content: safeHtml, 
@@ -1822,6 +1807,41 @@
                     UI.showToast(`成功領取 ${m.attachedCoins} 金幣！`);
                 }
             },
+            reply(id) {
+                const u = getUserData(currentUser.uid);
+                const m = u.mails.find(x => x.id === id);
+                if(!m) return;
+
+                // 嘗試找出寄件人的 UID (支援相容舊版沒存 UID 的信件)
+                let senderUid = m.fromUid;
+                if (!senderUid) {
+                    const found = users.find(user => user.name === m.from);
+                    if (found) senderUid = found.uid;
+                }
+
+                this.switchTab('write');
+
+                if (senderUid) {
+                    const select = document.getElementById('mail-target-select');
+                    if (Array.from(select.options).some(opt => opt.value === senderUid)) {
+                        select.value = senderUid;
+                    }
+                }
+
+                const editor = document.getElementById('mail-input');
+                // 建立安全的不可編輯引用區塊 (contenteditable="false")
+                const quoteHtml = `
+                    <blockquote contenteditable="false" style="border-left: 4px solid #cbd5e1; padding-left: 10px; margin-bottom: 10px; color: #64748b; font-size: 0.875rem; background: #f8fafc; border-radius: 8px; padding: 10px; user-select: none;">
+                        <div style="font-weight: 900; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
+                            <div style="width: 16px; height: 16px;">${SVGs[m.fromAvatarKey] || SVGs.fox}</div> 來自 ${escapeHTML(m.from)} 的信件：
+                        </div>
+                        <div>${m.content}</div>
+                    </blockquote>
+                    <p><br></p>
+                `;
+                editor.innerHTML = quoteHtml;
+                editor.focus();
+            },
             renderMails() { 
                 const u = getUserData(currentUser.uid); 
                 document.getElementById('mail-list').innerHTML = u.mails.slice(0, this.mailLimit).map(m => {
@@ -1836,7 +1856,10 @@
                     <div class="bg-white border-4 border-gray-800 p-4 rounded-xl shadow-[4px_4px_0px_#1f2937] flex flex-col">
                         <div class="flex justify-between items-start mb-2 border-b-2 border-gray-100 pb-2">
                             <p class="font-black text-blue-600 flex items-center gap-2"><div class="w-6 h-6">${SVGs[m.fromAvatarKey] || SVGs.fox}</div>來自 ${escapeHTML(m.from)}</p>
-                            <button onclick="Mail.deleteMail('${m.id}')" class="w-6 h-6 p-1 bg-red-50 rounded border border-gray-300 flex items-center justify-center">${SVGs.ui.trash}</button>
+                            <div class="flex gap-2">
+                                ${m.fromAvatarKey !== 'leaf' ? `<button onclick="Mail.reply('${m.id}')" class="w-6 h-6 p-1 bg-blue-50 hover:bg-blue-100 rounded border border-gray-300 flex items-center justify-center transition-colors" title="回覆">${SVGs.ui.send}</button>` : ''}
+                                <button onclick="Mail.deleteMail('${m.id}')" class="w-6 h-6 p-1 bg-red-50 hover:bg-red-100 rounded border border-gray-300 flex items-center justify-center transition-colors" title="刪除">${SVGs.ui.trash}</button>
+                            </div>
                         </div>
                         <div class="text-gray-700 font-bold leading-relaxed break-words flex-1">${m.content}</div>
                         ${claimBtn}
@@ -1860,7 +1883,6 @@
             }
         };
 
-        // STREAMING_CHUNK:Configuring reports and family tree
         const Report = {
             viewYear: new Date().getFullYear(),
             viewMonth: new Date().getMonth(),
@@ -2087,7 +2109,6 @@
             }
         };
 
-        // STREAMING_CHUNK:Setting up editor config and modals
         const Editor = {
             open() { UI.toggleHabitMenu(); this.renderHabitList(); UI.openModal('editor-modal'); },
             renderHabitList() {
@@ -2281,7 +2302,6 @@
         
         function getUserData(uid) { return dailyHabitData[uid]; }
 
-        // STREAMING_CHUNK:Application entry point
         window.addEventListener('DOMContentLoaded', async () => { 
             await initDB(); 
             UI.init(); 
