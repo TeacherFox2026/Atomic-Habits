@@ -1,16 +1,26 @@
-const CACHE_NAME = 'atomic-habit-v1';
+const CACHE_NAME = 'atomic-habit-v3';
+const urlsToCache = [
+  './',
+  './index.html',
+  './manifest.json',
+  'https://cdn.tailwindcss.com'
+];
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', event => {
   self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(urlsToCache))
+  );
 });
 
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', event => {
   event.waitUntil(clients.claim());
 });
 
-// 滿足 PWA 條件的最低限度 Fetch 監聽器
-self.addEventListener('fetch', (event) => {
-  event.respondWith(fetch(event.request).catch(() => {
-    return new Response('目前處於離線狀態');
-  }));
+// 當處於離線狀態時，從快取提取資源，確保 App 可用
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    fetch(event.request).catch(() => caches.match(event.request))
+  );
 });
