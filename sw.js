@@ -1,4 +1,3 @@
-```javascript:sw.js
 const CACHE_NAME = 'atomic-habit-v4';
 const urlsToCache = [
   './',
