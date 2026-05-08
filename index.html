@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>原子習慣養成</title>
     
-    <!-- PWA Manifest：加入 start_url 並強制 standalone，確保 Android 從桌面開啟時 100% 無網址列全螢幕 -->
-    <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22%E5%AE%B6%E5%BA%AD%E5%8E%9F%E5%AD%90%E7%BF%92%E6%85%A3%22%2C%22short_name%22%3A%22%E5%8E%9F%E5%AD%90%E7%BF%92%E6%85%A3%22%2C%22display%22%3A%22standalone%22%2C%22start_url%22%3A%22.%22%2C%22theme_color%22%3A%22%23fdf8f5%22%2C%22background_color%22%3A%22%23fdf8f5%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iI2ZkZTA0NyIgc3Ryb2tlPSIjMWYyOTM3IiBzdHJva2Utd2lkdGg9IjQiLz48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSIzMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjY2E4YTA0IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1kYXNoYXJyYXk9IjQgNCIvPjwvc3ZnPg%3D%3D%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+    <!-- 載入實體 manifest.json 確保 Android PWA 100% 成功 -->
+    <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -154,15 +154,15 @@
                 </div>
             </header>
 
-            <!-- 【修改 3】吉祥物改為 Flex 排版插入在區塊之間，利用實體高度把下方內容往下推 -->
-            <div class="w-full flex flex-row items-end justify-end z-20 px-4 -mt-8 relative pointer-events-none">
-                <div class="bg-white border-4 border-gray-800 text-gray-800 px-4 py-3 rounded-2xl rounded-br-none shadow-[4px_4px_0px_#1f2937] mb-6 mr-[-10px] pop-in text-sm font-black text-left w-[180px] md:w-[200px] pointer-events-auto relative z-10 transform -rotate-2" id="mascot-speech"></div>
-                <div class="w-24 h-24 md:w-28 md:h-28 mascot-float cursor-pointer pointer-events-auto relative z-20 select-none flex-shrink-0" id="mascot-img" 
+            <!-- 【修復 Z-Index 遮蔽】將 z-[100] 設定在此，確保不被下方的 bg-white 區塊蓋住 -->
+            <div class="w-full flex flex-row items-end justify-end z-[100] px-4 -mt-8 relative pointer-events-none">
+                <div class="bg-white border-4 border-gray-800 text-gray-800 px-4 py-3 rounded-2xl rounded-br-none shadow-[4px_4px_0px_#1f2937] mb-6 mr-[-10px] pop-in text-sm font-black text-left w-[180px] md:w-[200px] pointer-events-auto relative z-[101] transform -rotate-2" id="mascot-speech"></div>
+                <div class="w-24 h-24 md:w-28 md:h-28 mascot-float cursor-pointer pointer-events-auto relative z-[101] select-none flex-shrink-0" id="mascot-img" 
                      onmousedown="EasterEggs.startPress(event)" onmouseup="EasterEggs.endPress(event)" onmouseleave="EasterEggs.cancelPress(event)"
                      ontouchstart="EasterEggs.startPress(event)" ontouchend="EasterEggs.endPress(event)" ontouchcancel="EasterEggs.cancelPress(event)"></div>
             </div>
 
-            <!-- 任務區塊容器，會被上方的吉祥物自然擠下來 -->
+            <!-- 任務區塊容器 -->
             <div class="p-5 pt-2 flex-1 bg-white md:bg-transparent flex flex-col relative z-10">
                 <div id="family-buff-banner" class="hidden w-full mb-4 bg-red-500 text-white font-black text-sm px-4 py-2 rounded-xl border-4 border-gray-800 shadow-[2px_2px_0px_#1f2937] transform rotate-1 pop-in flex items-center justify-center gap-2">
                     <div class="w-5 h-5" id="buff-tree-icon"></div> 全家連擊中！今日金幣 x1.2 倍
@@ -211,11 +211,19 @@
     <input type="file" id="backup-file-input" class="hidden" accept=".json" onchange="SystemConfig.handleRestoreBackup(event)">
 
     <script>
+        // 【PWA 註冊 Service Worker】強制滿足 Chrome 安裝條件
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('SW Setup 成功!'))
+                .catch(err => console.log('SW Setup 失敗!', err));
+            });
+        }
+
         // ==========================================
         // 🎨 純手繪 SVG 圖庫
         // ==========================================
         const SVGs = {
-            // 【修改 5】為狐狸爸爸補上靈魂的帥氣臉頰鬍鬚！
             fox: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
                 <polygon points="15,45 20,15 40,30" fill="#fb923c" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
                 <polygon points="85,45 80,15 60,30" fill="#fb923c" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
@@ -438,6 +446,7 @@
             });
         }
 
+        // 【修復連點漏存漏洞】遇到 isSyncing 鎖定時不丟棄，標記起來稍後再傳
         function saveLocal() {
             pruneAllData();
             localStorage.setItem('appTemplates_v13', JSON.stringify(appTemplates));
@@ -447,6 +456,8 @@
             
             if(!SyncEngine.isSyncing) {
                 SyncEngine.push().catch(e => console.error("Background sync push failed:", e));
+            } else {
+                SyncEngine.syncPending = true;
             }
         }
 
@@ -456,6 +467,7 @@
         const SyncEngine = {
             API_URL: "https://script.google.com/macros/s/AKfycbyISODCgqeOUH0ZtIf2kf3VmdmOzaF1PLoNd9ZQQ19j40FQZcYP1GVqb72uYqyf7NJb3w/exec",
             isSyncing: false,
+            syncPending: false, // 貯列標記，確保打卡不會漏傳
             
             async pull() {
                 try {
@@ -500,11 +512,18 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ updates })
                     });
-                } catch (e) {}
-                this.isSyncing = false;
+                } catch (e) {} 
+                finally {
+                    this.isSyncing = false;
+                    // 若這期間有新的變更被標記，補傳一波
+                    if (this.syncPending) {
+                        this.syncPending = false;
+                        this.push();
+                    }
+                }
             },
 
-            // 【修改 7】手動同步防呆，先 Push 本地變更，再透過 initDB 重新拉取
+            // 【手動同步防呆修復】絕對先 Push 本地資料再 Pull 遠端，防止離線進度被洗掉
             async manualSync() {
                 if(this.isSyncing) return;
                 document.getElementById('sync-overlay').classList.remove('hidden');
@@ -583,9 +602,10 @@
         };
 
         // ==========================================
-        // 📲 PWA 機制
+        // 📲 PWA 機制 (正式版本支援 Chrome & Safari 安裝)
         // ==========================================
         const PWA = {
+            deferredPrompt: null,
             isIos() {
                 return /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
             },
@@ -594,9 +614,33 @@
                     localStorage.setItem('pwa_installed_v14', 'true');
                     UI.closeModal('ios-pwa-modal');
                 });
+                
+                // 攔截 Chrome 原生安裝提示
+                window.addEventListener('beforeinstallprompt', (e) => { 
+                    e.preventDefault(); 
+                    this.deferredPrompt = e; 
+                    // 一旦確認支援，就把 Editor 中的安裝按鈕顯示出來
+                    const btn = document.getElementById('install-app-btn-editor');
+                    if(btn) btn.classList.remove('hidden');
+                }); 
+
+                if (this.isIos() && !(('standalone' in window.navigator) && window.navigator.standalone)) {
+                    // iOS 的話，不管怎樣都在 Editor 顯示按鈕教安裝
+                    const btn = document.getElementById('install-app-btn-editor');
+                    if(btn) btn.classList.remove('hidden');
+                }
             },
             install() { 
-                if(this.isIos()) { UI.openModal('ios-pwa-modal'); } 
+                if(this.isIos()) { 
+                    UI.openModal('ios-pwa-modal'); 
+                } else if (this.deferredPrompt) {
+                    this.deferredPrompt.prompt(); 
+                    this.deferredPrompt.userChoice.then((c) => { 
+                        if (c.outcome === 'accepted') this.deferredPrompt = null; 
+                    }); 
+                } else {
+                    UI.showToast("已處於全版模式，或瀏覽器不支援安裝功能。");
+                }
             }
         };
 
@@ -628,7 +672,7 @@
                     let endX = e.changedTouches[0].screenX, endY = e.changedTouches[0].screenY;
                     let dx = endX - startX, dy = endY - startY;
                     
-                    if(Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+                    if(Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 2) {
                         const currentIndex = users.findIndex(u => u.uid === currentUser.uid);
                         if(dx > 0) { // 向右滑 -> 上一個角色 (從左邊滑入)
                             let prev = currentIndex - 1 < 0 ? users.length - 1 : currentIndex - 1;
@@ -649,12 +693,12 @@
                         startX = e.changedTouches[0].screenX; startY = e.changedTouches[0].screenY;
                     }, {passive: true});
                     modal.addEventListener('touchend', e => {
-                        // 【修改 7】修復防呆，保護寫信區塊不被滑動干擾
+                        // 絕對防護：輸入框、信箱內文區域滑動時，不切換
                         if(['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest('[contenteditable="true"]') || e.target.closest('#mail-write-area')) return;
                         
                         let endX = e.changedTouches[0].screenX, endY = e.changedTouches[0].screenY;
                         let dx = endX - startX, dy = endY - startY;
-                        if(Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+                        if(Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 2) {
                             let activeIdx = tabsArray.findIndex(t => document.getElementById(`${t.prefix}-tab-${t.id}`).classList.contains(t.activeClass));
                             if(activeIdx === -1) activeIdx = 0;
                             if(dx > 0) { 
@@ -968,7 +1012,8 @@
             },
             
             switchHabit(hId) {
-                currentHabitId = hId; localStorage.setItem('lastHabitId_v13', hId); document.getElementById('habit-dropdown').classList.add('hidden'); Logic.cancelRecovery();
+                // 【修復防呆】切換習慣時必定清除「補救模式」狀態
+                currentHabitId = hId; localStorage.setItem('lastHabitId_v13', hId); document.getElementById('habit-dropdown').classList.add('hidden'); recoveryDate = null;
                 const habit = appTemplates[hId]; const th = THEMES.find(t => t.id === habit.themeId) || THEMES[0];
                 document.getElementById('app-title').innerText = habit.title; document.getElementById('main-header').style.background = th.grad;
                 this.renderAll();
@@ -1115,10 +1160,10 @@
             },
             
             injectModals() {
-                // 【修改 4】針對各大彈窗外層加入 lg:max-w-[1200px] 與 w-[95%] 來實現寬螢幕的完美利用
+                // 【修復 RWD 與信箱】加入 90vw 等防爆設定
                 document.getElementById('modals-container').innerHTML = `
                     <div id="generic-confirm-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-4">
-                        <div class="bg-white w-[95%] max-w-[320px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative flex flex-col items-center">
+                        <div class="bg-white w-[90vw] md:w-[92vw] max-w-[320px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative flex flex-col items-center box-border">
                             <div class="w-24 h-24 mb-2">${SVGs.cryCat}</div>
                             <h3 id="confirm-title" class="text-xl font-black text-gray-800 mb-2">確認視窗</h3>
                             <p id="confirm-desc" class="text-sm text-gray-600 font-bold mb-6">確定執行嗎？</p>
@@ -1130,7 +1175,7 @@
                     </div>
                     
                     <div id="radio-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[80] transition-opacity opacity-0 px-4">
-                        <div class="bg-[#fff9f0] w-[95%] max-w-[600px] h-[80vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] relative flex flex-col overflow-hidden">
+                        <div class="bg-[#fff9f0] w-[90vw] md:w-[92vw] max-w-[600px] h-[80vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] relative flex flex-col overflow-hidden box-border">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2">
                                 <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.bulb}</div> 廣播台管理</h3>
                                 <button onclick="UI.closeModal('radio-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white font-black p-1">${SVGs.ui.cross}</button>
@@ -1151,7 +1196,7 @@
                     </div>
                     
                     <div id="shop-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[80] transition-opacity opacity-0 px-4">
-                        <div class="bg-[#fff9f0] w-[95%] max-w-[1000px] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden">
+                        <div class="bg-[#fff9f0] w-[90vw] md:w-[92vw] max-w-[1000px] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2">
                                 <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-8 h-8">${SVGs.ui.shopStand}</div> 兌換商店</h3>
                                 <button onclick="UI.closeModal('shop-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1">${SVGs.ui.cross}</button>
@@ -1197,7 +1242,7 @@
                     </div>
                     
                     <div id="report-modal" class="fixed inset-0 bg-gray-900/80 hidden flex-col items-center justify-center z-[80] transition-opacity opacity-0 px-4">
-                        <div class="bg-[#fef9f0] w-[95%] max-w-[1000px] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden">
+                        <div class="bg-[#fef9f0] w-[90vw] md:w-[92vw] max-w-[1000px] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2">
                                 <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.ui.magicBook}</div> 魔法成就手帳</h3>
                                 <button onclick="UI.closeModal('report-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1">${SVGs.ui.cross}</button>
@@ -1221,7 +1266,12 @@
                                     <div id="cycle-treasures" class="absolute bottom-4 right-4 flex flex-col-reverse gap-1 items-center justify-center z-20"></div>
                                 </div>
                                 <div class="flex-1 bg-white border-4 border-gray-800 rounded-3xl p-4 relative flex flex-col">
-                                    <div class="absolute -top-3 -right-3 bg-pink-300 border-2 border-gray-800 px-3 py-1 rounded-lg font-black text-sm z-20">本月貼紙牆</div>
+                                    <!-- 【修復 貼紙牆月份切換】 -->
+                                    <div class="absolute -top-3 -right-3 bg-pink-300 border-2 border-gray-800 px-3 py-1 rounded-lg font-black text-sm z-20 flex items-center gap-2">
+                                        <button onclick="Report.changeMonth(-1)" class="w-5 h-5 bg-white/50 rounded flex items-center justify-center active:scale-90">◀</button>
+                                        <span id="sticker-month-label">本月</span>貼紙牆
+                                        <button onclick="Report.changeMonth(1)" class="w-5 h-5 bg-white/50 rounded flex items-center justify-center active:scale-90">▶</button>
+                                    </div>
                                     <div id="sticker-grid" class="grid grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-1 md:gap-2 flex-1 overflow-y-auto custom-scroll pr-2 mt-4 content-start"></div>
                                 </div>
                             </div>
@@ -1260,13 +1310,14 @@
                     </div>
                     
                     <div id="mailbox-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[80] transition-opacity opacity-0 px-4">
-                        <div class="bg-[#fff0f5] w-[95%] max-w-[1000px] lg:max-w-[1200px] rounded-t-[2rem] md:rounded-[2rem] p-6 border-t-8 border-gray-800 md:border-8 h-[85vh] md:h-[auto] md:max-h-[90vh] flex flex-col overflow-hidden">
+                        <div class="bg-[#fff0f5] w-[90vw] md:w-[92vw] max-w-[1000px] lg:max-w-[1200px] rounded-t-[2rem] md:rounded-[2rem] p-6 border-t-8 border-gray-800 md:border-8 h-[85vh] md:h-[auto] md:max-h-[90vh] flex flex-col overflow-hidden box-border">
                             <div class="flex-none flex justify-between items-center mb-4 pb-3 border-b-4 border-dashed border-gray-300">
                                 <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.mailbox}</div> 家庭信箱</h3>
                                 <button onclick="UI.closeModal('mailbox-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1">${SVGs.ui.cross}</button>
                             </div>
                             <div class="flex-none flex gap-2 mb-4">
-                                <button id="m-tab-read" onclick="Mail.switchTab('read')" class="flex-1 py-2 font-black rounded-xl border-4 border-gray-800 bg-pink-300 transition-colors">收信箱</button>
+                                <!-- 【修復】為收信箱文字前也加上圖示 -->
+                                <button id="m-tab-read" onclick="Mail.switchTab('read')" class="flex-1 py-2 font-black rounded-xl border-4 border-gray-800 bg-pink-300 transition-colors inline-flex justify-center items-center gap-1"><div class="w-4 h-4">${SVGs.mailbox}</div> 收信箱</button>
                                 <button id="m-tab-write" onclick="Mail.switchTab('write')" class="flex-1 py-2 font-black rounded-xl border-4 border-gray-800 inline-flex justify-center items-center gap-1 transition-colors"><div class="w-4 h-4">${SVGs.ui.editPen}</div> 寫信</button>
                             </div>
                             
@@ -1281,7 +1332,7 @@
                                         <p class="font-black">寫給：</p>
                                         <select id="mail-target-select" class="w-full box-border bg-white border-2 border-gray-800 rounded-lg px-2 py-1 font-bold shadow-[2px_2px_0px_#1f2937]"></select>
                                     </div>
-                                    <div id="mail-input" contenteditable="true" onpaste="Mail.handlePaste(event)" class="w-full min-h-[100px] max-h-[150px] md:flex-1 md:max-h-none bg-white border-4 border-gray-800 rounded-xl p-3 font-bold mb-3 overflow-y-auto focus:outline-none" placeholder="說點好聽的喵..."></div>
+                                    <div id="mail-input" contenteditable="true" onpaste="Mail.handlePaste(event)" class="w-full min-h-[100px] max-h-[150px] md:flex-1 md:max-h-none bg-white border-4 border-gray-800 rounded-xl p-3 font-bold mb-3 overflow-y-auto focus:outline-none box-border" placeholder="說點好聽的喵..."></div>
                                 </div>
                                 <div class="flex-1 flex flex-col overflow-hidden">
                                     <div class="bg-pink-50 border-4 border-dashed border-pink-200 p-3 rounded-xl mb-4 flex-1 overflow-y-auto custom-scroll">
@@ -1298,7 +1349,7 @@
                     </div>
                     
                     <div id="editor-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[80] transition-opacity opacity-0 px-4">
-                        <div class="bg-[#fef9f0] w-[95%] max-w-[1000px] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden">
+                        <div class="bg-[#fef9f0] w-[90vw] md:w-[92vw] max-w-[1000px] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2">
                                 <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.ui.magicWand}</div> 系統與習慣管理</h3>
                                 <button onclick="UI.closeModal('editor-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1">${SVGs.ui.cross}</button>
@@ -1311,7 +1362,7 @@
                                 <div class="mt-4 border-t-4 border-dashed border-gray-300 pt-4 flex flex-wrap gap-2">
                                     <button onclick="SystemConfig.downloadBackup()" class="flex-auto bg-sky-300 border-4 border-gray-800 py-3 px-2 rounded-xl font-black text-sm shadow-[2px_2px_0px_#1f2937]">📥 備份進度</button>
                                     <button onclick="SystemConfig.triggerRestore()" class="flex-auto bg-rose-300 border-4 border-gray-800 py-3 px-2 rounded-xl font-black text-sm shadow-[2px_2px_0px_#1f2937]">📤 還原進度</button>
-                                    ${PWA.isIos() ? `<button onclick="PWA.install()" class="flex-auto bg-green-300 border-4 border-gray-800 py-3 px-2 rounded-xl font-black text-sm shadow-[2px_2px_0px_#1f2937]">📲 安裝 App (iOS)</button>` : ''}
+                                    <button id="install-app-btn-editor" onclick="PWA.install()" class="hidden flex-auto bg-green-300 border-4 border-gray-800 py-3 px-2 rounded-xl font-black text-sm shadow-[2px_2px_0px_#1f2937]">📲 安裝 App</button>
                                 </div>
                             </div>
                             
@@ -1368,7 +1419,7 @@
                     </div>
                     
                     <div id="input-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[70] transition-opacity opacity-0">
-                        <div id="modal-content" class="bg-[#fff9f0] w-[95%] max-w-[480px] rounded-t-[2rem] md:rounded-[2rem] p-6 border-t-8 border-gray-800 md:border-8 relative">
+                        <div id="modal-content" class="bg-[#fff9f0] w-[95%] max-w-[480px] rounded-t-[2rem] md:rounded-[2rem] p-6 border-t-8 border-gray-800 md:border-8 relative box-border">
                             <div class="flex justify-between items-center mb-5 border-b-4 border-dashed border-gray-300 pb-3">
                                 <h3 class="text-2xl font-black" id="modal-title">紀錄進度</h3>
                                 <button onclick="UI.closeModal('input-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1">${SVGs.ui.cross}</button>
@@ -1389,9 +1440,8 @@
                         </div>
                     </div>
                     
-                    <!-- 【PWA優化】iOS 安裝教學彈窗 -->
                     <div id="ios-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0 px-4 pb-10 md:pb-0">
-                        <div class="bg-[#fff9f0] w-[95%] max-w-[360px] rounded-[2rem] p-6 border-8 border-gray-800 transform transition-transform translate-y-full md:translate-y-0 text-center shadow-[8px_8px_0px_#1f2937] relative">
+                        <div class="bg-[#fff9f0] w-[95%] max-w-[360px] rounded-[2rem] p-6 border-8 border-gray-800 transform transition-transform translate-y-full md:translate-y-0 text-center shadow-[8px_8px_0px_#1f2937] relative box-border">
                             <h3 class="text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.bulb}</div> 安裝至桌面</h3>
                             <p class="font-bold text-gray-600 mb-4 text-left leading-relaxed">蘋果設備專屬魔法：<br>1. 點擊下方工具列的 <b class="text-blue-500">分享圖示</b><br>2. 往下滑選擇 <b class="text-gray-800">「加入主畫面」</b></p>
                             <div class="text-4xl mb-6 flex justify-center w-8 h-8 mx-auto">${SVGs.icons.star}</div>
@@ -1756,10 +1806,18 @@
         };
 
         // ==========================================
-        // 📊 統計報表
+        // 📊 統計報表 (支援貼紙牆月份切換)
         // ==========================================
         const Report = {
-            open() { this.switchTab('self'); UI.openModal('report-modal'); },
+            viewYear: new Date().getFullYear(),
+            viewMonth: new Date().getMonth(),
+            
+            open() { 
+                this.viewYear = new Date().getFullYear();
+                this.viewMonth = new Date().getMonth();
+                this.switchTab('self'); 
+                UI.openModal('report-modal'); 
+            },
             switchTab(tab, swipeDir = 0) { 
                 ['self','family','stats'].forEach(t => document.getElementById(`rep-tab-${t}`).classList.toggle('bg-purple-500', tab === t)); 
                 ['self','family','stats'].forEach(t => document.getElementById(`rep-tab-${t}`).classList.toggle('text-white', tab === t)); 
@@ -1770,6 +1828,12 @@
                 if(swipeDir !== 0) SwipeDetector.playSlide('rep-area-' + tab, swipeDir);
                 
                 if(tab==='stats') this.renderStats(); if(tab==='self') this.renderSelf(); if(tab==='family') this.renderFamily(); 
+            },
+            changeMonth(offset) {
+                this.viewMonth += offset;
+                if (this.viewMonth < 0) { this.viewMonth = 11; this.viewYear--; }
+                if (this.viewMonth > 11) { this.viewMonth = 0; this.viewYear++; }
+                this.renderSelf();
             },
             renderSelf() { 
                 const u = getUserData(currentUser.uid); 
@@ -1793,12 +1857,22 @@
                     if(liquid) liquid.style.height = `${percent}%`;
                 }, 100);
                 
-                const currentM = new Date().getMonth(); const currentY = new Date().getFullYear();
-                const daysInMonth = new Date(currentY, currentM + 1, 0).getDate();
+                // 【修復】貼紙牆支援動態月份切換
+                const daysInMonth = new Date(this.viewYear, this.viewMonth + 1, 0).getDate();
+                
+                // 標籤文字更新
+                const now = new Date();
+                let monthLabelStr = `${this.viewMonth + 1}月`;
+                if (this.viewYear === now.getFullYear() && this.viewMonth === now.getMonth()) {
+                    monthLabelStr = "本月";
+                } else if (this.viewYear !== now.getFullYear()) {
+                    monthLabelStr = `${this.viewYear}年${this.viewMonth + 1}月`;
+                }
+                document.getElementById('sticker-month-label').innerText = monthLabelStr;
                 
                 let stickersHtml = '';
                 for(let day = 1; day <= daysInMonth; day++) {
-                    const dateStr = `${currentY}-${String(currentM+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                    const dateStr = `${this.viewYear}-${String(this.viewMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
                     let hasLog = false;
                     
                     Object.keys(u.habits||{}).forEach(hId => {
