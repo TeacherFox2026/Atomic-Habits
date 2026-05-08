@@ -44,6 +44,11 @@
         .hand-drawn-btn:active { transform: translate(4px, 4px) !important; box-shadow: 0px 0px 0px #1f2937 !important; }
         .bg-theme-transition { transition: background 0.5s ease-in-out; border-bottom: 4px solid #1f2937; }
 
+        /* 【深度除錯】強制所有輸入框字體為 16px，防止 iOS 點擊輸入時強迫放大破壞版面 */
+        input, textarea, select, [contenteditable="true"] {
+            font-size: 16px !important;
+        }
+
         /* 動畫區 */
         @keyframes float { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(2deg); } }
         .mascot-float { animation: float 3s infinite ease-in-out; }
@@ -85,7 +90,7 @@
 <body class="antialiased text-gray-800">
 
     <!-- ☁️ 雲端同步鎖定遮罩 -->
-    <div id="sync-overlay" class="fixed inset-0 z-[200] bg-white/80 backdrop-blur-md flex flex-col items-center justify-center transition-opacity duration-500">
+    <div id="sync-overlay" class="fixed inset-0 z-[200] bg-white/80 backdrop-blur-md flex flex-col items-center justify-center transition-opacity duration-500 hidden opacity-0">
         <div class="w-20 h-24 mb-4 relative mascot-float" id="sync-mascot-img"></div>
         <p class="font-black text-xl text-blue-600 tracking-widest drop-shadow-sm" id="sync-msg">連線雲端手帳中...</p>
         <p class="text-gray-500 font-bold text-sm mt-2">全家人的足跡同步中</p>
@@ -108,17 +113,21 @@
                             <div class="w-3 h-3 flex-shrink-0" id="icon-crown-header"></div> <span id="identity-text" class="truncate">稱號載入中</span>
                         </div>
                         
-                        <!-- 下拉選單 -->
-                        <div id="habit-dropdown" class="absolute top-full left-0 mt-2 bg-white hand-drawn-border p-2 hidden flex-col gap-2 w-56 shadow-[4px_4px_0px_#1f2937]">
+                        <!-- 下拉選單 (加入安裝 App 按鈕) -->
+                        <div id="habit-dropdown" class="absolute top-full left-0 mt-2 bg-white hand-drawn-border p-2 hidden flex-col gap-2 w-56 shadow-[4px_4px_0px_#1f2937] z-[60]">
                             <div id="habit-list-container" class="flex flex-col gap-1 max-h-64 overflow-y-auto custom-scroll"></div>
                             <div class="border-t-2 border-dashed border-gray-300 my-1"></div>
-                            <button onclick="SyncEngine.manualSync()" class="w-full text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg font-black text-blue-700 flex items-center gap-2">
+                            <!-- 【修改 3】將安裝 App 按鈕移入下拉選單 -->
+                            <button id="menu-install-btn" onclick="PWA.install()" class="hidden w-full text-left px-3 py-2 bg-green-50 hover:bg-green-100 rounded-lg font-black text-green-700 flex items-center gap-2 transition-colors">
+                                <div class="w-4 h-4" id="icon-install-btn"></div> 安裝至手機桌面
+                            </button>
+                            <button onclick="SyncEngine.manualSync()" class="w-full text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg font-black text-blue-700 flex items-center gap-2 transition-colors">
                                 <div class="w-4 h-4" id="icon-sync-btn"></div> 立即同步雲端
                             </button>
-                            <button onclick="Radio.openCMS()" class="w-full text-left px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-black text-gray-800 flex items-center gap-2">
+                            <button onclick="Radio.openCMS()" class="w-full text-left px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-black text-gray-800 flex items-center gap-2 transition-colors">
                                 <div class="w-4 h-4" id="icon-radio-btn"></div> 廣播台管理
                             </button>
-                            <button onclick="Editor.open()" class="w-full text-left px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-black text-gray-800 flex items-center gap-2">
+                            <button onclick="Editor.open()" class="w-full text-left px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-black text-gray-800 flex items-center gap-2 transition-colors">
                                 <div class="w-4 h-4" id="icon-setting-btn"></div> 系統與習慣管理
                             </button>
                         </div>
@@ -134,7 +143,8 @@
                 <div class="flex flex-row justify-between items-end w-full relative z-40 mt-4 md:mt-6">
                     <div class="flex items-center gap-2">
                         <button onclick="Report.open()" id="trophy-btn" class="w-12 h-12 bg-yellow-200 rounded-xl hand-drawn-border flex items-center justify-center shadow-[2px_2px_0px_#1f2937] transition-all hover:bg-yellow-300 p-2"></button>
-                        <button onclick="Mail.open()" id="mailbox-btn" class="w-12 h-12 bg-white rounded-xl hand-drawn-border flex items-center justify-center relative shadow-[2px_2px_0px_#1f2937] transition-all p-1.5">
+                        <!-- 【修改 4】為信箱按鈕增加舒服的馬卡龍粉藍底色 -->
+                        <button onclick="Mail.open()" id="mailbox-btn" class="w-12 h-12 bg-cyan-100 rounded-xl hand-drawn-border flex items-center justify-center relative shadow-[2px_2px_0px_#1f2937] transition-all hover:bg-cyan-200 p-1.5">
                             <span id="mail-badge" class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-black w-5 h-5 rounded-full border-2 border-gray-800 flex items-center justify-center z-10">!</span>
                         </button>
                         <button onclick="Shop.open()" id="shop-btn" class="w-12 h-12 bg-pink-200 rounded-xl hand-drawn-border flex items-center justify-center shadow-[2px_2px_0px_#1f2937] transition-all hover:bg-pink-300 p-2"></button>
@@ -154,10 +164,11 @@
                 </div>
             </header>
 
-            <!-- 【修復 Z-Index 遮蔽】將 z-[100] 設定在此，確保不被下方的 bg-white 區塊蓋住 -->
-            <div class="w-full flex flex-row items-end justify-end z-[100] px-4 -mt-8 relative pointer-events-none">
-                <div class="bg-white border-4 border-gray-800 text-gray-800 px-4 py-3 rounded-2xl rounded-br-none shadow-[4px_4px_0px_#1f2937] mb-6 mr-[-10px] pop-in text-sm font-black text-left w-[180px] md:w-[200px] pointer-events-auto relative z-[101] transform -rotate-2" id="mascot-speech"></div>
-                <div class="w-24 h-24 md:w-28 md:h-28 mascot-float cursor-pointer pointer-events-auto relative z-[101] select-none flex-shrink-0" id="mascot-img" 
+            <!-- 【修改 1】圖層重構，將吉祥物 Z-index 降至 40 與 50，確保被 z-[150] 的彈窗完美覆蓋 -->
+            <div class="w-full flex flex-row items-end justify-end z-40 px-4 -mt-8 relative pointer-events-none">
+                <!-- 【修改 2】對話框預設加上 opacity-0 與轉場動畫，等待觸發 -->
+                <div class="bg-white border-4 border-gray-800 text-gray-800 px-4 py-3 rounded-2xl rounded-br-none shadow-[4px_4px_0px_#1f2937] mb-6 mr-[-10px] text-sm font-black text-left w-[180px] md:w-[200px] pointer-events-auto relative z-50 transform -rotate-2 opacity-0 transition-opacity duration-500" id="mascot-speech"></div>
+                <div class="w-24 h-24 md:w-28 md:h-28 mascot-float cursor-pointer pointer-events-auto relative z-50 select-none flex-shrink-0" id="mascot-img" 
                      onmousedown="EasterEggs.startPress(event)" onmouseup="EasterEggs.endPress(event)" onmouseleave="EasterEggs.cancelPress(event)"
                      ontouchstart="EasterEggs.startPress(event)" ontouchend="EasterEggs.endPress(event)" ontouchcancel="EasterEggs.cancelPress(event)"></div>
             </div>
@@ -181,7 +192,7 @@
         </div>
 
         <!-- ================= 右半邊：數據與日曆 ================= -->
-        <div class="panel-right pb-20 md:pb-5 relative">
+        <div class="panel-right pb-20 md:pb-5 relative z-10">
             <div class="bg-white p-5 hand-drawn-border bg-yellow-50 relative mt-4 md:mt-2">
                 <div class="absolute -top-3 left-4 bg-yellow-300 border-2 border-gray-800 px-3 py-1 rounded-lg font-black text-xs transform -rotate-2">近 7 天活躍</div>
                 <div class="flex justify-between items-center mt-3" id="calendar-row"></div>
@@ -204,14 +215,14 @@
 
     <div id="modals-container"></div>
     
-    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-gray-800 border-4 border-gray-900 text-white px-6 py-3 rounded-2xl shadow-[4px_4px_0px_rgba(0,0,0,0.3)] transition-all duration-300 opacity-0 pointer-events-none z-[100] font-bold text-center w-max max-w-[90%] flex items-center gap-2">
+    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-gray-800 border-4 border-gray-900 text-white px-6 py-3 rounded-2xl shadow-[4px_4px_0px_rgba(0,0,0,0.3)] transition-all duration-300 opacity-0 pointer-events-none z-[200] font-bold text-center w-max max-w-[90%] flex items-center gap-2">
         <span id="toast-msg">提示！</span>
     </div>
 
     <input type="file" id="backup-file-input" class="hidden" accept=".json" onchange="SystemConfig.handleRestoreBackup(event)">
 
     <script>
-        // 【PWA 註冊 Service Worker】強制滿足 Chrome 安裝條件
+        // 【PWA 註冊 Service Worker】滿血觸發 Chrome 安裝條件與離線快取
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
@@ -318,7 +329,7 @@
                 leaf: `<svg viewBox="0 0 100 100"><path d="M20 80 C20 30 50 15 85 15 C85 65 60 85 20 80 Z" fill="#86efac" stroke="#1f2937" stroke-width="4"/><path d="M20 80 L80 20" fill="none" stroke="#1f2937" stroke-width="3"/></svg>`,
                 flower: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="15" fill="#fde047" stroke="#1f2937" stroke-width="4"/><path d="M50 35 A15 15 0 1 1 50 5 A15 15 0 1 1 50 35 M65 50 A15 15 0 1 1 95 50 A15 15 0 1 1 65 50 M50 65 A15 15 0 1 1 50 95 A15 15 0 1 1 50 65 M35 50 A15 15 0 1 1 5 50 A15 15 0 1 1 35 50" fill="#fbcfe8" stroke="#1f2937" stroke-width="4"/></svg>`,
                 chest: `<svg viewBox="0 0 100 100"><rect x="15" y="50" width="70" height="35" fill="#fcd34d" stroke="#1f2937" stroke-width="4"/><path d="M15 50 C15 20 85 20 85 50 Z" fill="#fbbf24" stroke="#1f2937" stroke-width="4"/><rect x="45" y="45" width="10" height="15" fill="#1f2937"/></svg>`,
-                smile: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#fef08a" stroke="#1f2937" stroke-width="4"/><circle cx="35" cy="40" r="5" fill="#1f2937"/><circle cx="65" cy="40" r="5" fill="#1f2937"/><path d="M30 60 Q50 80 70 60" fill="none" stroke="#1f2937" stroke-width="4" stroke-linecap="round"/></svg>`
+                smile: `<svg viewBox="0 100 100"><circle cx="50" cy="50" r="40" fill="#fef08a" stroke="#1f2937" stroke-width="4"/><circle cx="35" cy="40" r="5" fill="#1f2937"/><circle cx="65" cy="40" r="5" fill="#1f2937"/><path d="M30 60 Q50 80 70 60" fill="none" stroke="#1f2937" stroke-width="4" stroke-linecap="round"/></svg>`
             }
         };
 
@@ -446,7 +457,6 @@
             });
         }
 
-        // 【修復連點漏存漏洞】遇到 isSyncing 鎖定時不丟棄，標記起來稍後再傳
         function saveLocal() {
             pruneAllData();
             localStorage.setItem('appTemplates_v13', JSON.stringify(appTemplates));
@@ -515,7 +525,6 @@
                 } catch (e) {} 
                 finally {
                     this.isSyncing = false;
-                    // 若這期間有新的變更被標記，補傳一波
                     if (this.syncPending) {
                         this.syncPending = false;
                         this.push();
@@ -523,7 +532,6 @@
                 }
             },
 
-            // 【手動同步防呆修復】絕對先 Push 本地資料再 Pull 遠端，防止離線進度被洗掉
             async manualSync() {
                 if(this.isSyncing) return;
                 document.getElementById('sync-overlay').classList.remove('hidden');
@@ -613,31 +621,35 @@
                 window.addEventListener('appinstalled', (e) => {
                     localStorage.setItem('pwa_installed_v14', 'true');
                     UI.closeModal('ios-pwa-modal');
+                    const btn = document.getElementById('menu-install-btn');
+                    if(btn) btn.classList.add('hidden');
                 });
                 
                 // 攔截 Chrome 原生安裝提示
                 window.addEventListener('beforeinstallprompt', (e) => { 
                     e.preventDefault(); 
                     this.deferredPrompt = e; 
-                    // 一旦確認支援，就把 Editor 中的安裝按鈕顯示出來
-                    const btn = document.getElementById('install-app-btn-editor');
-                    if(btn) btn.classList.remove('hidden');
+                    // 【修復】將安裝按鈕顯示在主選單內
+                    const btn = document.getElementById('menu-install-btn');
+                    if(btn && localStorage.getItem('pwa_installed_v14') !== 'true') btn.classList.remove('hidden');
                 }); 
 
                 if (this.isIos() && !(('standalone' in window.navigator) && window.navigator.standalone)) {
-                    // iOS 的話，不管怎樣都在 Editor 顯示按鈕教安裝
-                    const btn = document.getElementById('install-app-btn-editor');
+                    // iOS 的話，顯示選單按鈕，並跳出教導彈窗
+                    const btn = document.getElementById('menu-install-btn');
                     if(btn) btn.classList.remove('hidden');
                 }
             },
             install() { 
                 if(this.isIos()) { 
                     UI.openModal('ios-pwa-modal'); 
+                    UI.toggleHabitMenu(); // 關閉選單
                 } else if (this.deferredPrompt) {
                     this.deferredPrompt.prompt(); 
                     this.deferredPrompt.userChoice.then((c) => { 
                         if (c.outcome === 'accepted') this.deferredPrompt = null; 
                     }); 
+                    UI.toggleHabitMenu();
                 } else {
                     UI.showToast("已處於全版模式，或瀏覽器不支援安裝功能。");
                 }
@@ -732,25 +744,41 @@
         };
 
         // ==========================================
-        // 🎁 彩蛋與互動系統
+        // 🎁 彩蛋與互動系統 (含對話框自動淡出防呆)
         // ==========================================
+        const Mascot = {
+            speechTimer: null,
+            speak(text) {
+                const speech = document.getElementById('mascot-speech');
+                speech.innerText = text;
+                speech.classList.remove('opacity-0', 'pointer-events-none');
+                speech.classList.add('pop-in');
+                
+                // 【修復】對話框自動淡出，保持畫面乾淨
+                if(this.speechTimer) clearTimeout(this.speechTimer);
+                this.speechTimer = setTimeout(() => {
+                    speech.classList.add('opacity-0', 'pointer-events-none');
+                    speech.classList.remove('pop-in');
+                }, 5500);
+            }
+        };
+
         const EasterEggs = {
             clickCount: 0, clickTimer: null, pressTimer: null, isPressed: false, pressStartTime: 0, foxQuotes: [],
             startPress(e) { 
-                if(e && e.type === 'touchstart' && e.cancelable) e.preventDefault(); 
+                // 【防爆】防止 Ghost Clicks 造成兩次觸發
+                if(e && e.cancelable) e.preventDefault(); 
                 if(this.isPressed) return; 
                 this.isPressed = true; this.pressStartTime = Date.now(); 
                 this.pressTimer = setTimeout(() => { 
                     if(this.isPressed) { 
                         this.isPressed = false; AudioEngine.init(); AudioEngine.playPurr(); AudioEngine.vibrate([2000]); this.spawnHearts(); 
-                        const speech = document.getElementById('mascot-speech');
-                        speech.innerText = "呼嚕嚕...算你摸得挺舒服的喵..."; 
-                        speech.classList.remove('pop-in'); void speech.offsetWidth; speech.classList.add('pop-in'); 
+                        Mascot.speak("呼嚕嚕...算你摸得挺舒服的喵...");
                     } 
                 }, 1000); 
             },
             endPress(e) { 
-                if(e && e.type === 'touchend' && e.cancelable) e.preventDefault(); 
+                if(e && e.cancelable) e.preventDefault(); 
                 if(this.pressTimer) clearTimeout(this.pressTimer); 
                 if (this.isPressed) { this.isPressed = false; if (Date.now() - this.pressStartTime < 1000) UI.pokeMascot(); } 
             },
@@ -764,11 +792,11 @@
                     const uData = getUserData(currentUser.uid); const todayStr = getTodayStr();
                     if(!uData.eggFastClick) uData.eggFastClick = {}; 
                     if(uData.eggFastClick[todayStr]) { 
-                        document.getElementById('mascot-speech').innerText = "別再戳了喵！今天已經給過你金幣了！"; return true; 
+                        Mascot.speak("別再戳了喵！今天已經給過你金幣了！"); return true; 
                     }
                     uData.eggFastClick[todayStr] = true; uData.totalCoins += 10; uData.currentCoins += 10; saveLocal();
                     AudioEngine.playLevelUp(); AudioEngine.vibrate([100,50,100,50,100]); 
-                    document.getElementById('mascot-speech').innerText = "煩死啦喵！這 10 枚金幣給你，快去打卡！"; UI.renderDashboard(); return true;
+                    Mascot.speak("煩死啦喵！這 10 枚金幣給你，快去打卡！"); UI.renderDashboard(); return true;
                 } else { 
                     AudioEngine.playAnimal(currentUser.svgKey); return false; 
                 }
@@ -960,6 +988,10 @@
                 document.getElementById('icon-setting-btn').innerHTML = SVGs.ui.magicWand;
                 document.getElementById('sync-mascot-img').innerHTML = SVGs.cat;
                 
+                // 【修復】把 PWA 安裝按鈕 Icon 在此填入
+                const installIcon = document.getElementById('icon-install-btn');
+                if(installIcon) installIcon.innerHTML = SVGs.icons.star;
+                
                 document.addEventListener("visibilitychange", () => { 
                     if (!document.hidden && !SyncEngine.isSyncing) this.renderAll(); 
                 });
@@ -1012,7 +1044,6 @@
             },
             
             switchHabit(hId) {
-                // 【修復防呆】切換習慣時必定清除「補救模式」狀態
                 currentHabitId = hId; localStorage.setItem('lastHabitId_v13', hId); document.getElementById('habit-dropdown').classList.add('hidden'); recoveryDate = null;
                 const habit = appTemplates[hId]; const th = THEMES.find(t => t.id === habit.themeId) || THEMES[0];
                 document.getElementById('app-title').innerText = habit.title; document.getElementById('main-header').style.background = th.grad;
@@ -1140,7 +1171,7 @@
             },
             
             loadMoreFootprints() { this.footprintLimit += 10; this.renderFootprints(); },
-            showMascotMessage() { document.getElementById('mascot-speech').innerText = Radio.getLine(); },
+            showMascotMessage() { Mascot.speak(Radio.getLine()); },
             pokeMascot() { EasterEggs.handleClick(); this.showMascotMessage(); },
             
             showToast(msg) { 
@@ -1160,9 +1191,9 @@
             },
             
             injectModals() {
-                // 【修復 RWD 與信箱】加入 90vw 等防爆設定
+                // 【修復】所有 Modal z-index 均設定為 z-[150] 或 z-[160]，且加入 box-border 防止被文字擠破
                 document.getElementById('modals-container').innerHTML = `
-                    <div id="generic-confirm-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-4">
+                    <div id="generic-confirm-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-center z-[160] transition-opacity opacity-0 px-4">
                         <div class="bg-white w-[90vw] md:w-[92vw] max-w-[320px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative flex flex-col items-center box-border">
                             <div class="w-24 h-24 mb-2">${SVGs.cryCat}</div>
                             <h3 id="confirm-title" class="text-xl font-black text-gray-800 mb-2">確認視窗</h3>
@@ -1174,7 +1205,7 @@
                         </div>
                     </div>
                     
-                    <div id="radio-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[80] transition-opacity opacity-0 px-4">
+                    <div id="radio-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-4">
                         <div class="bg-[#fff9f0] w-[90vw] md:w-[92vw] max-w-[600px] h-[80vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] relative flex flex-col overflow-hidden box-border">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2">
                                 <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.bulb}</div> 廣播台管理</h3>
@@ -1195,7 +1226,7 @@
                         </div>
                     </div>
                     
-                    <div id="shop-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[80] transition-opacity opacity-0 px-4">
+                    <div id="shop-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-4">
                         <div class="bg-[#fff9f0] w-[90vw] md:w-[92vw] max-w-[1000px] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2">
                                 <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-8 h-8">${SVGs.ui.shopStand}</div> 兌換商店</h3>
@@ -1241,7 +1272,7 @@
                         </div>
                     </div>
                     
-                    <div id="report-modal" class="fixed inset-0 bg-gray-900/80 hidden flex-col items-center justify-center z-[80] transition-opacity opacity-0 px-4">
+                    <div id="report-modal" class="fixed inset-0 bg-gray-900/80 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-4">
                         <div class="bg-[#fef9f0] w-[90vw] md:w-[92vw] max-w-[1000px] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2">
                                 <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.ui.magicBook}</div> 魔法成就手帳</h3>
@@ -1266,7 +1297,6 @@
                                     <div id="cycle-treasures" class="absolute bottom-4 right-4 flex flex-col-reverse gap-1 items-center justify-center z-20"></div>
                                 </div>
                                 <div class="flex-1 bg-white border-4 border-gray-800 rounded-3xl p-4 relative flex flex-col">
-                                    <!-- 【修復 貼紙牆月份切換】 -->
                                     <div class="absolute -top-3 -right-3 bg-pink-300 border-2 border-gray-800 px-3 py-1 rounded-lg font-black text-sm z-20 flex items-center gap-2">
                                         <button onclick="Report.changeMonth(-1)" class="w-5 h-5 bg-white/50 rounded flex items-center justify-center active:scale-90">◀</button>
                                         <span id="sticker-month-label">本月</span>貼紙牆
@@ -1309,14 +1339,13 @@
                         </div>
                     </div>
                     
-                    <div id="mailbox-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[80] transition-opacity opacity-0 px-4">
+                    <div id="mailbox-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0 px-4">
                         <div class="bg-[#fff0f5] w-[90vw] md:w-[92vw] max-w-[1000px] lg:max-w-[1200px] rounded-t-[2rem] md:rounded-[2rem] p-6 border-t-8 border-gray-800 md:border-8 h-[85vh] md:h-[auto] md:max-h-[90vh] flex flex-col overflow-hidden box-border">
                             <div class="flex-none flex justify-between items-center mb-4 pb-3 border-b-4 border-dashed border-gray-300">
                                 <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.mailbox}</div> 家庭信箱</h3>
                                 <button onclick="UI.closeModal('mailbox-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1">${SVGs.ui.cross}</button>
                             </div>
                             <div class="flex-none flex gap-2 mb-4">
-                                <!-- 【修復】為收信箱文字前也加上圖示 -->
                                 <button id="m-tab-read" onclick="Mail.switchTab('read')" class="flex-1 py-2 font-black rounded-xl border-4 border-gray-800 bg-pink-300 transition-colors inline-flex justify-center items-center gap-1"><div class="w-4 h-4">${SVGs.mailbox}</div> 收信箱</button>
                                 <button id="m-tab-write" onclick="Mail.switchTab('write')" class="flex-1 py-2 font-black rounded-xl border-4 border-gray-800 inline-flex justify-center items-center gap-1 transition-colors"><div class="w-4 h-4">${SVGs.ui.editPen}</div> 寫信</button>
                             </div>
@@ -1348,7 +1377,7 @@
                         </div>
                     </div>
                     
-                    <div id="editor-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[80] transition-opacity opacity-0 px-4">
+                    <div id="editor-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-4">
                         <div class="bg-[#fef9f0] w-[90vw] md:w-[92vw] max-w-[1000px] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2">
                                 <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.ui.magicWand}</div> 系統與習慣管理</h3>
@@ -1362,7 +1391,6 @@
                                 <div class="mt-4 border-t-4 border-dashed border-gray-300 pt-4 flex flex-wrap gap-2">
                                     <button onclick="SystemConfig.downloadBackup()" class="flex-auto bg-sky-300 border-4 border-gray-800 py-3 px-2 rounded-xl font-black text-sm shadow-[2px_2px_0px_#1f2937]">📥 備份進度</button>
                                     <button onclick="SystemConfig.triggerRestore()" class="flex-auto bg-rose-300 border-4 border-gray-800 py-3 px-2 rounded-xl font-black text-sm shadow-[2px_2px_0px_#1f2937]">📤 還原進度</button>
-                                    <button id="install-app-btn-editor" onclick="PWA.install()" class="hidden flex-auto bg-green-300 border-4 border-gray-800 py-3 px-2 rounded-xl font-black text-sm shadow-[2px_2px_0px_#1f2937]">📲 安裝 App</button>
                                 </div>
                             </div>
                             
@@ -1418,8 +1446,8 @@
                         </div>
                     </div>
                     
-                    <div id="input-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[70] transition-opacity opacity-0">
-                        <div id="modal-content" class="bg-[#fff9f0] w-[95%] max-w-[480px] rounded-t-[2rem] md:rounded-[2rem] p-6 border-t-8 border-gray-800 md:border-8 relative box-border">
+                    <div id="input-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0">
+                        <div id="modal-content" class="bg-[#fff9f0] w-[90vw] md:w-[92vw] max-w-[480px] rounded-t-[2rem] md:rounded-[2rem] p-6 border-t-8 border-gray-800 md:border-8 relative box-border">
                             <div class="flex justify-between items-center mb-5 border-b-4 border-dashed border-gray-300 pb-3">
                                 <h3 class="text-2xl font-black" id="modal-title">紀錄進度</h3>
                                 <button onclick="UI.closeModal('input-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1">${SVGs.ui.cross}</button>
@@ -1440,8 +1468,8 @@
                         </div>
                     </div>
                     
-                    <div id="ios-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0 px-4 pb-10 md:pb-0">
-                        <div class="bg-[#fff9f0] w-[95%] max-w-[360px] rounded-[2rem] p-6 border-8 border-gray-800 transform transition-transform translate-y-full md:translate-y-0 text-center shadow-[8px_8px_0px_#1f2937] relative box-border">
+                    <div id="ios-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-4 pb-10 md:pb-0">
+                        <div class="bg-[#fff9f0] w-[90vw] md:w-[92vw] max-w-[360px] rounded-[2rem] p-6 border-8 border-gray-800 transform transition-transform translate-y-full md:translate-y-0 text-center shadow-[8px_8px_0px_#1f2937] relative box-border">
                             <h3 class="text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.bulb}</div> 安裝至桌面</h3>
                             <p class="font-bold text-gray-600 mb-4 text-left leading-relaxed">蘋果設備專屬魔法：<br>1. 點擊下方工具列的 <b class="text-blue-500">分享圖示</b><br>2. 往下滑選擇 <b class="text-gray-800">「加入主畫面」</b></p>
                             <div class="text-4xl mb-6 flex justify-center w-8 h-8 mx-auto">${SVGs.icons.star}</div>
@@ -1666,7 +1694,7 @@
                     
                     saveLocal(); UI.renderAll(); UI.closeModal('shop-modal'); AudioEngine.playCoin(); 
                     UI.showToast(`兌換「${i.name}」成功！`); 
-                    document.getElementById('mascot-speech').innerText = "換了禮物別太高興，明天還要繼續賺回來喵！"; 
+                    Mascot.speak("換了禮物別太高興，明天還要繼續賺回來喵！");
                 } finally { setTimeout(() => isProcessing = false, 300); }
             },
             renderHistory() { 
@@ -1857,10 +1885,8 @@
                     if(liquid) liquid.style.height = `${percent}%`;
                 }, 100);
                 
-                // 【修復】貼紙牆支援動態月份切換
                 const daysInMonth = new Date(this.viewYear, this.viewMonth + 1, 0).getDate();
                 
-                // 標籤文字更新
                 const now = new Date();
                 let monthLabelStr = `${this.viewMonth + 1}月`;
                 if (this.viewYear === now.getFullYear() && this.viewMonth === now.getMonth()) {
