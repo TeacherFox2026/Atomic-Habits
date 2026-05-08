@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>原子習慣養成</title>
     
-    <!-- PWA Manifest 將由 JavaScript 動態寫入，確保 100% 觸發 Android 全螢幕 -->
-    <link id="pwa-manifest" rel="manifest" href="">
+    <!-- PWA Manifest：加入 start_url 並強制 standalone，確保 Android 從桌面開啟時 100% 無網址列全螢幕 -->
+    <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22%E5%AE%B6%E5%BA%AD%E5%8E%9F%E5%AD%90%E7%BF%92%E6%85%A3%22%2C%22short_name%22%3A%22%E5%8E%9F%E5%AD%90%E7%BF%92%E6%85%A3%22%2C%22display%22%3A%22standalone%22%2C%22start_url%22%3A%22.%22%2C%22theme_color%22%3A%22%23fdf8f5%22%2C%22background_color%22%3A%22%23fdf8f5%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iI2ZkZTA0NyIgc3Ryb2tlPSIjMWYyOTM3IiBzdHJva2Utd2lkdGg9IjQiLz48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSIzMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjY2E4YTA0IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1kYXNoYXJyYXk9IjQgNCIvPjwvc3ZnPg%3D%3D%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -90,21 +90,13 @@
         <p class="font-black text-xl text-blue-600 tracking-widest drop-shadow-sm" id="sync-msg">連線雲端手帳中...</p>
         <p class="text-gray-500 font-bold text-sm mt-2">全家人的足跡同步中</p>
     </div>
-
-    <!-- 📲 PWA 安裝提示 Banner -->
-    <div id="pwa-banner" class="hidden bg-blue-500 text-white font-black p-3 text-center text-sm border-b-4 border-gray-800 relative z-50 shadow-md flex items-center justify-center gap-4">
-        <span class="inline-flex items-center gap-1"><div class="w-4 h-4" id="pwa-bulb-icon"></div> 想要全螢幕體驗嗎？</span>
-        <button onclick="PWA.install()" class="bg-yellow-300 text-gray-900 px-3 py-1 rounded-lg border-2 border-gray-800 shadow-sm active:translate-y-1">安裝 App</button>
-        <button onclick="PWA.hide()" class="text-white font-bold opacity-80 absolute right-3">✕</button>
-    </div>
     
     <div id="golden-rain"></div>
 
     <div class="app-wrapper">
         <!-- ================= 左半邊：操作儀表板 ================= -->
         <div class="panel-left" id="main-panel-left">
-            <!-- 【UI優化 1】pb-12 適度留白，吉祥物浮空剛好在商店按鈕正下方 -->
-            <header id="main-header" class="bg-theme-transition text-white p-5 pb-12 relative z-30 md:rounded-none rounded-b-[2rem]">
+            <header id="main-header" class="bg-theme-transition text-white p-5 pb-6 relative z-30 md:rounded-none rounded-b-[2rem] flex flex-col">
                 
                 <!-- Row 1: 標題與角色切換 -->
                 <div class="flex justify-between items-start w-full relative z-50">
@@ -160,17 +152,18 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- 【UI優化 1】吉祥物上移至 -bottom-8，完美懸浮於按鈕下方且不遮擋 -->
-                <div class="absolute -bottom-8 right-2 flex flex-row items-end justify-end z-20 pointer-events-none">
-                    <div class="bg-white border-4 border-gray-800 text-gray-800 px-4 py-3 rounded-2xl rounded-br-none shadow-[4px_4px_0px_#1f2937] mb-8 mr-[-10px] pop-in text-sm font-black text-left w-[180px] md:w-[200px] pointer-events-auto relative z-10 transform -rotate-2" id="mascot-speech"></div>
-                    <div class="w-24 h-24 md:w-28 md:h-28 mascot-float cursor-pointer pointer-events-auto relative z-20 select-none" id="mascot-img" 
-                         onmousedown="EasterEggs.startPress(event)" onmouseup="EasterEggs.endPress(event)" onmouseleave="EasterEggs.cancelPress(event)"
-                         ontouchstart="EasterEggs.startPress(event)" ontouchend="EasterEggs.endPress(event)" ontouchcancel="EasterEggs.cancelPress(event)"></div>
-                </div>
             </header>
 
-            <div class="p-5 pt-14 flex-1 bg-white md:bg-transparent flex flex-col relative z-10">
+            <!-- 【修改 3】吉祥物改為 Flex 排版插入在區塊之間，利用實體高度把下方內容往下推 -->
+            <div class="w-full flex flex-row items-end justify-end z-20 px-4 -mt-8 relative pointer-events-none">
+                <div class="bg-white border-4 border-gray-800 text-gray-800 px-4 py-3 rounded-2xl rounded-br-none shadow-[4px_4px_0px_#1f2937] mb-6 mr-[-10px] pop-in text-sm font-black text-left w-[180px] md:w-[200px] pointer-events-auto relative z-10 transform -rotate-2" id="mascot-speech"></div>
+                <div class="w-24 h-24 md:w-28 md:h-28 mascot-float cursor-pointer pointer-events-auto relative z-20 select-none flex-shrink-0" id="mascot-img" 
+                     onmousedown="EasterEggs.startPress(event)" onmouseup="EasterEggs.endPress(event)" onmouseleave="EasterEggs.cancelPress(event)"
+                     ontouchstart="EasterEggs.startPress(event)" ontouchend="EasterEggs.endPress(event)" ontouchcancel="EasterEggs.cancelPress(event)"></div>
+            </div>
+
+            <!-- 任務區塊容器，會被上方的吉祥物自然擠下來 -->
+            <div class="p-5 pt-2 flex-1 bg-white md:bg-transparent flex flex-col relative z-10">
                 <div id="family-buff-banner" class="hidden w-full mb-4 bg-red-500 text-white font-black text-sm px-4 py-2 rounded-xl border-4 border-gray-800 shadow-[2px_2px_0px_#1f2937] transform rotate-1 pop-in flex items-center justify-center gap-2">
                     <div class="w-5 h-5" id="buff-tree-icon"></div> 全家連擊中！今日金幣 x1.2 倍
                 </div>
@@ -222,6 +215,7 @@
         // 🎨 純手繪 SVG 圖庫
         // ==========================================
         const SVGs = {
+            // 【修改 5】為狐狸爸爸補上靈魂的帥氣臉頰鬍鬚！
             fox: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
                 <polygon points="15,45 20,15 40,30" fill="#fb923c" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
                 <polygon points="85,45 80,15 60,30" fill="#fb923c" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
@@ -229,8 +223,8 @@
                 <line x1="28" y1="52" x2="42" y2="48" stroke="#1f2937" stroke-width="4" stroke-linecap="round"/>
                 <line x1="72" y1="52" x2="58" y2="48" stroke="#1f2937" stroke-width="4" stroke-linecap="round"/>
                 <ellipse cx="50" cy="68" rx="5" ry="4" fill="#1f2937"/>
-                <polyline points="10,55 18,58 12,62" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                <polyline points="90,55 82,58 88,62" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M5,55 Q15,58 20,57 M2,62 Q15,62 18,61 M8,69 Q18,67 22,65" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round" />
+                <path d="M95,55 Q85,58 80,57 M98,62 Q85,62 82,61 M92,69 Q82,67 78,65" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round" />
             </svg>`,
             cat: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
                 <polygon points="15,40 25,10 45,30" fill="#a855f7" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
@@ -510,21 +504,21 @@
                 this.isSyncing = false;
             },
 
+            // 【修改 7】手動同步防呆，先 Push 本地變更，再透過 initDB 重新拉取
             async manualSync() {
                 if(this.isSyncing) return;
                 document.getElementById('sync-overlay').classList.remove('hidden');
                 document.getElementById('sync-overlay').style.opacity = '1';
-                document.getElementById('sync-msg').innerText = '連線雲端手帳中...';
+                document.getElementById('sync-msg').innerText = '備份本地紀錄中...';
                 
-                const status = await this.pull();
-                if (status === 'success' || status === 'empty') { 
-                    initDB(); UI.renderAll(); 
-                    document.getElementById('sync-msg').innerText = '資料已同步，寫入手帳...';
-                    await this.push(); UI.showToast("資料同步完成！");
-                } else { 
-                    document.getElementById('sync-msg').innerText = '連線失敗，保護機制啟動';
-                    UI.showToast("網路異常，已暫停同步。您的本地資料安全無虞。"); 
-                }
+                await this.push();
+                
+                document.getElementById('sync-msg').innerText = '接收雲端最新手帳...';
+                await initDB();
+                
+                UI.renderAll();
+                UI.showToast("同步完成！");
+                
                 setTimeout(() => {
                     document.getElementById('sync-overlay').style.opacity = '0';
                     setTimeout(() => document.getElementById('sync-overlay').classList.add('hidden'), 500);
@@ -589,52 +583,20 @@
         };
 
         // ==========================================
-        // 📲 PWA 系統優化 (動態產生 Manifest 確保 Android 全螢幕)
+        // 📲 PWA 機制
         // ==========================================
         const PWA = {
-            deferredPrompt: null,
+            isIos() {
+                return /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            },
             init() { 
-                // 【PWA優化 2】動態注入 start_url，繞過 Android 某些版本對 base64 manifest 的全螢幕限制
-                const manifestJSON = {
-                    "name": "家庭原子習慣",
-                    "short_name": "原子習慣",
-                    "start_url": window.location.href.split('?')[0],
-                    "display": "standalone",
-                    "theme_color": "#fdf8f5",
-                    "background_color": "#fdf8f5",
-                    "icons": [{"src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iI2ZkZTA0NyIgc3Ryb2tlPSIjMWYyOTM3IiBzdHJva2Utd2lkdGg9IjQiLz48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSIzMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjY2E4YTA0IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1kYXNoYXJyYXk9IjQgNCIvPjwvc3ZnPg==", "sizes": "192x192", "type": "image/svg+xml"}]
-                };
-                const manifestBlob = new Blob([JSON.stringify(manifestJSON)], {type: 'application/manifest+json'});
-                document.getElementById('pwa-manifest').setAttribute('href', URL.createObjectURL(manifestBlob));
-
                 window.addEventListener('appinstalled', (e) => {
                     localStorage.setItem('pwa_installed_v14', 'true');
-                    this.hide();
                     UI.closeModal('ios-pwa-modal');
-                    UI.closeModal('android-pwa-modal');
                 });
-
-                if (localStorage.getItem('pwa_installed_v14') === 'true' || window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) { 
-                    this.hide(); return; 
-                } 
-                
-                window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); this.deferredPrompt = e; this.show(); }); 
-                const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-                if (isIos() && !(('standalone' in window.navigator) && window.navigator.standalone)) this.show(); 
-                if (!isIos() && !this.deferredPrompt) this.show();
             },
-            show() { document.getElementById('pwa-banner').classList.remove('hidden'); }, 
-            hide() { document.getElementById('pwa-banner').classList.add('hidden'); },
             install() { 
-                const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-                if(isIos()) { 
-                    UI.openModal('ios-pwa-modal'); 
-                } else if (this.deferredPrompt) { 
-                    this.deferredPrompt.prompt(); 
-                    this.deferredPrompt.userChoice.then((c) => { if (c.outcome === 'accepted') this.hide(); this.deferredPrompt = null; }); 
-                } else { 
-                    UI.openModal('android-pwa-modal'); 
-                } 
+                if(this.isIos()) { UI.openModal('ios-pwa-modal'); } 
             }
         };
 
@@ -687,7 +649,8 @@
                         startX = e.changedTouches[0].screenX; startY = e.changedTouches[0].screenY;
                     }, {passive: true});
                     modal.addEventListener('touchend', e => {
-                        if(['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest('[contenteditable="true"]')) return;
+                        // 【修改 7】修復防呆，保護寫信區塊不被滑動干擾
+                        if(['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest('[contenteditable="true"]') || e.target.closest('#mail-write-area')) return;
                         
                         let endX = e.changedTouches[0].screenX, endY = e.changedTouches[0].screenY;
                         let dx = endX - startX, dy = endY - startY;
@@ -788,7 +751,9 @@
                 if(!this.foxQuotes || this.foxQuotes.length === 0) {
                     this.foxQuotes = Radio.shuffle([
                         "爸爸永遠愛你們喔喵！", "看到你們每天進步，爸爸超驕傲的！", "累了就休息一下，全家人都在你身邊喔！",
-                        "今天有乖乖喝水嗎？要照顧好自己喔！", "不管發生什麼事，這裡永遠是你們的避風港！"
+                        "今天有乖乖喝水嗎？要照顧好自己喔！", "不管發生什麼事，這裡永遠是你們的避風港！",
+                        "有你們在，每天都是好日子！", "寶貝們健康長大，就是爸爸最大的財富！",
+                        "照顧孩子辛苦了，但也別忘了照顧自己喔！"
                     ]);
                 }
                 UI.showToast("🦊 " + this.foxQuotes.pop());
@@ -949,7 +914,6 @@
                 document.getElementById('icon-sync-btn').innerHTML = SVGs.ui.history;
                 document.getElementById('icon-radio-btn').innerHTML = SVGs.icons.bulb;
                 document.getElementById('icon-setting-btn').innerHTML = SVGs.ui.magicWand;
-                document.getElementById('pwa-bulb-icon').innerHTML = SVGs.icons.bulb;
                 document.getElementById('sync-mascot-img').innerHTML = SVGs.cat;
                 
                 document.addEventListener("visibilitychange", () => { 
@@ -980,7 +944,6 @@
                 document.getElementById('overall-streak').innerText = getOverallStreak(currentUser.uid);
             },
             
-            // 【UI優化 6】加入了 swipeDir 參數，搭配 playSlide 播放全域切換角色的流暢動畫
             switchUser(uid, isInit=false, swipeDir=0) {
                 if(swipeDir !== 0) SwipeDetector.playSlide('main-panel-left', swipeDir);
                 
@@ -1152,9 +1115,10 @@
             },
             
             injectModals() {
+                // 【修改 4】針對各大彈窗外層加入 lg:max-w-[1200px] 與 w-[95%] 來實現寬螢幕的完美利用
                 document.getElementById('modals-container').innerHTML = `
                     <div id="generic-confirm-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-4">
-                        <div class="bg-white w-full max-w-[320px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative flex flex-col items-center">
+                        <div class="bg-white w-[95%] max-w-[320px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative flex flex-col items-center">
                             <div class="w-24 h-24 mb-2">${SVGs.cryCat}</div>
                             <h3 id="confirm-title" class="text-xl font-black text-gray-800 mb-2">確認視窗</h3>
                             <p id="confirm-desc" class="text-sm text-gray-600 font-bold mb-6">確定執行嗎？</p>
@@ -1166,7 +1130,7 @@
                     </div>
                     
                     <div id="radio-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[80] transition-opacity opacity-0 px-4">
-                        <div class="bg-[#fff9f0] w-full max-w-[500px] h-[80vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] relative flex flex-col overflow-hidden">
+                        <div class="bg-[#fff9f0] w-[95%] max-w-[600px] h-[80vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] relative flex flex-col overflow-hidden">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2">
                                 <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.bulb}</div> 廣播台管理</h3>
                                 <button onclick="UI.closeModal('radio-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white font-black p-1">${SVGs.ui.cross}</button>
@@ -1177,7 +1141,6 @@
                                         <option value="all">所有人</option><option value="user_dad">狐狸</option><option value="user_mom">綠公主</option><option value="user_son">阿蛇</option>
                                     </select>
                                 </div>
-                                <!-- 【UI優化 3】台詞 placeholder 已更新 -->
                                 <div class="flex flex-col gap-2">
                                     <textarea id="radio-new-text" placeholder="寫下要給廣播對象的話..." class="w-full box-border flex-1 border-4 border-gray-800 rounded-lg p-2 font-bold resize-none custom-scroll" rows="3"></textarea>
                                     <button onclick="Radio.addLine()" class="w-full bg-green-400 text-white font-black py-2 rounded-lg border-4 border-gray-800 hand-drawn-btn">儲存</button>
@@ -1188,7 +1151,7 @@
                     </div>
                     
                     <div id="shop-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[80] transition-opacity opacity-0 px-4">
-                        <div class="bg-[#fff9f0] w-full max-w-[900px] h-[90vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden">
+                        <div class="bg-[#fff9f0] w-[95%] max-w-[1000px] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2">
                                 <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-8 h-8">${SVGs.ui.shopStand}</div> 兌換商店</h3>
                                 <button onclick="UI.closeModal('shop-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1">${SVGs.ui.cross}</button>
@@ -1208,13 +1171,13 @@
                             </div>
                             
                             <div id="shop-area-history" class="flex-1 overflow-y-auto custom-scroll pr-2 hidden flex-col gap-3">
-                                <div id="shop-history-list" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+                                <div id="shop-history-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
                                 <button id="btn-load-more-shop" onclick="Shop.loadMoreHistory()" class="hidden mt-2 text-sm font-bold bg-gray-100 py-2 rounded-xl border-2 border-dashed border-gray-300">展開歷史戰利品 ▼</button>
                             </div>
                             
                             <div id="shop-area-edit" class="flex-1 overflow-y-auto hidden flex-col">
                                 <button onclick="Shop.openAddItem()" class="w-full mb-4 py-3 bg-green-400 text-white font-black border-4 border-gray-800 rounded-xl inline-flex justify-center items-center gap-2"><div class="w-5 h-5">${SVGs.ui.plus}</div> 新增獎品</button>
-                                <div id="shop-edit-list" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+                                <div id="shop-edit-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
                             </div>
                             
                             <div id="shop-area-form" class="flex-1 overflow-y-auto hidden flex-col">
@@ -1234,12 +1197,11 @@
                     </div>
                     
                     <div id="report-modal" class="fixed inset-0 bg-gray-900/80 hidden flex-col items-center justify-center z-[80] transition-opacity opacity-0 px-4">
-                        <div class="bg-[#fef9f0] w-full max-w-[900px] h-[90vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden">
+                        <div class="bg-[#fef9f0] w-[95%] max-w-[1000px] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2">
                                 <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.ui.magicBook}</div> 魔法成就手帳</h3>
                                 <button onclick="UI.closeModal('report-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1">${SVGs.ui.cross}</button>
                             </div>
-                            <!-- 【UI優化 4, 5】精簡手帳標籤文字，使用 px-1 md:px-2 與 text-sm md:text-base 確保無水平捲軸並滿版 -->
                             <div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
                                 <button id="rep-tab-self" onclick="Report.switchTab('self')" class="flex-1 py-2 px-1 md:px-2 font-black rounded-xl border-4 border-gray-800 bg-purple-500 text-white inline-flex justify-center items-center gap-1 transition-colors text-sm md:text-base"><div class="w-4 h-4">${SVGs.ui.sparkle}</div> 收藏</button>
                                 <button id="rep-tab-family" onclick="Report.switchTab('family')" class="flex-1 py-2 px-1 md:px-2 font-black rounded-xl border-4 border-gray-800 inline-flex justify-center items-center gap-1 transition-colors text-sm md:text-base"><div class="w-4 h-4">${SVGs.ui.tree}</div> 大樹</button>
@@ -1247,7 +1209,7 @@
                             </div>
                             
                             <div id="rep-area-self" class="flex-1 overflow-y-auto custom-scroll flex flex-col md:flex-row gap-6 pb-6">
-                                <div class="flex-1 bg-white border-4 border-gray-800 rounded-3xl p-4 flex flex-col items-center justify-center relative">
+                                <div class="flex-1 bg-white border-4 border-gray-800 rounded-3xl p-4 flex flex-col items-center justify-center relative min-h-[300px]">
                                     <div class="absolute -top-3 -left-3 bg-yellow-300 border-2 border-gray-800 px-3 py-1 rounded-lg font-black text-sm z-20">無盡寶物瓶</div>
                                     <div class="text-3xl font-black text-yellow-600 mb-2 flex items-center gap-2 z-20"><div class="w-8 h-8">${SVGs.coin}</div> <span id="report-total-points">0</span></div>
                                     <div class="relative w-48 h-56 md:w-64 md:h-72 mt-2">
@@ -1260,8 +1222,7 @@
                                 </div>
                                 <div class="flex-1 bg-white border-4 border-gray-800 rounded-3xl p-4 relative flex flex-col">
                                     <div class="absolute -top-3 -right-3 bg-pink-300 border-2 border-gray-800 px-3 py-1 rounded-lg font-black text-sm z-20">本月貼紙牆</div>
-                                    <!-- 【UI優化 4, 5】貼紙牆支援手機版與平板 RWD，自動填滿 -->
-                                    <div id="sticker-grid" class="grid grid-cols-5 md:grid-cols-7 gap-1 md:gap-2 flex-1 overflow-y-auto custom-scroll pr-2 mt-4 content-start"></div>
+                                    <div id="sticker-grid" class="grid grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-1 md:gap-2 flex-1 overflow-y-auto custom-scroll pr-2 mt-4 content-start"></div>
                                 </div>
                             </div>
                             
@@ -1299,7 +1260,7 @@
                     </div>
                     
                     <div id="mailbox-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[80] transition-opacity opacity-0 px-4">
-                        <div class="bg-[#fff0f5] w-full max-w-[900px] rounded-t-[2rem] md:rounded-[2rem] p-6 border-t-8 border-gray-800 md:border-8 h-[85vh] md:h-[auto] md:max-h-[90vh] flex flex-col overflow-hidden">
+                        <div class="bg-[#fff0f5] w-[95%] max-w-[1000px] lg:max-w-[1200px] rounded-t-[2rem] md:rounded-[2rem] p-6 border-t-8 border-gray-800 md:border-8 h-[85vh] md:h-[auto] md:max-h-[90vh] flex flex-col overflow-hidden">
                             <div class="flex-none flex justify-between items-center mb-4 pb-3 border-b-4 border-dashed border-gray-300">
                                 <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.mailbox}</div> 家庭信箱</h3>
                                 <button onclick="UI.closeModal('mailbox-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1">${SVGs.ui.cross}</button>
@@ -1310,7 +1271,7 @@
                             </div>
                             
                             <div id="mail-read-area" class="flex-1 overflow-y-auto custom-scroll pr-2 pb-4 flex flex-col gap-3">
-                                <div id="mail-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start"></div>
+                                <div id="mail-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start"></div>
                                 <button id="btn-load-more-mails" onclick="Mail.loadMore()" class="hidden mt-2 text-sm font-bold bg-gray-100 py-2 rounded-xl border-2 border-dashed border-gray-300">展開歷史信件 ▼</button>
                             </div>
                             
@@ -1325,7 +1286,7 @@
                                 <div class="flex-1 flex flex-col overflow-hidden">
                                     <div class="bg-pink-50 border-4 border-dashed border-pink-200 p-3 rounded-xl mb-4 flex-1 overflow-y-auto custom-scroll">
                                         <p class="text-xs font-black text-pink-500 mb-2 inline-flex items-center gap-1"><div class="w-4 h-4">${SVGs.ui.sparkle}</div> 溫馨短句：</p>
-                                        <div class="grid grid-cols-2 gap-2 mb-4" id="mail-text-shortcuts"></div>
+                                        <div class="grid grid-cols-2 lg:grid-cols-3 gap-2 mb-4" id="mail-text-shortcuts"></div>
                                         
                                         <p class="text-xs font-black text-pink-500 mb-2 inline-flex items-center gap-1"><div class="w-4 h-4">${SVGs.icons.star}</div> 魔法貼紙：</p>
                                         <div class="flex flex-wrap gap-2" id="mail-icon-shortcuts"></div>
@@ -1337,20 +1298,20 @@
                     </div>
                     
                     <div id="editor-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[80] transition-opacity opacity-0 px-4">
-                        <div class="bg-[#fef9f0] w-full max-w-[900px] h-[90vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden">
+                        <div class="bg-[#fef9f0] w-[95%] max-w-[1000px] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2">
                                 <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.ui.magicWand}</div> 系統與習慣管理</h3>
                                 <button onclick="UI.closeModal('editor-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1">${SVGs.ui.cross}</button>
                             </div>
                             
                             <div id="editor-view-list" class="flex-1 flex flex-col overflow-hidden">
-                                <div id="editor-habit-list" class="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-3 content-start pr-2"></div>
+                                <div id="editor-habit-list" class="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 content-start pr-2"></div>
                                 <button onclick="Editor.createNewHabit()" class="w-full mt-4 py-3 bg-green-400 text-white font-black border-4 border-gray-800 rounded-xl inline-flex justify-center items-center gap-2"><div class="w-5 h-5">${SVGs.ui.plus}</div> 建立新習慣</button>
                                 
                                 <div class="mt-4 border-t-4 border-dashed border-gray-300 pt-4 flex flex-wrap gap-2">
                                     <button onclick="SystemConfig.downloadBackup()" class="flex-auto bg-sky-300 border-4 border-gray-800 py-3 px-2 rounded-xl font-black text-sm shadow-[2px_2px_0px_#1f2937]">📥 備份進度</button>
                                     <button onclick="SystemConfig.triggerRestore()" class="flex-auto bg-rose-300 border-4 border-gray-800 py-3 px-2 rounded-xl font-black text-sm shadow-[2px_2px_0px_#1f2937]">📤 還原進度</button>
-                                    <button onclick="PWA.install()" class="flex-auto bg-green-300 border-4 border-gray-800 py-3 px-2 rounded-xl font-black text-sm shadow-[2px_2px_0px_#1f2937]">📲 安裝 App</button>
+                                    ${PWA.isIos() ? `<button onclick="PWA.install()" class="flex-auto bg-green-300 border-4 border-gray-800 py-3 px-2 rounded-xl font-black text-sm shadow-[2px_2px_0px_#1f2937]">📲 安裝 App (iOS)</button>` : ''}
                                 </div>
                             </div>
                             
@@ -1407,7 +1368,7 @@
                     </div>
                     
                     <div id="input-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[70] transition-opacity opacity-0">
-                        <div id="modal-content" class="bg-[#fff9f0] w-full max-w-[480px] rounded-t-[2rem] md:rounded-[2rem] p-6 border-t-8 border-gray-800 md:border-8 relative">
+                        <div id="modal-content" class="bg-[#fff9f0] w-[95%] max-w-[480px] rounded-t-[2rem] md:rounded-[2rem] p-6 border-t-8 border-gray-800 md:border-8 relative">
                             <div class="flex justify-between items-center mb-5 border-b-4 border-dashed border-gray-300 pb-3">
                                 <h3 class="text-2xl font-black" id="modal-title">紀錄進度</h3>
                                 <button onclick="UI.closeModal('input-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1">${SVGs.ui.cross}</button>
@@ -1430,21 +1391,11 @@
                     
                     <!-- 【PWA優化】iOS 安裝教學彈窗 -->
                     <div id="ios-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0 px-4 pb-10 md:pb-0">
-                        <div class="bg-[#fff9f0] w-full max-w-[360px] rounded-[2rem] p-6 border-8 border-gray-800 transform transition-transform translate-y-full md:translate-y-0 text-center shadow-[8px_8px_0px_#1f2937] relative">
+                        <div class="bg-[#fff9f0] w-[95%] max-w-[360px] rounded-[2rem] p-6 border-8 border-gray-800 transform transition-transform translate-y-full md:translate-y-0 text-center shadow-[8px_8px_0px_#1f2937] relative">
                             <h3 class="text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.bulb}</div> 安裝至桌面</h3>
                             <p class="font-bold text-gray-600 mb-4 text-left leading-relaxed">蘋果設備專屬魔法：<br>1. 點擊下方工具列的 <b class="text-blue-500">分享圖示</b><br>2. 往下滑選擇 <b class="text-gray-800">「加入主畫面」</b></p>
                             <div class="text-4xl mb-6 flex justify-center w-8 h-8 mx-auto">${SVGs.icons.star}</div>
                             <button onclick="UI.closeModal('ios-pwa-modal')" class="w-full py-3 rounded-xl font-black text-gray-800 bg-yellow-300 border-4 border-gray-800 hand-drawn-btn shadow-[4px_4px_0px_#1f2937]">我知道了！</button>
-                        </div>
-                    </div>
-                    
-                    <!-- 【PWA優化】Android 專屬安裝教學彈窗 -->
-                    <div id="android-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0 px-4 pb-10 md:pb-0">
-                        <div class="bg-[#fff9f0] w-full max-w-[360px] rounded-[2rem] p-6 border-8 border-gray-800 transform transition-transform translate-y-full md:translate-y-0 text-center shadow-[8px_8px_0px_#1f2937] relative">
-                            <h3 class="text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.bulb}</div> 安裝至桌面</h3>
-                            <p class="font-bold text-gray-600 mb-4 text-left leading-relaxed">安卓設備魔法：<br>1. 點擊瀏覽器右上角 <b class="text-blue-500">⋮ (設定)</b><br>2. 選擇 <b class="text-gray-800">「加到主畫面」</b> 即可全螢幕體驗！</p>
-                            <div class="text-4xl mb-6 flex justify-center w-8 h-8 mx-auto">${SVGs.icons.star}</div>
-                            <button onclick="UI.closeModal('android-pwa-modal')" class="w-full py-3 rounded-xl font-black text-gray-800 bg-yellow-300 border-4 border-gray-800 hand-drawn-btn shadow-[4px_4px_0px_#1f2937]">我知道了！</button>
                         </div>
                     </div>
                 `;
@@ -2040,9 +1991,38 @@
                 const uid = currentUser.uid; const uData = getUserData(uid); const streak = getOverallStreak(uid);
                 if(!this.pools[uid] || this.pools[uid].length === 0) {
                     let lines = [];
-                    if (uid === 'user_dad') { lines = [`穩紮穩打，今天也是好榜樣！`, `連勝 ${streak} 天了，繼續保持！`, `【綠公主廣播】老公辛苦了，真帥氣！`, `口袋裡有 ${uData.currentCoins} 金幣。`]; } 
-                    else if (uid === 'user_mom') { lines = [`優雅地打卡了！給自己一個大大的擁抱～`, `已經累積 ${uData.totalCoins} 枚金幣了！`, `【狐狸廣播】老婆今天也閃閃發光！`]; } 
-                    else { lines = [`跑這麼快，後面有狗在追喵？`, `連勝 ${streak} 天？算你有乖乖完成任務喵。`, `【狐狸廣播】阿蛇今天也超棒的！`, `口袋有 ${uData.currentCoins} 金幣了喵？`]; }
+                    if (uid === 'user_dad') { 
+                        lines = [
+                            `穩紮穩打，今天也是好榜樣！`, 
+                            `連勝 ${streak} 天了，繼續保持！`, 
+                            `【綠公主廣播】老公辛苦了，真帥氣！`, 
+                            `口袋裡有 ${uData.currentCoins} 金幣。`,
+                            `一步一腳印，我們慢慢來。`,
+                            `全家人一起努力的感覺真好！`,
+                            `爸爸會一直當你們最堅強的後盾！`
+                        ]; 
+                    } 
+                    else if (uid === 'user_mom') { 
+                        lines = [
+                            `優雅地打卡了！給自己一個大大的擁抱～`, 
+                            `已經累積 ${uData.totalCoins} 枚金幣了！`, 
+                            `【狐狸廣播】老婆今天也閃閃發光！`,
+                            `今天也要像公主一樣優雅地完成任務喔！`,
+                            `我為你感到驕傲！`,
+                            `辛苦了，別忘了喝杯熱水休息一下。`
+                        ]; 
+                    } 
+                    else { 
+                        lines = [
+                            `跑這麼快，後面有狗在追喵？`, 
+                            `連勝 ${streak} 天？算你有乖乖完成任務喵。`, 
+                            `【狐狸廣播】阿蛇今天也超棒的！`, 
+                            `口袋有 ${uData.currentCoins} 金幣了喵？`,
+                            `別一直戳喵，本喵很忙的！`,
+                            `看在你這麼努力打卡的份上，本喵就勉為其難誇獎你一下。`,
+                            `快點去打卡，本喵等著買罐罐呢！`
+                        ]; 
+                    }
                     const valid = customRadios.filter(r => r.target === 'all' || r.target === uid).map(r=>r.text); 
                     lines = lines.concat(valid); this.pools[uid] = this.shuffle(lines);
                 } 
