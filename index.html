@@ -1,7 +1,9 @@
+```html:index.html
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
+    <!-- STREAMING_CHUNK:Configuring meta tags and viewport -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>原子習慣養成</title>
     
@@ -11,6 +13,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- STREAMING_CHUNK:Styling the layout and animations -->
     <style>
         body {
             font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', 'Segoe UI', sans-serif;
@@ -44,7 +47,7 @@
         .hand-drawn-btn:active { transform: translate(4px, 4px) !important; box-shadow: 0px 0px 0px #1f2937 !important; }
         .bg-theme-transition { transition: background 0.5s ease-in-out; border-bottom: 4px solid #1f2937; }
 
-        /* 【深度除錯】強制所有輸入框字體為 16px，防止 iOS 點擊輸入時強迫放大破壞版面 */
+        /* 強制所有輸入框字體為 16px，防止 iOS 點擊輸入時強迫放大破壞版面 */
         input, textarea, select, [contenteditable="true"] {
             font-size: 16px !important;
         }
@@ -87,6 +90,7 @@
         .liquid-fill { transition: height 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     </style>
 </head>
+<!-- STREAMING_CHUNK:Rendering body and main layout structure -->
 <body class="antialiased text-gray-800">
 
     <!-- ☁️ 雲端同步鎖定遮罩 -->
@@ -99,6 +103,7 @@
     <div id="golden-rain"></div>
 
     <div class="app-wrapper">
+        <!-- STREAMING_CHUNK:Rendering left panel for dashboard -->
         <!-- ================= 左半邊：操作儀表板 ================= -->
         <div class="panel-left" id="main-panel-left">
             <header id="main-header" class="bg-theme-transition text-white p-5 pb-6 relative z-30 md:rounded-none rounded-b-[2rem] flex flex-col">
@@ -117,10 +122,12 @@
                         <div id="habit-dropdown" class="absolute top-full left-0 mt-2 bg-white hand-drawn-border p-2 hidden flex-col gap-2 w-56 shadow-[4px_4px_0px_#1f2937] z-[60]">
                             <div id="habit-list-container" class="flex flex-col gap-1 max-h-64 overflow-y-auto custom-scroll"></div>
                             <div class="border-t-2 border-dashed border-gray-300 my-1"></div>
-                            <!-- 【修改 3】將安裝 App 按鈕移入下拉選單 -->
-                            <button id="menu-install-btn" onclick="PWA.install()" class="hidden w-full text-left px-3 py-2 bg-green-50 hover:bg-green-100 rounded-lg font-black text-green-700 flex items-center gap-2 transition-colors">
+                            
+                            <!-- 終極 PWA 安裝按鈕 -->
+                            <button id="menu-install-btn" onclick="PWA.install()" class="w-full text-left px-3 py-2 bg-green-50 hover:bg-green-100 rounded-lg font-black text-green-700 flex items-center gap-2 transition-colors">
                                 <div class="w-4 h-4" id="icon-install-btn"></div> 安裝至手機桌面
                             </button>
+                            
                             <button onclick="SyncEngine.manualSync()" class="w-full text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg font-black text-blue-700 flex items-center gap-2 transition-colors">
                                 <div class="w-4 h-4" id="icon-sync-btn"></div> 立即同步雲端
                             </button>
@@ -143,7 +150,6 @@
                 <div class="flex flex-row justify-between items-end w-full relative z-40 mt-4 md:mt-6">
                     <div class="flex items-center gap-2">
                         <button onclick="Report.open()" id="trophy-btn" class="w-12 h-12 bg-yellow-200 rounded-xl hand-drawn-border flex items-center justify-center shadow-[2px_2px_0px_#1f2937] transition-all hover:bg-yellow-300 p-2"></button>
-                        <!-- 【修改 4】為信箱按鈕增加舒服的馬卡龍粉藍底色 -->
                         <button onclick="Mail.open()" id="mailbox-btn" class="w-12 h-12 bg-cyan-100 rounded-xl hand-drawn-border flex items-center justify-center relative shadow-[2px_2px_0px_#1f2937] transition-all hover:bg-cyan-200 p-1.5">
                             <span id="mail-badge" class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-black w-5 h-5 rounded-full border-2 border-gray-800 flex items-center justify-center z-10">!</span>
                         </button>
@@ -164,16 +170,13 @@
                 </div>
             </header>
 
-            <!-- 【修改 1】圖層重構，將吉祥物 Z-index 降至 40 與 50，確保被 z-[150] 的彈窗完美覆蓋 -->
             <div class="w-full flex flex-row items-end justify-end z-40 px-4 -mt-8 relative pointer-events-none">
-                <!-- 【修改 2】對話框預設加上 opacity-0 與轉場動畫，等待觸發 -->
                 <div class="bg-white border-4 border-gray-800 text-gray-800 px-4 py-3 rounded-2xl rounded-br-none shadow-[4px_4px_0px_#1f2937] mb-6 mr-[-10px] text-sm font-black text-left w-[180px] md:w-[200px] pointer-events-auto relative z-50 transform -rotate-2 opacity-0 transition-opacity duration-500" id="mascot-speech"></div>
                 <div class="w-24 h-24 md:w-28 md:h-28 mascot-float cursor-pointer pointer-events-auto relative z-50 select-none flex-shrink-0" id="mascot-img" 
                      onmousedown="EasterEggs.startPress(event)" onmouseup="EasterEggs.endPress(event)" onmouseleave="EasterEggs.cancelPress(event)"
                      ontouchstart="EasterEggs.startPress(event)" ontouchend="EasterEggs.endPress(event)" ontouchcancel="EasterEggs.cancelPress(event)"></div>
             </div>
 
-            <!-- 任務區塊容器 -->
             <div class="p-5 pt-2 flex-1 bg-white md:bg-transparent flex flex-col relative z-10">
                 <div id="family-buff-banner" class="hidden w-full mb-4 bg-red-500 text-white font-black text-sm px-4 py-2 rounded-xl border-4 border-gray-800 shadow-[2px_2px_0px_#1f2937] transform rotate-1 pop-in flex items-center justify-center gap-2">
                     <div class="w-5 h-5" id="buff-tree-icon"></div> 全家連擊中！今日金幣 x1.2 倍
@@ -191,6 +194,7 @@
             </div>
         </div>
 
+        <!-- STREAMING_CHUNK:Rendering right panel for stats and footprint -->
         <!-- ================= 右半邊：數據與日曆 ================= -->
         <div class="panel-right pb-20 md:pb-5 relative z-10">
             <div class="bg-white p-5 hand-drawn-border bg-yellow-50 relative mt-4 md:mt-2">
@@ -213,6 +217,7 @@
         </div>
     </div>
 
+    <!-- STREAMING_CHUNK:Rendering modals container -->
     <div id="modals-container"></div>
     
     <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-gray-800 border-4 border-gray-900 text-white px-6 py-3 rounded-2xl shadow-[4px_4px_0px_rgba(0,0,0,0.3)] transition-all duration-300 opacity-0 pointer-events-none z-[200] font-bold text-center w-max max-w-[90%] flex items-center gap-2">
@@ -221,8 +226,8 @@
 
     <input type="file" id="backup-file-input" class="hidden" accept=".json" onchange="SystemConfig.handleRestoreBackup(event)">
 
+    <!-- STREAMING_CHUNK:Initializing JS context and SVG assets -->
     <script>
-        // 【PWA 註冊 Service Worker】滿血觸發 Chrome 安裝條件與離線快取
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
@@ -231,9 +236,6 @@
             });
         }
 
-        // ==========================================
-        // 🎨 純手繪 SVG 圖庫
-        // ==========================================
         const SVGs = {
             fox: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
                 <polygon points="15,45 20,15 40,30" fill="#fb923c" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
@@ -315,7 +317,7 @@
                 bulb: `<svg viewBox="0 0 100 100"><path d="M35 40 C35 20 65 20 65 40 C65 55 55 60 55 75 L45 75 C45 60 35 55 35 40 Z" fill="#ffffba" stroke="#1f2937" stroke-width="4"/></svg>`,
                 run: `<svg viewBox="0 0 100 100"><circle cx="35" cy="45" r="10" fill="#1f2937"/><path d="M35 55 L35 75 L20 90 M35 75 L50 90 M20 30 L35 55 L50 40 M60 30 L80 50 L70 60" fill="none" stroke="#1f2937" stroke-width="4" stroke-linecap="round"/></svg>`,
                 water: `<svg viewBox="0 0 100 100"><path d="M35,20 L65,20 L60,80 L40,80 Z" fill="#93c5fd" stroke="#1f2937" stroke-width="4"/><path d="M40 40 L60 40 M45 60 L55 60" fill="none" stroke="#1f2937" stroke-width="3"/></svg>`,
-                apple: `<svg viewBox="0 0 100 100"><path d="M50,25 C30,25 20,50 30,75 C40,90 50,85 50,85 C50,85 60,90 70,75 C80,50 70,25 50,25 Z" fill="#fca5a5" stroke="#1f2937" stroke-width="4"/><path d="M50 25 C50 15 60 10 65 15" fill="none" stroke="#22c55e" stroke-width="4"/></svg>`,
+                apple: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md"><path d="M50,25 C30,25 20,50 30,75 C40,90 50,85 50,85 C50,85 60,90 70,75 C80,50 70,25 50,25 Z" fill="#fca5a5" stroke="#1f2937" stroke-width="4"/><path d="M50 25 C50 15 60 10 65 15" fill="none" stroke="#22c55e" stroke-width="4"/></svg>`,
                 lightning: `<svg viewBox="0 0 100 100"><polygon points="55,10 25,55 50,55 45,90 75,45 50,45" fill="#fde047" stroke="#1f2937" stroke-width="4"/></svg>`,
                 star: `<svg viewBox="0 0 100 100"><polygon points="50,15 61,40 88,40 68,60 75,90 50,70 25,90 32,60 12,40 39,40" fill="#fde047" stroke="#1f2937" stroke-width="4"/></svg>`,
                 moon: `<svg viewBox="0 0 100 100"><path d="M60 15 A35 35 0 1 0 85 60 A25 25 0 1 1 60 15 Z" fill="#fef08a" stroke="#1f2937" stroke-width="4"/></svg>`,
@@ -329,13 +331,10 @@
                 leaf: `<svg viewBox="0 0 100 100"><path d="M20 80 C20 30 50 15 85 15 C85 65 60 85 20 80 Z" fill="#86efac" stroke="#1f2937" stroke-width="4"/><path d="M20 80 L80 20" fill="none" stroke="#1f2937" stroke-width="3"/></svg>`,
                 flower: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="15" fill="#fde047" stroke="#1f2937" stroke-width="4"/><path d="M50 35 A15 15 0 1 1 50 5 A15 15 0 1 1 50 35 M65 50 A15 15 0 1 1 95 50 A15 15 0 1 1 65 50 M50 65 A15 15 0 1 1 50 95 A15 15 0 1 1 50 65 M35 50 A15 15 0 1 1 5 50 A15 15 0 1 1 35 50" fill="#fbcfe8" stroke="#1f2937" stroke-width="4"/></svg>`,
                 chest: `<svg viewBox="0 0 100 100"><rect x="15" y="50" width="70" height="35" fill="#fcd34d" stroke="#1f2937" stroke-width="4"/><path d="M15 50 C15 20 85 20 85 50 Z" fill="#fbbf24" stroke="#1f2937" stroke-width="4"/><rect x="45" y="45" width="10" height="15" fill="#1f2937"/></svg>`,
-                smile: `<svg viewBox="0 100 100"><circle cx="50" cy="50" r="40" fill="#fef08a" stroke="#1f2937" stroke-width="4"/><circle cx="35" cy="40" r="5" fill="#1f2937"/><circle cx="65" cy="40" r="5" fill="#1f2937"/><path d="M30 60 Q50 80 70 60" fill="none" stroke="#1f2937" stroke-width="4" stroke-linecap="round"/></svg>`
+                smile: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="50" r="40" fill="#fef08a" stroke="#1f2937" stroke-width="4"/><circle cx="35" cy="40" r="5" fill="#1f2937"/><circle cx="65" cy="40" r="5" fill="#1f2937"/><path d="M30 60 Q50 80 70 60" fill="none" stroke="#1f2937" stroke-width="4" stroke-linecap="round"/></svg>`
             }
         };
 
-        // ==========================================
-        // 🎨 10 種系統佈景主題設定
-        // ==========================================
         const THEMES = [
             { id: 'pink', title: '草莓粉', hex: '#f9a8d4', grad: 'linear-gradient(135deg, #b088f9 0%, #da9ff9 100%)', prim: 'bg-pink-300', btn: 'bg-pink-100', dot: 'bg-pink-400' },
             { id: 'orange', title: '活力橘', hex: '#fdba74', grad: 'linear-gradient(135deg, #fb923c 0%, #fcd34d 100%)', prim: 'bg-orange-300', btn: 'bg-orange-100', dot: 'bg-orange-400' },
@@ -368,13 +367,11 @@
         let editTargetDate = null;
         let isProcessing = false;
 
-        // ==========================================
-        // 💾 資料庫與智慧維運系統
-        // ==========================================
+        // STREAMING_CHUNK:Loading database and parsing templates
         async function initDB() {
             const cloudSync = await SyncEngine.pull();
             
-            const savedTpl = localStorage.getItem('appTemplates_v13') || localStorage.getItem('appTemplates_v12');
+            const savedTpl = localStorage.getItem('appTemplates_v13');
             if (savedTpl) {
                 appTemplates = JSON.parse(savedTpl); 
                 Object.values(appTemplates).forEach(h => { 
@@ -398,14 +395,15 @@
             const lastHId = localStorage.getItem('lastHabitId_v13');
             currentHabitId = appTemplates[lastHId] ? lastHId : Object.keys(appTemplates)[0];
 
-            const savedShop = localStorage.getItem('shopItems_v13') || localStorage.getItem('shopItems_v12');
+            const savedShop = localStorage.getItem('shopItems_v13');
             if (savedShop) shopItems = JSON.parse(savedShop);
             else shopItems = [{ id: "s1", name: "看電視 30 分鐘", cost: 50, icon: "star", reqLog: true }];
 
-            const savedRadios = localStorage.getItem('customRadios_v13') || localStorage.getItem('customRadios_v12');
+            const savedRadios = localStorage.getItem('customRadios_v13');
             if(savedRadios) customRadios = JSON.parse(savedRadios);
 
-            dailyHabitData = JSON.parse(localStorage.getItem('daily-habit-v13')) || JSON.parse(localStorage.getItem('daily-habit-v12')) || {};
+            dailyHabitData = JSON.parse(localStorage.getItem('daily-habit-v13')) || {};
+            if (!dailyHabitData.systemFlags) dailyHabitData.systemFlags = {};
             
             users.forEach(u => {
                 if (!dailyHabitData[u.uid]) {
@@ -471,13 +469,10 @@
             }
         }
 
-        // ==========================================
-        // ☁️ 雲端同步引擎
-        // ==========================================
         const SyncEngine = {
             API_URL: "https://script.google.com/macros/s/AKfycbyISODCgqeOUH0ZtIf2kf3VmdmOzaF1PLoNd9ZQQ19j40FQZcYP1GVqb72uYqyf7NJb3w/exec",
             isSyncing: false,
-            syncPending: false, // 貯列標記，確保打卡不會漏傳
+            syncPending: false, 
             
             async pull() {
                 try {
@@ -487,7 +482,9 @@
                         const cloudData = result.data;
                         if(Object.keys(cloudData).length === 0) return 'empty'; 
                         
-                        const rawDaily = cloudData['daily-habit-v13'] || cloudData['daily-habit-v12'] || {};
+                        const rawDaily = cloudData['daily-habit-v13'] || {};
+                        if (!rawDaily.systemFlags) rawDaily.systemFlags = {}; 
+                        
                         users.forEach(u => {
                             if (!rawDaily[u.uid]) {
                                 rawDaily[u.uid] = { totalCoins: 0, currentCoins: 0, mails: [], habits: {}, shopHistory: [] };
@@ -553,9 +550,7 @@
             }
         };
 
-        // ==========================================
-        // 🎵 音效引擎
-        // ==========================================
+        // STREAMING_CHUNK:Setting up audio functions
         const AudioEngine = {
             muted: false, ctx: null,
             init() { 
@@ -609,56 +604,57 @@
             vibrate(pattern) { if(navigator.vibrate) navigator.vibrate(pattern); }
         };
 
-        // ==========================================
-        // 📲 PWA 機制 (正式版本支援 Chrome & Safari 安裝)
-        // ==========================================
         const PWA = {
             deferredPrompt: null,
             isIos() {
                 return /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
             },
+            isInAppBrowser() {
+                const ua = navigator.userAgent || navigator.vendor || window.opera;
+                return (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Line") > -1) || (ua.indexOf("MicroMessenger") > -1) || (ua.indexOf("Instagram") > -1);
+            },
             init() { 
                 window.addEventListener('appinstalled', (e) => {
                     localStorage.setItem('pwa_installed_v14', 'true');
                     UI.closeModal('ios-pwa-modal');
+                    UI.closeModal('android-pwa-modal');
                     const btn = document.getElementById('menu-install-btn');
                     if(btn) btn.classList.add('hidden');
                 });
                 
-                // 攔截 Chrome 原生安裝提示
                 window.addEventListener('beforeinstallprompt', (e) => { 
                     e.preventDefault(); 
                     this.deferredPrompt = e; 
-                    // 【修復】將安裝按鈕顯示在主選單內
-                    const btn = document.getElementById('menu-install-btn');
-                    if(btn && localStorage.getItem('pwa_installed_v14') !== 'true') btn.classList.remove('hidden');
                 }); 
-
-                if (this.isIos() && !(('standalone' in window.navigator) && window.navigator.standalone)) {
-                    // iOS 的話，顯示選單按鈕，並跳出教導彈窗
-                    const btn = document.getElementById('menu-install-btn');
-                    if(btn) btn.classList.remove('hidden');
+                
+                const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || window.location.search.includes('mode=pwa');
+                const btn = document.getElementById('menu-install-btn');
+                if (btn && !isStandalone && localStorage.getItem('pwa_installed_v14') !== 'true') {
+                    btn.classList.remove('hidden');
                 }
             },
             install() { 
-                if(this.isIos()) { 
-                    UI.openModal('ios-pwa-modal'); 
-                    UI.toggleHabitMenu(); // 關閉選單
-                } else if (this.deferredPrompt) {
+                UI.toggleHabitMenu();
+                
+                if (this.deferredPrompt) {
                     this.deferredPrompt.prompt(); 
                     this.deferredPrompt.userChoice.then((c) => { 
-                        if (c.outcome === 'accepted') this.deferredPrompt = null; 
+                        if (c.outcome === 'accepted') {
+                            this.deferredPrompt = null; 
+                            document.getElementById('menu-install-btn').classList.add('hidden');
+                        }
                     }); 
-                    UI.toggleHabitMenu();
+                } else if (this.isInAppBrowser()) {
+                    UI.openModal('inapp-pwa-modal');
+                } else if (this.isIos()) { 
+                    UI.openModal('ios-pwa-modal'); 
                 } else {
-                    UI.showToast("已處於全版模式，或瀏覽器不支援安裝功能。");
+                    UI.openModal('android-pwa-modal');
                 }
             }
         };
 
-        // ==========================================
-        // 👆 全域手勢滑動切換引擎 (User & Tabs)
-        // ==========================================
+        // STREAMING_CHUNK:Configuring swipe detection
         const SwipeDetector = {
             init() {
                 this.bindGlobalSwipe();
@@ -669,7 +665,7 @@
                 const el = document.getElementById(elementId);
                 if(!el) return;
                 el.classList.remove('anim-slide-in-left', 'anim-slide-in-right');
-                void el.offsetWidth; // 觸發瀏覽器重繪
+                void el.offsetWidth;
                 el.classList.add(dir > 0 ? 'anim-slide-in-right' : 'anim-slide-in-left');
             },
             bindGlobalSwipe() {
@@ -686,10 +682,10 @@
                     
                     if(Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 2) {
                         const currentIndex = users.findIndex(u => u.uid === currentUser.uid);
-                        if(dx > 0) { // 向右滑 -> 上一個角色 (從左邊滑入)
+                        if(dx > 0) { 
                             let prev = currentIndex - 1 < 0 ? users.length - 1 : currentIndex - 1;
                             UI.switchUser(users[prev].uid, false, -1);
-                        } else { // 向左滑 -> 下一個角色 (從右邊滑入)
+                        } else { 
                             let next = currentIndex + 1 >= users.length ? 0 : currentIndex + 1;
                             UI.switchUser(users[next].uid, false, 1);
                         }
@@ -705,7 +701,6 @@
                         startX = e.changedTouches[0].screenX; startY = e.changedTouches[0].screenY;
                     }, {passive: true});
                     modal.addEventListener('touchend', e => {
-                        // 絕對防護：輸入框、信箱內文區域滑動時，不切換
                         if(['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest('[contenteditable="true"]') || e.target.closest('#mail-write-area')) return;
                         
                         let endX = e.changedTouches[0].screenX, endY = e.changedTouches[0].screenY;
@@ -743,9 +738,6 @@
             }
         };
 
-        // ==========================================
-        // 🎁 彩蛋與互動系統 (含對話框自動淡出防呆)
-        // ==========================================
         const Mascot = {
             speechTimer: null,
             speak(text) {
@@ -754,7 +746,6 @@
                 speech.classList.remove('opacity-0', 'pointer-events-none');
                 speech.classList.add('pop-in');
                 
-                // 【修復】對話框自動淡出，保持畫面乾淨
                 if(this.speechTimer) clearTimeout(this.speechTimer);
                 this.speechTimer = setTimeout(() => {
                     speech.classList.add('opacity-0', 'pointer-events-none');
@@ -763,10 +754,10 @@
             }
         };
 
+        // STREAMING_CHUNK:Adding Easter eggs functionality
         const EasterEggs = {
             clickCount: 0, clickTimer: null, pressTimer: null, isPressed: false, pressStartTime: 0, foxQuotes: [],
             startPress(e) { 
-                // 【防爆】防止 Ghost Clicks 造成兩次觸發
                 if(e && e.cancelable) e.preventDefault(); 
                 if(this.isPressed) return; 
                 this.isPressed = true; this.pressStartTime = Date.now(); 
@@ -823,8 +814,8 @@
                 if(!this.foxQuotes || this.foxQuotes.length === 0) {
                     this.foxQuotes = Radio.shuffle([
                         "爸爸永遠愛你們喔喵！", "看到你們每天進步，爸爸超驕傲的！", "累了就休息一下，全家人都在你身邊喔！",
-                        "今天有乖乖喝水嗎？要照顧好自己喔！", "不管發生什麼事，這裡永遠是你們的避風港！",
-                        "有你們在，每天都是好日子！", "寶貝們健康長大，就是爸爸最大的財富！",
+                        "今天有乖乖喝水嗎？要照顧好自己喔！", "不管發生什麼事，這裡永遠是避風港！",
+                        "有你們在，每天都是好日子！", "寶貝健康長大，就是爸爸最大的財富！",
                         "照顧孩子辛苦了，但也別忘了照顧自己喔！"
                     ]);
                 }
@@ -832,16 +823,13 @@
             }
         };
 
-        // ==========================================
-        // ⚙️ 系統設定與備份還原
-        // ==========================================
         const SystemConfig = {
             downloadBackup() {
                 const payload = { appTemplates_v13: appTemplates, shopItems_v13: shopItems, customRadios_v13: customRadios, 'daily-habit-v13': dailyHabitData };
                 const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload));
                 const anchor = document.createElement('a'); anchor.href = dataStr; anchor.download = `AtomicHabits_Backup_${getTodayStr()}.json`; anchor.click();
             },
-            triggerRestore() { Confirm.show("警告：還原備份", "這會用您上傳的備份檔覆蓋目前所有的資料與雲端，確定要繼續嗎？", "選擇檔案", () => { document.getElementById('backup-file-input').click(); }); },
+            triggerRestore() { Confirm.show("警告：還原備份", "這會覆蓋目前所有的資料與雲端，確定要繼續嗎？", "選擇檔案", () => { document.getElementById('backup-file-input').click(); }); },
             handleRestoreBackup(event) {
                 const file = event.target.files[0]; if (!file) return;
                 const reader = new FileReader();
@@ -852,16 +840,14 @@
                         if(parsed.shopItems_v13) shopItems = parsed.shopItems_v13;
                         if(parsed.customRadios_v13) customRadios = parsed.customRadios_v13;
                         if(parsed['daily-habit-v13']) dailyHabitData = parsed['daily-habit-v13'];
-                        saveLocal(); UI.init(); UI.showToast("備份還原成功並已排入同步！");
+                        saveLocal(); UI.init(); UI.showToast("備份還原成功並排入同步！");
                     } catch(err) { UI.showToast("備份檔讀取失敗，格式錯誤"); }
                 };
                 reader.readAsText(file);
             }
         };
 
-        // ==========================================
-        // 📊 日期與共用安全防護函式
-        // ==========================================
+        // STREAMING_CHUNK:Utility functions
         function getTodayStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
         function formatFootprintDate(ts) {
             const d = new Date(ts); const m = d.getMonth() + 1; const day = d.getDate(); const w = ['日','一','二','三','四','五','六'][d.getDay()];
@@ -963,9 +949,7 @@
             return coins;
         }
 
-        // ==========================================
-        // 🖥️ 核心 UI 渲染引擎
-        // ==========================================
+        // STREAMING_CHUNK:Building the UI rendering engine
         const UI = {
             footprintLimit: 7,
             
@@ -988,7 +972,6 @@
                 document.getElementById('icon-setting-btn').innerHTML = SVGs.ui.magicWand;
                 document.getElementById('sync-mascot-img').innerHTML = SVGs.cat;
                 
-                // 【修復】把 PWA 安裝按鈕 Icon 在此填入
                 const installIcon = document.getElementById('icon-install-btn');
                 if(installIcon) installIcon.innerHTML = SVGs.icons.star;
                 
@@ -1185,13 +1168,12 @@
             toggleHabitMenu() { document.getElementById('habit-dropdown').classList.toggle('hidden'); },
             
             updateMailBadge() { 
-                const unread = (getUserData(currentUser.uid).mails || []).filter(m => !m.isRead).length; 
+                const unread = (getUserData(currentUser.uid).mails || []).filter(m => !m.isRead || (m.attachedCoins && !m.isClaimed)).length; 
                 document.getElementById('mail-badge').classList.toggle('hidden', unread === 0); 
                 if(unread > 0) document.getElementById('mail-badge').innerText = unread > 9 ? '9+' : unread; 
             },
             
             injectModals() {
-                // 【修復】所有 Modal z-index 均設定為 z-[150] 或 z-[160]，且加入 box-border 防止被文字擠破
                 document.getElementById('modals-container').innerHTML = `
                     <div id="generic-confirm-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-center z-[160] transition-opacity opacity-0 px-4">
                         <div class="bg-white w-[90vw] md:w-[92vw] max-w-[320px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative flex flex-col items-center box-border">
@@ -1308,8 +1290,10 @@
                             
                             <div id="rep-area-family" class="flex-1 flex-col hidden relative overflow-hidden bg-blue-50 border-4 border-gray-800 rounded-3xl">
                                 <div class="absolute top-2 left-2 bg-white/80 p-2 rounded-lg border-2 border-gray-800 z-20 font-black text-sm" id="tree-month-title">本月爬樹大賽</div>
-                                <div class="absolute inset-0 z-0 flex justify-center items-end">${SVGs.fluffyTree}</div>
+                                <div id="tree-group-buff" class="absolute top-12 left-2 bg-yellow-200 p-2 rounded-lg border-2 border-gray-800 z-20 font-black text-xs hidden shadow-sm pop-in">🎉 大樹已進化！</div>
+                                <div class="absolute inset-0 z-0 flex justify-center items-end" id="tree-svg-container">${SVGs.fluffyTree}</div>
                                 <div id="tree-nodes-container" class="absolute inset-0 z-10 p-4"></div>
+                                <div id="tree-dialogue" class="absolute bg-white border-4 border-gray-800 rounded-2xl rounded-bl-none px-3 py-2 text-sm font-black text-gray-800 shadow-[4px_4px_0px_#1f2937] z-30 opacity-0 pointer-events-none transition-opacity duration-300" style="max-width: 150px; min-width: 100px;"></div>
                             </div>
                             
                             <div id="rep-area-stats" class="flex-1 overflow-y-auto hidden flex-col gap-4 pb-4">
@@ -1476,13 +1460,27 @@
                             <button onclick="UI.closeModal('ios-pwa-modal')" class="w-full py-3 rounded-xl font-black text-gray-800 bg-yellow-300 border-4 border-gray-800 hand-drawn-btn shadow-[4px_4px_0px_#1f2937]">我知道了！</button>
                         </div>
                     </div>
+                    
+                    <div id="android-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-4 pb-10 md:pb-0">
+                        <div class="bg-[#fff9f0] w-[90vw] md:w-[92vw] max-w-[360px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative box-border">
+                            <h3 class="text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.star}</div> 安裝至桌面</h3>
+                            <p class="font-bold text-gray-600 mb-4 text-left leading-relaxed">安卓專屬魔法：<br>1. 點擊瀏覽器右上角的 <b class="text-blue-500">⋮ (選單)</b><br>2. 選擇 <b class="text-gray-800">「加到主畫面」</b> 或 <b class="text-gray-800">「安裝應用程式」</b></p>
+                            <button onclick="UI.closeModal('android-pwa-modal')" class="w-full py-3 rounded-xl font-black text-gray-800 bg-yellow-300 border-4 border-gray-800 hand-drawn-btn">我知道了！</button>
+                        </div>
+                    </div>
+                    
+                    <div id="inapp-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-4 pb-10 md:pb-0">
+                        <div class="bg-[#fff9f0] w-[90vw] md:w-[92vw] max-w-[360px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative box-border">
+                            <h3 class="text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.lightning}</div> 跳轉提示</h3>
+                            <p class="font-bold text-gray-600 mb-4 text-left leading-relaxed">您目前使用 App 內建瀏覽器。<br><br>請點擊右上角或右下角選單，選擇 <b class="text-blue-500">「使用預設瀏覽器開啟」</b> 或 <b class="text-blue-500">「在 Safari/Chrome 開啟」</b>，才能順利安裝到手機桌面喔！</p>
+                            <button onclick="UI.closeModal('inapp-pwa-modal')" class="w-full py-3 rounded-xl font-black text-gray-800 bg-yellow-300 border-4 border-gray-800 hand-drawn-btn">我知道了！</button>
+                        </div>
+                    </div>
                 `;
             }
         };
 
-        // ==========================================
-        // 🧠 核心操作邏輯
-        // ==========================================
+        // STREAMING_CHUNK:Building the main logic engine
         const Logic = {
             openActionModal(aId) { 
                 const today = getTodayStr(); 
@@ -1647,9 +1645,7 @@
             cancelRecovery() { recoveryDate = null; UI.renderAll(); }
         };
 
-        // ==========================================
-        // 🏪 商店系統
-        // ==========================================
+        // STREAMING_CHUNK:Configuring shop system
         const Shop = {
             historyLimit: 10,
             open() { this.historyLimit = 10; this.switchTab('shop'); UI.openModal('shop-modal'); },
@@ -1743,9 +1739,7 @@
             deleteItem(id) { Confirm.show("刪除獎品", "確定下架？", "刪除", () => { shopItems = shopItems.filter(i=>i.id !== id); saveLocal(); this.renderItems(); }); }
         };
 
-        // ==========================================
-        // 📬 信箱系統與資安防護
-        // ==========================================
+        // STREAMING_CHUNK:Configuring mail system
         const Mail = {
             mailLimit: 10,
             open() { this.mailLimit = 10; this.switchTab('read'); UI.openModal('mailbox-modal'); },
@@ -1800,23 +1794,57 @@
 
                     const t = document.getElementById('mail-target-select').value; 
                     const other = getUserData(t); 
-                    other.mails.unshift({ id: Date.now().toString(), from: currentUser.name, fromAvatarKey: currentUser.svgKey, content: safeHtml, timestamp: Date.now(), isRead: false }); 
+                    other.mails.unshift({ 
+                        id: "m_"+Date.now().toString(), 
+                        from: currentUser.name, 
+                        fromAvatarKey: currentUser.svgKey, 
+                        content: safeHtml, 
+                        timestamp: Date.now(), 
+                        isRead: false, 
+                        attachedCoins: 0, 
+                        isClaimed: false 
+                    }); 
                     
                     saveLocal(); UI.showToast("信件已寄出！"); this.switchTab('read'); document.getElementById('mail-input').innerHTML=""; 
                 } finally { setTimeout(() => isProcessing = false, 300); }
             },
+            claimCoins(id) {
+                const u = getUserData(currentUser.uid);
+                const m = u.mails.find(x => x.id === id);
+                if (m && m.attachedCoins && !m.isClaimed) {
+                    m.isClaimed = true;
+                    u.currentCoins += m.attachedCoins;
+                    u.totalCoins += m.attachedCoins;
+                    saveLocal();
+                    this.renderMails();
+                    UI.renderAll();
+                    AudioEngine.playLevelUp();
+                    EasterEggs.triggerGoldenRain();
+                    UI.showToast(`成功領取 ${m.attachedCoins} 金幣！`);
+                }
+            },
             renderMails() { 
                 const u = getUserData(currentUser.uid); 
-                document.getElementById('mail-list').innerHTML = u.mails.slice(0, this.mailLimit).map(m => `
-                    <div class="bg-white border-4 border-gray-800 p-4 rounded-xl shadow-[4px_4px_0px_#1f2937]">
+                document.getElementById('mail-list').innerHTML = u.mails.slice(0, this.mailLimit).map(m => {
+                    let claimBtn = '';
+                    if (m.attachedCoins && !m.isClaimed) {
+                        claimBtn = `<button onclick="Mail.claimCoins('${m.id}')" class="mt-3 w-full py-2 bg-yellow-300 hover:bg-yellow-400 border-2 border-gray-800 rounded-lg font-black text-sm active:scale-95 transition-transform flex justify-center items-center gap-1 shadow-[2px_2px_0px_#1f2937]"><div class="w-5 h-5">${SVGs.coin}</div> 領取 ${m.attachedCoins} 金幣獎勵</button>`;
+                    } else if (m.attachedCoins && m.isClaimed) {
+                        claimBtn = `<div class="mt-3 text-center text-xs text-gray-500 font-bold bg-gray-100 py-2 rounded-lg border-2 border-dashed border-gray-300">已領取 ${m.attachedCoins} 金幣</div>`;
+                    }
+                    
+                    return `
+                    <div class="bg-white border-4 border-gray-800 p-4 rounded-xl shadow-[4px_4px_0px_#1f2937] flex flex-col">
                         <div class="flex justify-between items-start mb-2 border-b-2 border-gray-100 pb-2">
-                            <p class="font-black text-blue-600 flex items-center gap-2"><div class="w-6 h-6">${SVGs[m.fromAvatarKey] || SVGs.fox}</div>來自 ${m.from}</p>
+                            <p class="font-black text-blue-600 flex items-center gap-2"><div class="w-6 h-6">${SVGs[m.fromAvatarKey] || SVGs.fox}</div>來自 ${escapeHTML(m.from)}</p>
                             <button onclick="Mail.deleteMail('${m.id}')" class="w-6 h-6 p-1 bg-red-50 rounded border border-gray-300 flex items-center justify-center">${SVGs.ui.trash}</button>
                         </div>
-                        <div class="text-gray-700 font-bold leading-relaxed break-words">${m.content}</div>
+                        <div class="text-gray-700 font-bold leading-relaxed break-words flex-1">${m.content}</div>
+                        ${claimBtn}
                         <p class="text-[10px] text-gray-400 mt-2 text-right">${formatFootprintDate(m.timestamp)}</p>
                     </div>
-                `).join(''); 
+                `}).join(''); 
+                
                 u.mails.forEach(m => m.isRead = true); saveLocal(); UI.updateMailBadge(); 
                 document.getElementById('btn-load-more-mails').classList.toggle('hidden', u.mails.length <= this.mailLimit); 
             },
@@ -1833,12 +1861,11 @@
             }
         };
 
-        // ==========================================
-        // 📊 統計報表 (支援貼紙牆月份切換)
-        // ==========================================
+        // STREAMING_CHUNK:Configuring reports and family tree
         const Report = {
             viewYear: new Date().getFullYear(),
             viewMonth: new Date().getMonth(),
+            activeTreeDialogueTimer: null,
             
             open() { 
                 this.viewYear = new Date().getFullYear();
@@ -1855,7 +1882,12 @@
                 
                 if(swipeDir !== 0) SwipeDetector.playSlide('rep-area-' + tab, swipeDir);
                 
-                if(tab==='stats') this.renderStats(); if(tab==='self') this.renderSelf(); if(tab==='family') this.renderFamily(); 
+                if(tab==='stats') this.renderStats(); 
+                if(tab==='self') this.renderSelf(); 
+                if(tab==='family') {
+                    this.checkMonthlySettlement();
+                    this.renderFamily(); 
+                }
             },
             changeMonth(offset) {
                 this.viewMonth += offset;
@@ -1914,6 +1946,51 @@
                 document.getElementById('sticker-grid').innerHTML = stickersHtml;
             },
             
+            async checkMonthlySettlement() {
+                const currentD = new Date();
+                let lastM = currentD.getMonth() - 1;
+                let lastY = currentD.getFullYear();
+                if (lastM < 0) { lastM = 11; lastY--; }
+                const flagKey = `reward_sent_${lastY}_${lastM}`;
+
+                if (!dailyHabitData.systemFlags) dailyHabitData.systemFlags = {};
+                if (dailyHabitData.systemFlags[flagKey]) return; 
+
+                if(!SyncEngine.isSyncing) {
+                    try {
+                        const result = await fetch(SyncEngine.API_URL);
+                        const json = await result.json();
+                        if(json.data && json.data['daily-habit-v13'] && json.data['daily-habit-v13'].systemFlags?.[flagKey]) {
+                             dailyHabitData.systemFlags[flagKey] = true;
+                             saveLocal();
+                             return;
+                        }
+                    } catch(e) {}
+                }
+
+                dailyHabitData.systemFlags[flagKey] = true;
+
+                let lmScores = users.map(u => ({ uid: u.uid, score: getMonthlyCoinsForUser(u.uid, lastM, lastY) }));
+                lmScores.sort((a,b)=>b.score - a.score);
+
+                if (lmScores[0].score > 0) {
+                    const winnerId = lmScores[0].uid;
+                    const winnerData = getUserData(winnerId);
+                    winnerData.mails.unshift({
+                        id: 'sys_' + Date.now(),
+                        from: "大樹守護精靈",
+                        fromAvatarKey: "leaf",
+                        content: `恭喜你在 ${lastM+1} 月的爬樹大賽獲得第一名！<br>這是屬於你的登頂專屬寶藏！繼續保持喔！✨`,
+                        timestamp: Date.now(),
+                        isRead: false,
+                        attachedCoins: 100,
+                        isClaimed: false
+                    });
+                    saveLocal();
+                    UI.updateMailBadge();
+                }
+            },
+
             renderFamily() { 
                 const currentM = new Date().getMonth(); const currentY = new Date().getFullYear();
                 document.getElementById('tree-month-title').innerText = `${currentM+1}月爬樹大賽`;
@@ -1927,6 +2004,22 @@
                 let mScores = users.map(u => ({ uid: u.uid, score: getMonthlyCoinsForUser(u.uid, currentM, currentY) }));
                 mScores.sort((a,b)=>b.score - a.score);
                 
+                let totalCurrentScore = mScores.reduce((sum, x) => sum + x.score, 0);
+                let treeSvg = SVGs.fluffyTree;
+                if (totalCurrentScore >= 1000) {
+                    treeSvg = treeSvg.replace('</svg>', `<g class="pop-in">
+                        <circle cx="60" cy="80" r="8" fill="#ef4444" stroke="#1f2937" stroke-width="2"/>
+                        <circle cx="140" cy="100" r="8" fill="#ef4444" stroke="#1f2937" stroke-width="2"/>
+                        <circle cx="100" cy="40" r="8" fill="#ef4444" stroke="#1f2937" stroke-width="2"/>
+                        <circle cx="40" cy="120" r="8" fill="#ef4444" stroke="#1f2937" stroke-width="2"/>
+                        <circle cx="160" cy="130" r="8" fill="#ef4444" stroke="#1f2937" stroke-width="2"/>
+                        <circle cx="80" cy="160" r="8" fill="#ef4444" stroke="#1f2937" stroke-width="2"/>
+                        <circle cx="120" cy="150" r="8" fill="#ef4444" stroke="#1f2937" stroke-width="2"/>
+                    </g></svg>`);
+                }
+                document.getElementById('tree-svg-container').innerHTML = treeSvg;
+                document.getElementById('tree-group-buff').classList.toggle('hidden', totalCurrentScore < 1000);
+                
                 document.getElementById('tree-nodes-container').innerHTML = users.map((u,i) => {
                     const myRank = mScores.findIndex(x=>x.uid === u.uid) + 1;
                     const myScore = mScores.find(x=>x.uid === u.uid).score;
@@ -1936,21 +2029,34 @@
                     
                     let crownHtml = (u.uid === lmWinnerId) ? `<div class="absolute -top-4 -right-2 w-6 h-6 transform rotate-12">${SVGs.crown.replace('CROWN_COLOR', '#fde047')}</div>` : '';
                     
-                    return `<div class="absolute w-12 h-12 hover:scale-125 transition-transform cursor-pointer drop-shadow-md" style="bottom:${h}%; left:${left}%" onclick="Report.clickTreeCharacter('${myRank}', '${u.name}')">
+                    return `<div class="absolute w-12 h-12 hover:scale-125 transition-transform cursor-pointer drop-shadow-md" style="bottom:${h}%; left:${left}%" onclick="Report.clickTreeCharacter('${myRank}', '${u.name}', ${left}, ${h})">
                         ${SVGs[u.svgKey]}
                         ${crownHtml}
                     </div>`;
                 }).join(''); 
             },
             
-            clickTreeCharacter(rank, name) {
+            clickTreeCharacter(rank, name, left, bottom) {
                 let quotes = [];
-                if(rank === '1') quotes = ["我在最上面！大家快上來！", "風景真好喵～", "繼續保持第一名！"];
-                else if(rank === '2') quotes = ["我快追上了！別跑！", "就差一點點了！", "第二名也很棒喔！"];
-                else quotes = ["等等我呀～", "我會在下面支持你們的！", "慢慢爬，總會到的！"];
+                if(rank === '1') quotes = ["我在最上面！", "風景真好喵～", "繼續保持第一名！"];
+                else if(rank === '2') quotes = ["我快追上了！", "就差一點點了！", "第二名也很棒！"];
+                else quotes = ["等等我呀～", "我會在下面支持！", "慢慢爬總會到！"];
                 
                 const chosen = quotes[Math.floor(Math.random() * quotes.length)];
-                UI.showToast(`${name}: ${chosen}`);
+                const dlg = document.getElementById('tree-dialogue');
+                
+                dlg.innerText = chosen;
+                dlg.style.left = `calc(${left}% + 10px)`;
+                dlg.style.bottom = `calc(${bottom}% + 45px)`;
+                
+                dlg.classList.remove('opacity-0', 'pointer-events-none');
+                dlg.classList.add('pop-in');
+                
+                if (this.activeTreeDialogueTimer) clearTimeout(this.activeTreeDialogueTimer);
+                this.activeTreeDialogueTimer = setTimeout(() => {
+                    dlg.classList.add('opacity-0', 'pointer-events-none');
+                    dlg.classList.remove('pop-in');
+                }, 3000);
             },
             
             renderStats() {
@@ -1982,9 +2088,7 @@
             }
         };
 
-        // ==========================================
-        // ⚙️ 系統習慣管理介面
-        // ==========================================
+        // STREAMING_CHUNK:Setting up editor config and modals
         const Editor = {
             open() { UI.toggleHabitMenu(); this.renderHabitList(); UI.openModal('editor-modal'); },
             renderHabitList() {
@@ -2081,9 +2185,6 @@
             }
         };
 
-        // ==========================================
-        // 📻 廣播台 CMS
-        // ==========================================
         const Radio = {
             pools: {}, 
             shuffle(a) { let c=a.length, r; while(c!=0){ r=Math.floor(Math.random()*c); c--; [a[c],a[r]]=[a[r],a[c]]; } return a; },
@@ -2181,9 +2282,7 @@
         
         function getUserData(uid) { return dailyHabitData[uid]; }
 
-        // ==========================================
-        // 🚀 系統啟動入口
-        // ==========================================
+        // STREAMING_CHUNK:Application entry point
         window.addEventListener('DOMContentLoaded', async () => { 
             await initDB(); 
             UI.init(); 
@@ -2192,3 +2291,4 @@
     </script>
 </body>
 </html>
+```eof
