@@ -1,4 +1,5 @@
-const CACHE_NAME = 'atomic-habit-v3';
+```javascript:sw.js
+const CACHE_NAME = 'atomic-habit-v4';
 const urlsToCache = [
   './',
   './index.html',
@@ -24,3 +25,4 @@ self.addEventListener('fetch', event => {
     fetch(event.request).catch(() => caches.match(event.request))
   );
 });
+```eof
