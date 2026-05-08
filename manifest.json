@@ -2,7 +2,7 @@
   "name": "家庭原子習慣",
   "short_name": "原子習慣",
   "description": "充滿繪本風格與遊戲化機制的家庭習慣養成系統",
-  "start_url": "./index.html",
+  "start_url": "./index.html?mode=pwa",
   "display": "standalone",
   "background_color": "#fdf8f5",
   "theme_color": "#fdf8f5",
@@ -19,3 +19,4 @@
     }
   ]
 }
+```eof
