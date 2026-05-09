@@ -1,38 +1,57 @@
-const CACHE_NAME = 'atomic-habit-v21';
-const urlsToCache = [
+const CACHE_NAME = 'atomic-habits-v20260509';
+const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
-  'https://cdn.tailwindcss.com'
+  './icon-192.png',
+  './icon-512.png'
 ];
 
-self.addEventListener('install', event => {
-  self.skipWaiting();
+self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
+      .then((cache) => {
+        console.log('Opened cache');
+        return cache.addAll(ASSETS_TO_CACHE);
+      })
+      .then(() => self.skipWaiting())
   );
 });
 
-self.addEventListener('activate', event => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
+    caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map(cacheName => {
-          // 清除舊版本的快取，確保載入最新版
+        cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('清除舊快取:', cacheName);
+            console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
-    }).then(() => clients.claim())
+    })
+    .then(() => self.clients.claim())
   );
 });
 
-self.addEventListener('fetch', event => {
-  // 網路優先，失敗時才讀取快取 (確保有網路時總能抓到最新進度)
+self.addEventListener('fetch', (event) => {
+  // 採用 Network First, fallback to cache 策略，確保能拿到最新的 HTML
   event.respondWith(
-    fetch(event.request).catch(() => caches.match(event.request))
+    fetch(event.request)
+      .then(response => {
+        // 如果連線成功，就把新的回應塞進快取
+        if (response && response.status === 200 && response.type === 'basic') {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME)
+            .then(cache => {
+              cache.put(event.request, responseToCache);
+            });
+        }
+        return response;
+      })
+      .catch(() => {
+        // 如果斷網，就從快取拿
+        return caches.match(event.request);
+      })
   );
 });
