@@ -29,7 +29,7 @@
         @media (min-width: 768px) {
             .app-wrapper { max-width: 1024px; flex-direction: row; gap: 20px; padding: 20px; min-height: calc(100vh - 40px); }
             .panel-left { flex: 5; display: flex; flex-direction: column; background: #fff; border-radius: 2rem; border: 4px solid #1f2937; box-shadow: 8px 8px 0px #1f2937; position: relative; z-index: 10; }
-            .panel-right { flex: 4; display: flex; flex-direction: column; background: #fff; border-radius: 2rem; border: 4px solid #1f2937; box-shadow: 8px 8px 0px #1f2937; padding: 20px; overflow-y: auto; }
+            .panel-right { flex: 4; display: flex; flex-direction: column; background: #fff; border-radius: 2rem; border: 4px solid #1f2937; box-shadow: 8px 8px 0px #1f2937; padding: 20px; overflow-y: auto; overflow-x: hidden; }
             body { padding: 0; }
             #main-header { border-top-left-radius: calc(2rem - 4px); border-top-right-radius: calc(2rem - 4px); }
         }
@@ -352,10 +352,13 @@
             currentHabitId = appTemplates[lastHId] ? lastHId : Object.keys(appTemplates)[0];
 
             const savedShop = localStorage.getItem('shopItems_v13');
-            try { shopItems = savedShop ? JSON.parse(savedShop) : [{ id: "s1", name: "看電視 30 分鐘", cost: 50, icon: "star", reqLog: true }]; } catch(e) { shopItems = []; }
-
-            // [資料清洗]: 完全拔除保命符歷史設定
-            shopItems = shopItems.filter(i => i.isSpecial !== 'saver' && i.id !== 'special_saver');
+            try { 
+                shopItems = savedShop ? JSON.parse(savedShop) : [{ id: "s1", name: "看電視 30 分鐘", cost: 50, icon: "star", reqLog: true }]; 
+                // 深度資料清洗：移除任何可能殘留的保命符商品
+                shopItems = shopItems.filter(i => i.isSpecial !== 'saver' && i.id !== 'special_saver');
+            } catch(e) { 
+                shopItems = [{ id: "s1", name: "看電視 30 分鐘", cost: 50, icon: "star", reqLog: true }]; 
+            }
 
             const savedRadios = localStorage.getItem('customRadios_v13');
             if(savedRadios) { try { customRadios = JSON.parse(savedRadios); } catch(e) { customRadios = []; } }
@@ -370,7 +373,7 @@
                     dailyHabitData[u.uid] = { totalCoins: 0, currentCoins: 0, mails: [], habits: {}, shopHistory: [] };
                 }
                 
-                // [資料清洗]: 清除舊有的保命符庫存
+                // 深度資料清洗：徹底移除舊的 inventory / streakSavers 結構
                 if (dailyHabitData[u.uid].inventory) { delete dailyHabitData[u.uid].inventory; }
 
                 if (!dailyHabitData[u.uid].mails) dailyHabitData[u.uid].mails = [];
@@ -888,11 +891,11 @@
             
             renderAll() {
                 try { if (!appTemplates[currentHabitId]) { currentHabitId = Object.keys(appTemplates)[0]; localStorage.setItem('lastHabitId_v13', currentHabitId); } } catch(e){}
-                try { this.renderDashboard(); } catch(e) { console.error(e); }
-                try { this.renderButtons(); } catch(e) { console.error(e); }
-                try { this.renderCalendar(); } catch(e) { console.error(e); }
-                try { this.renderFootprints(); } catch(e) { console.error(e); }
-                try { this.updateMailBadge(); } catch(e) { console.error(e); }
+                try { this.renderDashboard(); } catch(e) { console.error("renderDashboard error:", e); }
+                try { this.renderButtons(); } catch(e) { console.error("renderButtons error:", e); }
+                try { this.renderCalendar(); } catch(e) { console.error("renderCalendar error:", e); }
+                try { this.renderFootprints(); } catch(e) { console.error("renderFootprints error:", e); }
+                try { this.updateMailBadge(); } catch(e) { console.error("updateMailBadge error:", e); }
                 try {
                     const banner = document.getElementById('family-buff-banner');
                     if(banner) banner.classList.toggle('hidden', !isFamilyBondActive());
@@ -966,9 +969,15 @@
                 
                 if(titleContainer && titleText && cancelBtn) {
                     if (recoveryDate) {
-                        titleText.innerHTML = `⏳ 是否進入補救模式？(${recoveryDate})`; titleContainer.classList.add('bg-orange-100', 'text-orange-800'); titleContainer.classList.remove('bg-white'); cancelBtn.classList.remove('hidden');
+                        titleText.innerHTML = `⏳ 補打卡模式 (${recoveryDate})`; 
+                        titleContainer.classList.add('bg-orange-100', 'text-orange-800'); 
+                        titleContainer.classList.remove('bg-white'); 
+                        cancelBtn.classList.remove('hidden');
                     } else {
-                        titleText.innerHTML = `準備好完成任務了嗎？`; titleContainer.classList.remove('bg-orange-100', 'text-orange-800'); titleContainer.classList.add('bg-white'); cancelBtn.classList.add('hidden');
+                        titleText.innerHTML = `準備好完成任務了嗎？`; 
+                        titleContainer.classList.remove('bg-orange-100', 'text-orange-800'); 
+                        titleContainer.classList.add('bg-white'); 
+                        cancelBtn.classList.add('hidden');
                     }
                 }
                 
@@ -1098,7 +1107,7 @@
                 const container = document.getElementById('modals-container'); if(!container) return;
                 container.innerHTML = `
                     <div id="generic-confirm-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-center z-[160] transition-opacity opacity-0 px-2 md:px-4">
-                        <div class="bg-white w-[96vw] max-w-[400px] box-border overflow-hidden rounded-[2rem] p-4 md:p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative flex flex-col items-center pb-[env(safe-area-inset-bottom)]">
+                        <div class="bg-white w-[96vw] md:w-[400px] max-w-[400px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative flex flex-col items-center box-border pb-[env(safe-area-inset-bottom)] overflow-x-hidden">
                             <div class="w-24 h-24 mb-2 flex-shrink-0">${SVGs.cryCat}</div>
                             <h3 id="confirm-title" class="text-xl font-black text-gray-800 mb-2">確認視窗</h3>
                             <p id="confirm-desc" class="text-sm text-gray-600 font-bold mb-6 whitespace-pre-wrap">確定執行嗎？</p>
@@ -1110,7 +1119,7 @@
                     </div>
                     
                     <div id="math-confirm-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-center z-[160] transition-opacity opacity-0 px-2 md:px-4">
-                        <div class="bg-white w-[96vw] max-w-[400px] box-border overflow-hidden rounded-[2rem] p-4 md:p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative flex flex-col items-center pb-[env(safe-area-inset-bottom)]">
+                        <div class="bg-white w-[96vw] max-w-[400px] box-border overflow-x-hidden rounded-[2rem] p-4 md:p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative flex flex-col items-center pb-[env(safe-area-inset-bottom)]">
                             <div class="w-20 h-20 mb-2 flex-shrink-0">${SVGs.icons.lightning}</div>
                             <h3 class="text-xl font-black text-red-600 mb-2">危險操作驗證</h3>
                             <p class="text-sm text-gray-600 font-bold mb-4 whitespace-pre-wrap">請計算以下數學題以確認您是清醒的：</p>
@@ -1123,8 +1132,8 @@
                         </div>
                     </div>
                     
-                    <div id="radio-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-2">
-                        <div class="bg-[#fff9f0] w-[96vw] max-w-[1200px] h-[80vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] relative flex flex-col overflow-hidden box-border pb-safe">
+                    <div id="radio-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-1 md:px-2">
+                        <div class="bg-[#fff9f0] w-[98vw] md:w-[98vw] max-w-[800px] h-[80vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] relative flex flex-col overflow-x-hidden box-border pb-[env(safe-area-inset-bottom)]">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2 flex-shrink-0">
                                 <h3 class="text-xl md:text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.bulb}</div> 廣播台管理</h3>
                                 <button onclick="UI.closeModal('radio-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white font-black p-1 flex-shrink-0">${SVGs.ui.cross}</button>
@@ -1144,8 +1153,8 @@
                         </div>
                     </div>
                     
-                    <div id="shop-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-2">
-                        <div class="bg-[#fff9f0] w-[96vw] max-w-[1200px] h-[90vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border pb-safe">
+                    <div id="shop-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-1 md:px-2">
+                        <div class="bg-[#fff9f0] w-[98vw] md:w-[98vw] max-w-[1200px] h-[90vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-x-hidden box-border pb-safe">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2 flex-shrink-0">
                                 <h3 class="text-xl md:text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6 md:w-8 md:h-8">${SVGs.ui.shopStand}</div> 兌換商店</h3>
                                 <button onclick="UI.closeModal('shop-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1 flex-shrink-0">${SVGs.ui.cross}</button>
@@ -1158,7 +1167,7 @@
                             
                             <div id="shop-area-shop" class="flex-1 overflow-y-auto custom-scroll pr-2 flex flex-col gap-4">
                                 <div class="bg-yellow-100 border-4 border-gray-800 rounded-xl p-3 flex justify-between items-center flex-shrink-0">
-                                    <span class="font-black text-sm md:text-base flex items-center gap-1"><div class="w-5 h-5">${SVGs.ui.sparkle}</div> 用努力換取獎勵！</span>
+                                    <span class="font-black text-sm md:text-base flex items-center gap-1"><div class="w-5 h-5">${SVGs.ui.sparkle}</div> 努力換到的金幣！</span>
                                     <span class="font-black text-lg md:text-xl text-yellow-600 flex items-center gap-1"><div class="w-5 h-5 md:w-6 md:h-6">${SVGs.coin}</div> <span id="shop-current-coins">0</span></span>
                                 </div>
                                 <div id="shop-items-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 content-start pb-6"></div>
@@ -1190,8 +1199,8 @@
                         </div>
                     </div>
                     
-                    <div id="report-modal" class="fixed inset-0 bg-gray-900/80 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-2">
-                        <div class="bg-[#fef9f0] w-[96vw] max-w-[1200px] h-[90vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border pb-safe">
+                    <div id="report-modal" class="fixed inset-0 bg-gray-900/80 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-1 md:px-2">
+                        <div class="bg-[#fef9f0] w-[98vw] md:w-[98vw] max-w-[1200px] h-[90vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-x-hidden box-border pb-safe">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2 flex-shrink-0">
                                 <h3 class="text-xl md:text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.ui.magicBook}</div> 魔法成就手帳</h3>
                                 <button onclick="UI.closeModal('report-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1 flex-shrink-0">${SVGs.ui.cross}</button>
@@ -1206,7 +1215,7 @@
                                 <div class="flex-1 bg-white border-4 border-gray-800 rounded-3xl p-3 md:p-4 flex flex-col items-center justify-center relative min-h-[250px] md:min-h-[300px]" id="jar-container">
                                     <div class="absolute -top-3 -left-3 bg-yellow-300 border-2 border-gray-800 px-3 py-1 rounded-lg font-black text-xs md:text-sm z-20">無盡寶物瓶</div>
                                     <div class="text-2xl md:text-3xl font-black text-yellow-600 flex items-center gap-2 z-20 flex-shrink-0 mb-2"><div class="w-6 h-6 md:w-8 md:h-8">${SVGs.coin}</div> <span id="report-total-points">0</span></div>
-                                    <div class="relative w-full max-w-[180px] md:max-w-[220px] aspect-[4/5] mx-auto flex-shrink-0">
+                                    <div class="relative w-full max-w-[160px] md:max-w-[200px] aspect-[4/5] mx-auto flex-shrink-0 mt-2">
                                         ${SVGs.fatJar}
                                         <div class="absolute bottom-0 left-0 w-full h-full" style="clip-path: polygon(15% 100%, 85% 100%, 100% 60%, 100% 30%, 0% 30%, 0% 60%);">
                                             <div id="jar-liquid-level" class="bg-yellow-300/80 absolute bottom-0 w-full liquid-fill" style="height: 0%;"></div>
@@ -1259,8 +1268,8 @@
                         </div>
                     </div>
                     
-                    <div id="mailbox-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0 px-2">
-                        <div class="bg-[#fff0f5] w-[96vw] max-w-[1200px] rounded-t-[2rem] md:rounded-[2rem] p-4 md:p-6 border-t-8 border-gray-800 md:border-8 h-[85vh] md:h-[auto] md:max-h-[90vh] flex flex-col overflow-hidden box-border pb-safe">
+                    <div id="mailbox-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0 px-1 md:px-2">
+                        <div class="bg-[#fff0f5] w-[98vw] md:w-[98vw] max-w-[1200px] rounded-t-[2rem] md:rounded-[2rem] p-4 md:p-6 border-t-8 border-gray-800 md:border-8 h-[85vh] md:h-[auto] md:max-h-[90vh] flex flex-col overflow-x-hidden box-border pb-safe">
                             <div class="flex-none flex justify-between items-center mb-4 pb-3 border-b-4 border-dashed border-gray-300">
                                 <h3 class="text-xl md:text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.mailbox}</div> 家庭信箱</h3>
                                 <button onclick="UI.closeModal('mailbox-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1 flex-shrink-0">${SVGs.ui.cross}</button>
@@ -1297,8 +1306,8 @@
                         </div>
                     </div>
                     
-                    <div id="editor-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-2">
-                        <div class="bg-[#fef9f0] w-[96vw] max-w-[1200px] h-[90vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border pb-safe">
+                    <div id="editor-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-1 md:px-2">
+                        <div class="bg-[#fef9f0] w-[98vw] md:w-[98vw] max-w-[1200px] h-[90vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-x-hidden box-border pb-safe">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2 flex-shrink-0">
                                 <h3 class="text-xl md:text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.ui.magicWand}</div> 系統與習慣管理</h3>
                                 <button onclick="UI.closeModal('editor-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1 flex-shrink-0">${SVGs.ui.cross}</button>
@@ -1369,8 +1378,8 @@
                         </div>
                     </div>
                     
-                    <div id="input-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0 px-2">
-                        <div id="modal-content" class="bg-[#fff9f0] w-[96vw] max-w-[480px] rounded-t-[2rem] md:rounded-[2rem] p-5 md:p-6 border-t-8 border-gray-800 md:border-8 relative box-border overflow-hidden pb-safe">
+                    <div id="input-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0 px-1 md:px-2">
+                        <div id="modal-content" class="bg-[#fff9f0] w-[98vw] md:w-[98vw] max-w-[480px] rounded-t-[2rem] md:rounded-[2rem] p-5 md:p-6 border-t-8 border-gray-800 md:border-8 relative box-border overflow-x-hidden pb-safe">
                             <div class="flex justify-between items-center mb-5 border-b-4 border-dashed border-gray-300 pb-3">
                                 <h3 class="text-xl md:text-2xl font-black" id="modal-title">紀錄進度</h3>
                                 <button onclick="UI.closeModal('input-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1">${SVGs.ui.cross}</button>
@@ -1391,8 +1400,8 @@
                         </div>
                     </div>
                     
-                    <div id="ios-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-2 pb-[env(safe-area-inset-bottom)]">
-                        <div class="bg-[#fff9f0] w-[96vw] max-w-[400px] rounded-[2rem] p-6 border-8 border-gray-800 transform transition-transform translate-y-full md:translate-y-0 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
+                    <div id="ios-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-2 md:px-4 pb-[env(safe-area-inset-bottom)]">
+                        <div class="bg-[#fff9f0] w-[96vw] md:w-[96vw] max-w-[400px] rounded-[2rem] p-6 border-8 border-gray-800 transform transition-transform translate-y-full md:translate-y-0 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
                             <h3 class="text-xl md:text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.bulb}</div> 安裝至桌面</h3>
                             <p class="font-bold text-sm md:text-base text-gray-600 mb-4 text-left leading-relaxed">蘋果設備專屬魔法：<br>1. 點擊下方工具列的 <b class="text-blue-500">分享圖示</b><br>2. 往下滑選擇 <b class="text-gray-800">「加入主畫面」</b></p>
                             <div class="text-4xl mb-6 flex justify-center w-8 h-8 mx-auto">${SVGs.icons.star}</div>
@@ -1400,16 +1409,16 @@
                         </div>
                     </div>
                     
-                    <div id="android-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-2 pb-[env(safe-area-inset-bottom)]">
-                        <div class="bg-[#fff9f0] w-[96vw] max-w-[400px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
+                    <div id="android-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-2 md:px-4 pb-[env(safe-area-inset-bottom)]">
+                        <div class="bg-[#fff9f0] w-[96vw] md:w-[96vw] max-w-[400px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
                             <h3 class="text-xl md:text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.star}</div> 安裝至桌面</h3>
                             <p class="font-bold text-sm md:text-base text-gray-600 mb-4 text-left leading-relaxed">安卓專屬魔法：<br>1. 點擊瀏覽器右上角的 <b class="text-blue-500">⋮ (選單)</b><br>2. 選擇 <b class="text-gray-800">「加到主畫面」</b> 或 <b class="text-gray-800">「安裝應用程式」</b></p>
                             <button onclick="UI.closeModal('android-pwa-modal')" class="w-full py-3 rounded-xl font-black text-gray-800 bg-yellow-300 border-4 border-gray-800 hand-drawn-btn">我知道了！</button>
                         </div>
                     </div>
                     
-                    <div id="inapp-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-2 pb-[env(safe-area-inset-bottom)]">
-                        <div class="bg-[#fff9f0] w-[96vw] max-w-[400px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
+                    <div id="inapp-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-2 md:px-4 pb-[env(safe-area-inset-bottom)]">
+                        <div class="bg-[#fff9f0] w-[96vw] md:w-[96vw] max-w-[400px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
                             <h3 class="text-xl md:text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.lightning}</div> 跳轉提示</h3>
                             <p class="font-bold text-sm md:text-base text-gray-600 mb-4 text-left leading-relaxed">您目前使用 App 內建瀏覽器。<br><br>請點擊右上角或右下角選單，選擇 <b class="text-blue-500">「使用預設瀏覽器開啟」</b> 或 <b class="text-blue-500">「在 Safari/Chrome 開啟」</b>，才能順利安裝到手機桌面喔！</p>
                             <button onclick="UI.closeModal('inapp-pwa-modal')" class="w-full py-3 rounded-xl font-black text-gray-800 bg-yellow-300 border-4 border-gray-800 hand-drawn-btn">我知道了！</button>
@@ -1426,7 +1435,7 @@
                     const targetDateStr = recoveryDate || today;
                     
                     if(getUserData(currentUser.uid)?.habits?.[currentHabitId]?.logs?.[targetDateStr]) {
-                        return UI.showToast(recoveryDate ? "補救的這天已經有打卡紀錄囉！" : "今天打過卡囉！可以修改歷史足跡喵"); 
+                        return UI.showToast(recoveryDate ? "這天已經有打卡紀錄囉！可以修改歷史足跡喵" : "今天打過卡囉！可以修改歷史足跡喵"); 
                     }
 
                     if(SyncEngine.isSyncing || isProcessing) return UI.showToast("系統處理中，請稍後操作");
@@ -1472,7 +1481,7 @@
             },
             
             setupModalUI(act, isRec) { 
-                document.getElementById('modal-title').innerHTML = isRec ? `⏳ 補救：${escapeHTML(act.label)}` : (isEditMode ? `✏️ 修改：${escapeHTML(act.label)}` : `✨ 紀錄：${escapeHTML(act.label)}`); 
+                document.getElementById('modal-title').innerHTML = isRec ? `⏳ 補打卡：${escapeHTML(act.label)}` : (isEditMode ? `✏️ 修改：${escapeHTML(act.label)}` : `✨ 紀錄：${escapeHTML(act.label)}`); 
                 const iVal = document.getElementById('input-value'); 
                 document.getElementById('label-title').innerHTML = `<div class="w-5 h-5 inline-block align-middle mr-1">${SVGs.icons.star}</div> 相關紀錄項目？(選填)`; 
                 if(act.isQuote) { 
@@ -1577,9 +1586,9 @@
                 const today = new Date(); const targetDate = new Date(d);
                 if (targetDate > today) return UI.showToast("不能補救未來的日期喔！");
                 
-                Confirm.show("啟動補救模式？", `即將針對 ${d} 進行補打卡，是否繼續？`, "進入補救", () => {
-                    recoveryDate = d; UI.renderAll(); UI.showToast("已進入補救模式！請選擇要補打卡的任務喵。");
-                });
+                // 直接進入補打卡模式，不彈窗
+                recoveryDate = d; 
+                UI.renderAll(); 
             }, 
             cancelRecovery() { recoveryDate = null; UI.renderAll(); }
         };
