@@ -1,4 +1,4 @@
-const CACHE_NAME = 'atomic-habit-v4';
+const CACHE_NAME = 'atomic-habit-v5';
 const urlsToCache = [
   './',
   './index.html',
@@ -15,10 +15,17 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(clients.claim());
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) return caches.delete(cacheName);
+        })
+      );
+    }).then(() => clients.claim())
+  );
 });
 
-// 當處於離線狀態時，從快取提取資源，確保 App 可用
 self.addEventListener('fetch', event => {
   event.respondWith(
     fetch(event.request).catch(() => caches.match(event.request))
