@@ -423,7 +423,7 @@
                 document.getElementById('sync-overlay').classList.add('hidden');
             }, 500);
             
-            // 【重大修正】補回 UI.init(); 指令，讓模態框與介面正常掛載與啟動
+            // 核心啟動修復：確保系統初始化 Modal 與綁定事件
             UI.init();
         }
 
@@ -863,7 +863,7 @@
                         const parsed = JSON.parse(e.target.result);
                         if(parsed.appTemplates_v13) appTemplates = parsed.appTemplates_v13;
                         if(parsed.shopItems_v13) shopItems = parsed.shopItems_v13;
-                        if(parsed.customRadios_v13) customRadios = customRadios.parsed.customRadios_v13;
+                        if(parsed.customRadios_v13) customRadios = parsed.customRadios_v13;
                         if(parsed['daily-habit-v13']) dailyHabitData = parsed['daily-habit-v13'];
                         saveLocal(); UI.renderAll(); UI.showToast("備份還原成功並排入同步！");
                     } catch(err) { UI.showToast("備份檔讀取失敗，格式錯誤"); }
@@ -1250,8 +1250,8 @@
                         </div>
                     </div>
                     
-                    <div id="radio-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-4">
-                        <div class="bg-[#fff9f0] w-[90vw] md:w-[92vw] max-w-[600px] h-[80vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] relative flex flex-col overflow-hidden box-border pb-[env(safe-area-inset-bottom)]">
+                    <div id="radio-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-2 md:px-4">
+                        <div class="bg-[#fff9f0] w-[96vw] md:w-[95vw] max-w-[600px] h-[80vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] relative flex flex-col overflow-hidden box-border pb-[env(safe-area-inset-bottom)]">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2 flex-shrink-0">
                                 <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.bulb}</div> 廣播台管理</h3>
                                 <button onclick="UI.closeModal('radio-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white font-black p-1 flex-shrink-0">${SVGs.ui.cross}</button>
@@ -1271,8 +1271,8 @@
                         </div>
                     </div>
                     
-                    <div id="shop-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-4">
-                        <div class="bg-[#fff9f0] w-[90vw] md:w-[92vw] max-w-[1000px] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border pb-safe">
+                    <div id="shop-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-2 md:px-4">
+                        <div class="bg-[#fff9f0] w-[96vw] md:w-[95vw] max-w-[1000px] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border pb-safe">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2 flex-shrink-0">
                                 <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-8 h-8">${SVGs.ui.shopStand}</div> 兌換商店</h3>
                                 <button onclick="UI.closeModal('shop-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1 flex-shrink-0">${SVGs.ui.cross}</button>
@@ -1317,8 +1317,8 @@
                         </div>
                     </div>
                     
-                    <div id="report-modal" class="fixed inset-0 bg-gray-900/80 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-4">
-                        <div class="bg-[#fef9f0] w-[90vw] md:w-[92vw] max-w-[1000px] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border pb-[env(safe-area-inset-bottom)]">
+                    <div id="report-modal" class="fixed inset-0 bg-gray-900/80 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-2 md:px-4">
+                        <div class="bg-[#fef9f0] w-[96vw] md:w-[95vw] max-w-[1000px] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border pb-[env(safe-area-inset-bottom)]">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2 flex-shrink-0">
                                 <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.ui.magicBook}</div> 魔法成就手帳</h3>
                                 <button onclick="UI.closeModal('report-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1 flex-shrink-0">${SVGs.ui.cross}</button>
@@ -1386,8 +1386,8 @@
                         </div>
                     </div>
                     
-                    <div id="mailbox-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0 px-4">
-                        <div class="bg-[#fff0f5] w-[90vw] md:w-[92vw] max-w-[1000px] lg:max-w-[1200px] rounded-t-[2rem] md:rounded-[2rem] p-6 border-t-8 border-gray-800 md:border-8 h-[85vh] md:h-[auto] md:max-h-[90vh] flex flex-col overflow-hidden box-border pb-[env(safe-area-inset-bottom)]">
+                    <div id="mailbox-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0 px-2 md:px-4">
+                        <div class="bg-[#fff0f5] w-[96vw] md:w-[95vw] max-w-[1000px] lg:max-w-[1200px] rounded-t-[2rem] md:rounded-[2rem] p-4 md:p-6 border-t-8 border-gray-800 md:border-8 h-[85vh] md:h-[auto] md:max-h-[90vh] flex flex-col overflow-hidden box-border pb-[env(safe-area-inset-bottom)]">
                             <div class="flex-none flex justify-between items-center mb-4 pb-3 border-b-4 border-dashed border-gray-300">
                                 <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.mailbox}</div> 家庭信箱</h3>
                                 <button onclick="UI.closeModal('mailbox-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1 flex-shrink-0">${SVGs.ui.cross}</button>
@@ -1424,8 +1424,8 @@
                         </div>
                     </div>
                     
-                    <div id="editor-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-4">
-                        <div class="bg-[#fef9f0] w-[90vw] md:w-[92vw] max-w-[1000px] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border pb-[env(safe-area-inset-bottom)]">
+                    <div id="editor-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-2 md:px-4">
+                        <div class="bg-[#fef9f0] w-[96vw] md:w-[95vw] max-w-[1000px] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border pb-[env(safe-area-inset-bottom)]">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2 flex-shrink-0">
                                 <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.ui.magicWand}</div> 系統與習慣管理</h3>
                                 <button onclick="UI.closeModal('editor-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1 flex-shrink-0">${SVGs.ui.cross}</button>
@@ -1497,7 +1497,7 @@
                     </div>
                     
                     <div id="input-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0">
-                        <div id="modal-content" class="bg-[#fff9f0] w-[90vw] md:w-[92vw] max-w-[480px] rounded-t-[2rem] md:rounded-[2rem] p-6 border-t-8 border-gray-800 md:border-8 relative box-border pb-[env(safe-area-inset-bottom)]">
+                        <div id="modal-content" class="bg-[#fff9f0] w-[96vw] md:w-[92vw] max-w-[480px] rounded-t-[2rem] md:rounded-[2rem] p-6 border-t-8 border-gray-800 md:border-8 relative box-border pb-[env(safe-area-inset-bottom)]">
                             <div class="flex justify-between items-center mb-5 border-b-4 border-dashed border-gray-300 pb-3">
                                 <h3 class="text-2xl font-black" id="modal-title">紀錄進度</h3>
                                 <button onclick="UI.closeModal('input-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1">${SVGs.ui.cross}</button>
@@ -1735,10 +1735,14 @@
             },
             startRecovery(d) {
                 const uData = getUserData(currentUser.uid);
-                const savers = uData.inventory?.streakSavers || 0;
+                // 防呆：確保 inventory 存在
+                if (!uData.inventory) uData.inventory = { streakSavers: 0 };
+                const savers = uData.inventory.streakSavers || 0;
+                
                 if(savers > 0) {
                     Confirm.show("啟動時光機？", `將消耗 1 張「保命符」來補救 ${d} 的進度。\n(目前剩餘: ${savers} 張)`, "開啟", () => {
-                        uData.inventory.streakSavers--;
+                        // 防呆：避免扣成負數
+                        uData.inventory.streakSavers = Math.max(0, uData.inventory.streakSavers - 1);
                         saveLocal();
                         recoveryDate = d; UI.renderAll();
                         UI.showToast("時光機已啟動！請選擇要補救的習慣喵。");
@@ -1769,7 +1773,13 @@
             renderItems() { 
                 const uData = getUserData(currentUser.uid); 
                 document.getElementById('shop-current-coins').innerText = uData.currentCoins; 
-                document.getElementById('shop-saver-count').innerText = uData.inventory?.streakSavers || 0;
+                
+                // 防呆：嚴格檢查並設定保命符數量顯示
+                const saversCount = (uData.inventory && typeof uData.inventory.streakSavers === 'number') 
+                                    ? uData.inventory.streakSavers 
+                                    : 0;
+                document.getElementById('shop-saver-count').innerText = saversCount;
+                
                 document.getElementById('shop-items-list').innerHTML = shopItems.map(i => `
                     <div class="bg-white border-4 border-gray-800 p-3 rounded-xl flex justify-between items-center shadow-sm">
                         <div class="flex flex-col">
@@ -1794,6 +1804,8 @@
                     uData.currentCoins -= i.cost; 
                     
                     if (i.isSpecial === 'saver') {
+                        // 防呆：確保 inventory 存在
+                        if (!uData.inventory) uData.inventory = { streakSavers: 0 };
                         uData.inventory.streakSavers = (uData.inventory.streakSavers || 0) + 1;
                     }
                     uData.shopHistory.unshift({ itemName: i.name, cost: i.cost, timestamp: Date.now() }); 
@@ -2147,7 +2159,6 @@
 
                 const topScore = lmScores[0].score;
                 if (topScore > 0) {
-                    // 【修正】支援並列第一名的成員都獲得獎勵
                     const winners = lmScores.filter(s => s.score === topScore);
                     
                     winners.forEach(winner => {
