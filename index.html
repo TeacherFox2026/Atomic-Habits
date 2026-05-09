@@ -18,6 +18,7 @@
             background-size: 30px 30px;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
         }
 
         .app-wrapper { 
@@ -170,7 +171,7 @@
                         <div class="w-4 h-4" id="title-sparkle-icon"></div>
                         <span id="action-title-text">準備好完成任務了嗎？</span>
                     </div>
-                    <button id="cancel-recovery-btn" onclick="Logic.cancelRecovery()" class="hidden bg-red-400 text-white px-2 py-1 rounded-md border-2 border-gray-800 flex items-center gap-1 shadow-sm active:translate-y-1"><div class="w-3 h-3" id="icon-cancel-time"></div> 取消補救</button>
+                    <button id="cancel-recovery-btn" onclick="Logic.cancelRecovery()" class="hidden bg-red-400 text-white px-2 py-1 rounded-md border-2 border-gray-800 flex items-center gap-1 shadow-sm active:translate-y-1"><div class="w-3 h-3" id="icon-cancel-time"></div> 取消</button>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4 pb-4" id="action-buttons"></div>
@@ -216,41 +217,9 @@
         }
 
         const SVGs = {
-            fox: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
-                <polygon points="15,45 20,15 40,30" fill="#fb923c" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
-                <polygon points="85,45 80,15 60,30" fill="#fb923c" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
-                <path d="M10,50 Q10,85 50,90 Q90,85 90,50 Q75,25 50,30 Q25,25 10,50 Z" fill="#fdba74" stroke="#1f2937" stroke-width="3"/>
-                <line x1="28" y1="52" x2="42" y2="48" stroke="#1f2937" stroke-width="4" stroke-linecap="round"/>
-                <line x1="72" y1="52" x2="58" y2="48" stroke="#1f2937" stroke-width="4" stroke-linecap="round"/>
-                <ellipse cx="50" cy="68" rx="5" ry="4" fill="#1f2937"/>
-                <path d="M5,55 Q15,58 20,57 M2,62 Q15,62 18,61 M8,69 Q18,67 22,65" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round" />
-                <path d="M95,55 Q85,58 80,57 M98,62 Q85,62 82,61 M92,69 Q82,67 78,65" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round" />
-            </svg>`,
-            cat: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
-                <polygon points="15,40 25,10 45,30" fill="#a855f7" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
-                <polygon points="85,40 75,10 55,30" fill="#a855f7" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
-                <path d="M15,40 Q10,80 50,85 Q90,80 85,40 Q65,30 50,35 Q35,30 15,40 Z" fill="#c084fc" stroke="#1f2937" stroke-width="3"/>
-                <path d="M20,56 L36,52 L32,60 Z" fill="#1f2937" stroke="#1f2937" stroke-width="2" stroke-linejoin="round" transform="rotate(30 29 56)"/>
-                <path d="M80,56 L64,52 L68,60 Z" fill="#1f2937" stroke="#1f2937" stroke-width="2" stroke-linejoin="round" transform="rotate(-30 71 56)"/>
-                <path d="M40,72 Q50,80 65,65" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
-                <ellipse cx="22" cy="65" rx="4" ry="2" fill="#fbcfe8"/>
-                <ellipse cx="78" cy="65" rx="4" ry="2" fill="#fbcfe8"/>
-                <line x1="8" y1="58" x2="20" y2="60" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
-                <line x1="6" y1="65" x2="18" y2="65" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
-                <line x1="10" y1="72" x2="22" y2="70" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
-                <line x1="92" y1="58" x2="80" y2="60" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
-                <line x1="94" y1="65" x2="82" y2="65" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
-                <line x1="90" y1="72" x2="78" y2="70" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
-            </svg>`,
-            cryCat: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
-                <polygon points="15,40 25,10 45,30" fill="#a855f7" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
-                <polygon points="85,40 75,10 55,30" fill="#a855f7" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
-                <path d="M15,40 Q10,80 50,85 Q90,80 85,40 Q65,30 50,35 Q35,30 15,40 Z" fill="#c084fc" stroke="#1f2937" stroke-width="3"/>
-                <path d="M28,58 A8,8 0 0,1 42,58 Z" fill="#1f2937" transform="rotate(15 35 58)" />
-                <path d="M58,58 A8,8 0 0,1 72,58 Z" fill="#1f2937" transform="rotate(-15 65 58)" />
-                <path d="M42,75 Q50,65 58,75" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
-                <path d="M35,62 L35,75 M38,62 L38,72 M65,62 L65,75 M62,62 L62,72" stroke="#60a5fa" stroke-width="3" stroke-linecap="round" fill="none"/>
-            </svg>`,
+            fox: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md"><polygon points="15,45 20,15 40,30" fill="#fb923c" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/><polygon points="85,45 80,15 60,30" fill="#fb923c" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/><path d="M10,50 Q10,85 50,90 Q90,85 90,50 Q75,25 50,30 Q25,25 10,50 Z" fill="#fdba74" stroke="#1f2937" stroke-width="3"/><line x1="28" y1="52" x2="42" y2="48" stroke="#1f2937" stroke-width="4" stroke-linecap="round"/><line x1="72" y1="52" x2="58" y2="48" stroke="#1f2937" stroke-width="4" stroke-linecap="round"/><ellipse cx="50" cy="68" rx="5" ry="4" fill="#1f2937"/><path d="M5,55 Q15,58 20,57 M2,62 Q15,62 18,61 M8,69 Q18,67 22,65" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round" /><path d="M95,55 Q85,58 80,57 M98,62 Q85,62 82,61 M92,69 Q82,67 78,65" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round" /></svg>`,
+            cat: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md"><polygon points="15,40 25,10 45,30" fill="#a855f7" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/><polygon points="85,40 75,10 55,30" fill="#a855f7" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/><path d="M15,40 Q10,80 50,85 Q90,80 85,40 Q65,30 50,35 Q35,30 15,40 Z" fill="#c084fc" stroke="#1f2937" stroke-width="3"/><path d="M20,56 L36,52 L32,60 Z" fill="#1f2937" stroke="#1f2937" stroke-width="2" stroke-linejoin="round" transform="rotate(30 29 56)"/><path d="M80,56 L64,52 L68,60 Z" fill="#1f2937" stroke="#1f2937" stroke-width="2" stroke-linejoin="round" transform="rotate(-30 71 56)"/><path d="M40,72 Q50,80 65,65" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/><ellipse cx="22" cy="65" rx="4" ry="2" fill="#fbcfe8"/><ellipse cx="78" cy="65" rx="4" ry="2" fill="#fbcfe8"/><line x1="8" y1="58" x2="20" y2="60" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/><line x1="6" y1="65" x2="18" y2="65" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/><line x1="10" y1="72" x2="22" y2="70" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/><line x1="92" y1="58" x2="80" y2="60" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/><line x1="94" y1="65" x2="82" y2="65" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/><line x1="90" y1="72" x2="78" y2="70" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/></svg>`,
+            cryCat: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md"><polygon points="15,40 25,10 45,30" fill="#a855f7" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/><polygon points="85,40 75,10 55,30" fill="#a855f7" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/><path d="M15,40 Q10,80 50,85 Q90,80 85,40 Q65,30 50,35 Q35,30 15,40 Z" fill="#c084fc" stroke="#1f2937" stroke-width="3"/><path d="M28,58 A8,8 0 0,1 42,58 Z" fill="#1f2937" transform="rotate(15 35 58)" /><path d="M58,58 A8,8 0 0,1 72,58 Z" fill="#1f2937" transform="rotate(-15 65 58)" /><path d="M42,75 Q50,65 58,75" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/><path d="M35,62 L35,75 M38,62 L38,72 M65,62 L65,75 M62,62 L62,72" stroke="#60a5fa" stroke-width="3" stroke-linecap="round" fill="none"/></svg>`,
             princess: `<svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md"><path d="M30,85 C10,85 15,55 35,55 C45,55 45,65 35,65 C25,65 25,75 40,75 C60,75 70,60 50,45 C40,35 25,45 25,30 C25,15 45,15 50,30 C55,45 80,45 85,65 C90,85 60,85 30,85 Z" fill="#6ee7b7" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/><circle cx="35" cy="30" r="2.5" fill="#1f2937"/><circle cx="50" cy="30" r="2.5" fill="#1f2937"/><path d="M33,18 L36,8 L42,15 L48,8 L51,18 Z" fill="#fde047" stroke="#1f2937" stroke-width="2"/></svg>`,
             coin: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="50" r="40" fill="#fde047" stroke="#1f2937" stroke-width="4"/><circle cx="50" cy="50" r="30" fill="none" stroke="#ca8a04" stroke-width="2" stroke-dasharray="4 4"/></svg>`,
             shop: `<svg viewBox="0 0 100 100" class="w-full h-full"><rect x="15" y="40" width="70" height="40" fill="#fca5a5" stroke="#1f2937" stroke-width="4"/><path d="M10,40 L90,40 L80,20 L20,20 Z" fill="#fde047" stroke="#1f2937" stroke-width="4"/></svg>`,
@@ -268,7 +237,6 @@
                 <path d="M40,80 Q50,90 60,80" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
             </svg>`,
             fluffyTree: `<svg viewBox="0 0 200 300" class="w-[120%] h-[110%] opacity-95 transform translate-y-6"><path d="M 80 130 C 80 200, 50 280, 30 300 L 170 300 C 150 280, 120 200, 120 130 Z" fill="#78350f" stroke="#1f2937" stroke-width="4"/><g class="tree-sway"><path d="M 100 140 C 160 160, 200 150, 190 90 C 180 30, 150 10, 110 20 C 70 -10, 20 20, 20 70 C 10 120, 50 160, 100 140 Z" fill="#22c55e" stroke="#1f2937" stroke-width="4"/></g></svg>`,
-            
             ui: {
                 sparkle: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M50,10 L55,45 L90,50 L55,55 L50,90 L45,55 L10,50 L45,45 Z" fill="#fde047" stroke="#1f2937" stroke-width="4"/></svg>`,
                 setting: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="50" r="25" fill="#d1d5db" stroke="#1f2937" stroke-width="4"/><path d="M50,10 L60,20 L80,20 L80,40 L90,50 L80,60 L80,80 L60,80 L50,90 L40,80 L20,80 L20,60 L10,50 L20,40 L20,20 L40,20 Z" fill="none" stroke="#1f2937" stroke-width="4"/></svg>`,
@@ -289,7 +257,6 @@
                 shopStand: `<svg viewBox="0 0 100 100" class="w-full h-full"><polygon points="10,40 30,15 70,15 90,40" fill="#fca5a5" stroke="#1f2937" stroke-width="4" stroke-linejoin="round"/><rect x="20" y="40" width="60" height="40" fill="#fde047" stroke="#1f2937" stroke-width="4"/><circle cx="30" cy="80" r="8" fill="#1f2937"/><circle cx="70" cy="80" r="8" fill="#1f2937"/><line x1="30" y1="15" x2="30" y2="40" stroke="#1f2937" stroke-width="4"/><line x1="50" y1="15" x2="50" y2="40" stroke="#1f2937" stroke-width="4"/><line x1="70" y1="15" x2="70" y2="40" stroke="#1f2937" stroke-width="4"/></svg>`,
                 magicWand: `<svg viewBox="0 0 100 100" class="w-full h-full"><line x1="20" y1="80" x2="70" y2="30" stroke="#d1d5db" stroke-width="8" stroke-linecap="round"/><polygon points="80,10 85,25 100,25 88,35 92,50 80,40 68,50 72,35 60,25 75,25" fill="#fde047" stroke="#1f2937" stroke-width="4"/><circle cx="30" cy="70" r="3" fill="#1f2937"/><circle cx="45" cy="55" r="3" fill="#1f2937"/></svg>`
             },
-
             icons: {
                 book: `<svg viewBox="0 0 100 100"><path d="M20 20 L45 25 L45 80 L20 75 Z" fill="#ffb3ba" stroke="#1f2937" stroke-width="4"/><path d="M80 20 L55 25 L55 80 L80 75 Z" fill="#ffb3ba" stroke="#1f2937" stroke-width="4"/></svg>`,
                 read: `<svg viewBox="0 0 100 100"><path d="M30 10 L70 10 L70 90 L50 70 L30 90 Z" fill="#bae1ff" stroke="#1f2937" stroke-width="4"/></svg>`,
@@ -348,21 +315,6 @@
         
         let myAuthToken = localStorage.getItem('family_secret_token_v1') || "";
 
-        function getSavers(uid) {
-            try {
-                return dailyHabitData[uid]?.inventory?.streakSavers || 0;
-            } catch(e) { return 0; }
-        }
-
-        function addSavers(uid, amount) {
-            try {
-                if(dailyHabitData[uid] && dailyHabitData[uid].inventory) {
-                    dailyHabitData[uid].inventory.streakSavers = Math.max(0, dailyHabitData[uid].inventory.streakSavers + amount);
-                    saveLocal();
-                }
-            } catch(e) { console.error(e); }
-        }
-
         async function initDB() {
             if (!myAuthToken) {
                 document.getElementById('auth-modal').classList.remove('hidden');
@@ -383,7 +335,6 @@
                     });
                 } catch(e) { appTemplates = {}; }
             } 
-            
             if (Object.keys(appTemplates).length === 0) {
                 appTemplates = {
                     "reading": { 
@@ -401,16 +352,10 @@
             currentHabitId = appTemplates[lastHId] ? lastHId : Object.keys(appTemplates)[0];
 
             const savedShop = localStorage.getItem('shopItems_v13');
-            if (savedShop) {
-                try { shopItems = JSON.parse(savedShop); } catch(e) { shopItems = []; }
-            } else {
-                shopItems = [{ id: "s1", name: "看電視 30 分鐘", cost: 50, icon: "star", reqLog: true }];
-            }
+            try { shopItems = savedShop ? JSON.parse(savedShop) : [{ id: "s1", name: "看電視 30 分鐘", cost: 50, icon: "star", reqLog: true }]; } catch(e) { shopItems = []; }
 
-            // [重要修復]：在此階段將資料庫缺失的結構補齊，不依賴 Getter
-            if (!shopItems.some(i => i.id === 'special_saver')) {
-                shopItems.unshift({ id: "special_saver", name: "保命符 (時光機)", cost: 500, icon: "magicWand", reqLog: false, isSpecial: 'saver' });
-            }
+            // [資料清洗]: 完全拔除保命符歷史設定
+            shopItems = shopItems.filter(i => i.isSpecial !== 'saver' && i.id !== 'special_saver');
 
             const savedRadios = localStorage.getItem('customRadios_v13');
             if(savedRadios) { try { customRadios = JSON.parse(savedRadios); } catch(e) { customRadios = []; } }
@@ -425,9 +370,8 @@
                     dailyHabitData[u.uid] = { totalCoins: 0, currentCoins: 0, mails: [], habits: {}, shopHistory: [] };
                 }
                 
-                // 強制結構修復：確保 inventory 與 streakSavers 永遠存在
-                if (!dailyHabitData[u.uid].inventory) dailyHabitData[u.uid].inventory = { streakSavers: 0 };
-                if (typeof dailyHabitData[u.uid].inventory.streakSavers !== 'number') dailyHabitData[u.uid].inventory.streakSavers = 0;
+                // [資料清洗]: 清除舊有的保命符庫存
+                if (dailyHabitData[u.uid].inventory) { delete dailyHabitData[u.uid].inventory; }
 
                 if (!dailyHabitData[u.uid].mails) dailyHabitData[u.uid].mails = [];
                 if (!dailyHabitData[u.uid].shopHistory) dailyHabitData[u.uid].shopHistory = [];
@@ -449,9 +393,7 @@
             if(cloudSync === 'empty' || !cloudSync) saveLocal();
             
             document.getElementById('sync-overlay').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('sync-overlay').classList.add('hidden');
-            }, 500);
+            setTimeout(() => { document.getElementById('sync-overlay').classList.add('hidden'); }, 500);
             
             UI.init();
         }
@@ -463,12 +405,8 @@
                 if(uData.mails && uData.mails.length > 50) {
                     const mailsToPrune = uData.mails.slice(50);
                     let autoClaimedCoins = 0;
-                    mailsToPrune.forEach(m => {
-                        if(m.attachedCoins && !m.isClaimed) autoClaimedCoins += m.attachedCoins;
-                    });
-                    if(autoClaimedCoins > 0) {
-                        uData.currentCoins += autoClaimedCoins; uData.totalCoins += autoClaimedCoins;
-                    }
+                    mailsToPrune.forEach(m => { if(m.attachedCoins && !m.isClaimed) autoClaimedCoins += m.attachedCoins; });
+                    if(autoClaimedCoins > 0) { uData.currentCoins += autoClaimedCoins; uData.totalCoins += autoClaimedCoins; }
                     uData.mails = uData.mails.slice(0, 50);
                 }
                 if(uData.shopHistory) uData.shopHistory = uData.shopHistory.slice(0, 50);
@@ -492,57 +430,43 @@
                 localStorage.setItem('customRadios_v13', JSON.stringify(customRadios));
                 localStorage.setItem('daily-habit-v13', JSON.stringify(dailyHabitData));
                 
-                if(!SyncEngine.isSyncing) {
-                    SyncEngine.push().catch(e => console.error("Background sync push failed:", e));
-                } else {
-                    SyncEngine.syncPending = true;
-                }
+                if(!SyncEngine.isSyncing) { SyncEngine.push().catch(e => console.error("Background sync failed", e)); } 
+                else { SyncEngine.syncPending = true; }
             } catch(e) { console.error("Save Local Error:", e); }
         }
 
         const SyncEngine = {
             API_URL: "https://script.google.com/macros/s/AKfycbwVha-MeBJJJtXQKDB-yLVFpMkwGzRd19s9XG10lHQ6UZAjMoefkp4RJkm-wJuasWd3CA/exec",
-            isSyncing: false,
-            syncPending: false, 
-            
+            isSyncing: false, syncPending: false, 
             async pull() {
                 if (!this.API_URL) return null;
                 try {
                     const response = await fetch(this.API_URL + "?token=" + encodeURIComponent(myAuthToken));
                     const result = await response.json();
-                    
                     if (result.status === 'error') {
                         UI.showToast("金鑰錯誤，請重新輸入！");
-                        localStorage.removeItem('family_secret_token_v1');
-                        myAuthToken = "";
-                        setTimeout(() => location.reload(), 1500);
-                        return 'auth_error';
+                        localStorage.removeItem('family_secret_token_v1'); myAuthToken = "";
+                        setTimeout(() => location.reload(), 1500); return 'auth_error';
                     }
-                    
                     if (result.status === 'success' && result.data) {
                         const cloudData = result.data;
                         if(Object.keys(cloudData).length === 0) return 'empty'; 
-                        
                         const rawDaily = cloudData['daily-habit-v13'] || {};
                         if (!rawDaily.systemFlags) rawDaily.systemFlags = {}; 
-                        
                         users.forEach(u => {
                             if (!rawDaily[u.uid]) { rawDaily[u.uid] = { totalCoins: 0, currentCoins: 0, mails: [], habits: {}, shopHistory: [] }; }
                             if (!rawDaily[u.uid].mails) rawDaily[u.uid].mails = [];
                             if (!rawDaily[u.uid].shopHistory) rawDaily[u.uid].shopHistory = [];
                             if (!rawDaily[u.uid].habits) rawDaily[u.uid].habits = {};
                         });
-                        
                         if (cloudData.appTemplates_v13) localStorage.setItem('appTemplates_v13', JSON.stringify(cloudData.appTemplates_v13));
                         if (cloudData.shopItems_v13) localStorage.setItem('shopItems_v13', JSON.stringify(cloudData.shopItems_v13));
                         if (cloudData.customRadios_v13) localStorage.setItem('customRadios_v13', JSON.stringify(cloudData.customRadios_v13));
                         localStorage.setItem('daily-habit-v13', JSON.stringify(rawDaily));
                         return 'success';
                     }
-                } catch (e) { console.error("Pull failed", e); }
-                return 'error';
+                } catch (e) {} return 'error';
             },
-
             async push() {
                 if (this.isSyncing || !this.API_URL) return;
                 this.isSyncing = true;
@@ -554,46 +478,29 @@
                         'daily-habit-v13': JSON.parse(localStorage.getItem('daily-habit-v13') || "{}"),
                         token: myAuthToken
                     };
-                    await fetch(this.API_URL, {
-                        method: 'POST', mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(updates)
-                    });
-                } catch (e) { console.error(e); } 
-                finally {
+                    await fetch(this.API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updates) });
+                } catch (e) {} finally {
                     this.isSyncing = false;
-                    if (this.syncPending) {
-                        this.syncPending = false;
-                        this.push();
-                    }
+                    if (this.syncPending) { this.syncPending = false; this.push(); }
                 }
             },
-
             async manualSync() {
                 if(this.isSyncing) return;
-                document.getElementById('sync-overlay').classList.remove('hidden');
-                document.getElementById('sync-overlay').style.opacity = '1';
+                document.getElementById('sync-overlay').classList.remove('hidden'); document.getElementById('sync-overlay').style.opacity = '1';
                 document.getElementById('sync-msg').innerText = '備份本地紀錄中...';
-                
                 await this.push();
-                
                 document.getElementById('sync-msg').innerText = '接收雲端最新手帳...';
                 await initDB();
-                
                 UI.showToast("同步完成！");
             }
         };
 
         const AudioEngine = {
             muted: false, ctx: null,
-            init() { 
-                if(this.ctx) return; 
-                try { window.AudioContext = window.AudioContext || window.webkitAudioContext; this.ctx = new AudioContext(); } catch(e) {} 
-            },
+            init() { try { window.AudioContext = window.AudioContext || window.webkitAudioContext; this.ctx = new AudioContext(); } catch(e) {} },
             toggleMute() { 
                 this.muted = !this.muted; 
-                const btn = document.getElementById('mute-btn');
-                if(btn) btn.innerHTML = `<div class="w-6 h-6">${this.muted ? SVGs.ui.mute : SVGs.ui.speaker}</div>`; 
+                document.getElementById('mute-btn').innerHTML = `<div class="w-6 h-6">${this.muted ? SVGs.ui.mute : SVGs.ui.speaker}</div>`; 
                 if(!this.muted) { this.init(); if(this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); this.playCoin(); } 
             },
             playCoin() { 
@@ -643,7 +550,7 @@
                     osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 2); 
                 } catch(e){}
             },
-            vibrate(pattern) { if(navigator.vibrate) try{ navigator.vibrate(pattern); }catch(e){} }
+            vibrate(pattern) { if(navigator.vibrate) try{navigator.vibrate(pattern);}catch(e){} }
         };
 
         const PWA = {
@@ -696,37 +603,40 @@
             },
             bindModalSwipes() {
                 const attachSwipe = (modalId, tabsArray, switchFn) => {
-                    let startX = 0, startY = 0; const modal = document.getElementById(modalId); if(!modal) return;
-                    modal.addEventListener('touchstart', e => { startX = e.changedTouches[0].screenX; startY = e.changedTouches[0].screenY; }, {passive: true});
-                    modal.addEventListener('touchend', e => {
-                        if(['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest('[contenteditable="true"]') || e.target.closest('#mail-write-area')) return;
-                        if(startX < 30) return; 
-                        let endX = e.changedTouches[0].screenX, endY = e.changedTouches[0].screenY;
-                        let dx = endX - startX, dy = endY - startY;
-                        if(Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 2) {
-                            let activeIdx = tabsArray.findIndex(t => { const tabEl = document.getElementById(`${t.prefix}-tab-${t.id}`); return tabEl && tabEl.classList.contains(t.activeClass); });
-                            if(activeIdx === -1) activeIdx = 0;
-                            if(dx > 0) { let prev = activeIdx - 1 < 0 ? tabsArray.length - 1 : activeIdx - 1; switchFn(tabsArray[prev].id, -1); } 
-                            else { let next = activeIdx + 1 >= tabsArray.length ? 0 : activeIdx + 1; switchFn(tabsArray[next].id, 1); }
-                        }
-                    }, {passive: true});
+                    let startX = 0, startY = 0;
+                    setTimeout(()=>{
+                        const modal = document.getElementById(modalId); if(!modal) return;
+                        modal.addEventListener('touchstart', e => { startX = e.changedTouches[0].screenX; startY = e.changedTouches[0].screenY; }, {passive: true});
+                        modal.addEventListener('touchend', e => {
+                            if(['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest('[contenteditable="true"]') || e.target.closest('#mail-write-area')) return;
+                            if(startX < 30) return; 
+                            let endX = e.changedTouches[0].screenX, endY = e.changedTouches[0].screenY;
+                            let dx = endX - startX, dy = endY - startY;
+                            if(Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 2) {
+                                let activeIdx = tabsArray.findIndex(t => { const tabEl = document.getElementById(`${t.prefix}-tab-${t.id}`); return tabEl && tabEl.classList.contains(t.activeClass); });
+                                if(activeIdx === -1) activeIdx = 0;
+                                if(dx > 0) { let prev = activeIdx - 1 < 0 ? tabsArray.length - 1 : activeIdx - 1; switchFn(tabsArray[prev].id, -1); } 
+                                else { let next = activeIdx + 1 >= tabsArray.length ? 0 : activeIdx + 1; switchFn(tabsArray[next].id, 1); }
+                            }
+                        }, {passive: true});
+                    }, 500);
                 };
-                setTimeout(() => {
-                    attachSwipe('shop-modal', [{id: 'shop', prefix: 'shop', activeClass: 'bg-pink-500'}, {id: 'history', prefix: 'shop', activeClass: 'bg-pink-500'}, {id: 'edit', prefix: 'shop', activeClass: 'bg-pink-500'}], (id, dir) => Shop.switchTab(id, dir));
-                    attachSwipe('mailbox-modal', [{id: 'read', prefix: 'm', activeClass: 'bg-pink-300'}, {id: 'write', prefix: 'm', activeClass: 'bg-pink-300'}], (id, dir) => Mail.switchTab(id, dir));
-                    attachSwipe('report-modal', [{id: 'self', prefix: 'rep', activeClass: 'bg-purple-500'}, {id: 'family', prefix: 'rep', activeClass: 'bg-purple-500'}, {id: 'stats', prefix: 'rep', activeClass: 'bg-purple-500'}], (id, dir) => Report.switchTab(id, dir));
-                }, 500);
+                attachSwipe('shop-modal', [{id: 'shop', prefix: 'shop', activeClass: 'bg-pink-500'}, {id: 'history', prefix: 'shop', activeClass: 'bg-pink-500'}, {id: 'edit', prefix: 'shop', activeClass: 'bg-pink-500'}], (id, dir) => Shop.switchTab(id, dir));
+                attachSwipe('mailbox-modal', [{id: 'read', prefix: 'm', activeClass: 'bg-pink-300'}, {id: 'write', prefix: 'm', activeClass: 'bg-pink-300'}], (id, dir) => Mail.switchTab(id, dir));
+                attachSwipe('report-modal', [{id: 'self', prefix: 'rep', activeClass: 'bg-purple-500'}, {id: 'family', prefix: 'rep', activeClass: 'bg-purple-500'}, {id: 'stats', prefix: 'rep', activeClass: 'bg-purple-500'}], (id, dir) => Report.switchTab(id, dir));
             }
         };
 
         const Mascot = {
             speechTimer: null,
             speak(text) {
-                const speech = document.getElementById('mascot-speech'); if(!speech) return;
-                speech.innerText = text;
-                speech.classList.remove('opacity-0', 'pointer-events-none'); speech.classList.add('pop-in');
-                if(this.speechTimer) clearTimeout(this.speechTimer);
-                this.speechTimer = setTimeout(() => { speech.classList.add('opacity-0', 'pointer-events-none'); speech.classList.remove('pop-in'); }, 5500);
+                try {
+                    const speech = document.getElementById('mascot-speech'); if(!speech) return;
+                    speech.innerText = text;
+                    speech.classList.remove('opacity-0', 'pointer-events-none'); speech.classList.add('pop-in');
+                    if(this.speechTimer) clearTimeout(this.speechTimer);
+                    this.speechTimer = setTimeout(() => { speech.classList.add('opacity-0', 'pointer-events-none'); speech.classList.remove('pop-in'); }, 5500);
+                } catch(e){}
             }
         };
 
@@ -757,22 +667,26 @@
                 } else { AudioEngine.playAnimal(currentUser.svgKey); return false; }
             },
             spawnHearts() { 
-                const container = document.getElementById('mascot-img'); if(!container) return;
-                for(let i=0; i<5; i++) { 
-                    const heart = document.createElement('div'); heart.className = 'heart-float w-6 h-6'; heart.innerHTML = SVGs.icons.heart; 
-                    heart.style.left = (Math.random() * 80 + 10) + 'px'; heart.style.top = (Math.random() * 20 + 20) + 'px'; heart.style.animationDelay = (Math.random() * 0.5) + 's'; 
-                    container.appendChild(heart); setTimeout(() => heart.remove(), 1000); 
-                } 
+                try {
+                    const container = document.getElementById('mascot-img'); if(!container) return;
+                    for(let i=0; i<5; i++) { 
+                        const heart = document.createElement('div'); heart.className = 'heart-float w-6 h-6'; heart.innerHTML = SVGs.icons.heart; 
+                        heart.style.left = (Math.random() * 80 + 10) + 'px'; heart.style.top = (Math.random() * 20 + 20) + 'px'; heart.style.animationDelay = (Math.random() * 0.5) + 's'; 
+                        container.appendChild(heart); setTimeout(() => heart.remove(), 1000); 
+                    } 
+                } catch(e){}
             },
             triggerGoldenRain() { 
-                const rain = document.getElementById('golden-rain'); if(!rain) return;
-                rain.style.display = 'block'; 
-                for(let i=0; i<30; i++) { 
-                    const coin = document.createElement('div'); coin.className = 'falling-coin w-8 h-8'; coin.innerHTML = SVGs.coin; 
-                    coin.style.left = Math.random() * 100 + 'vw'; coin.style.animationDuration = (Math.random() * 1 + 1) + 's'; 
-                    rain.appendChild(coin); 
-                } 
-                setTimeout(() => { rain.style.display = 'none'; rain.innerHTML = ''; }, 2500); 
+                try {
+                    const rain = document.getElementById('golden-rain'); if(!rain) return;
+                    rain.style.display = 'block'; 
+                    for(let i=0; i<30; i++) { 
+                        const coin = document.createElement('div'); coin.className = 'falling-coin w-8 h-8'; coin.innerHTML = SVGs.coin; 
+                        coin.style.left = Math.random() * 100 + 'vw'; coin.style.animationDuration = (Math.random() * 1 + 1) + 's'; 
+                        rain.appendChild(coin); 
+                    } 
+                    setTimeout(() => { rain.style.display = 'none'; rain.innerHTML = ''; }, 2500); 
+                } catch(e){}
             },
             triggerAuthorEgg() {
                 AudioEngine.init(); AudioEngine.playAnimal('fox');
@@ -824,18 +738,24 @@
             },
             triggerReset() {
                 Confirm.show("嚴重警告", "這會清空所有歷史資料！確定要繼續嗎？", "繼續", () => {
-                    const isAdd = Math.random() > 0.5;
-                    const num1 = Math.floor(Math.random() * 90) + 10;
-                    const num2 = isAdd ? Math.floor(Math.random() * 90) + 10 : Math.floor(Math.random() * 9) + 1;
-                    const opStr = isAdd ? '+' : '×';
-                    const answer = isAdd ? (num1 + num2) : (num1 * num2);
+                    const type = Math.floor(Math.random() * 3);
+                    let num1, num2, opStr, ans;
+                    if (type === 0) {
+                        num1 = Math.floor(Math.random() * 900) + 100; num2 = Math.floor(Math.random() * 90) + 10;
+                        opStr = '+'; ans = num1 + num2;
+                    } else if (type === 1) {
+                        num1 = Math.floor(Math.random() * 900) + 100; num2 = Math.floor(Math.random() * 90) + 10;
+                        opStr = '-'; ans = num1 - num2;
+                    } else {
+                        num1 = Math.floor(Math.random() * 90) + 10; num2 = Math.floor(Math.random() * 8) + 2;
+                        opStr = '*'; ans = num1 * num2;
+                    }
                     
-                    const ansInput = document.getElementById('math-ans');
-                    if(ansInput) ansInput.value = '';
+                    const ansInput = document.getElementById('math-ans'); if(ansInput) ansInput.value = '';
                     const questionEl = document.getElementById('math-question');
-                    if(questionEl) questionEl.innerText = `${num1} ${opStr} ${num2} = ?`;
+                    if(questionEl) questionEl.innerText = `${num1} ${opStr === '*' ? '×' : opStr} ${num2} = ?`;
                     
-                    this.expectedMathAnswer = answer;
+                    this.expectedMathAnswer = ans;
                     UI.openModal('math-confirm-modal');
                 });
             },
@@ -847,7 +767,6 @@
                             if(dailyHabitData[u.uid]) {
                                 dailyHabitData[u.uid].currentCoins = 0; dailyHabitData[u.uid].totalCoins = 0;
                                 dailyHabitData[u.uid].mails = []; dailyHabitData[u.uid].shopHistory = [];
-                                dailyHabitData[u.uid].inventory = { streakSavers: 0 };
                                 Object.keys(dailyHabitData[u.uid].habits).forEach(hId => {
                                     dailyHabitData[u.uid].habits[hId].logs = {}; dailyHabitData[u.uid].habits[hId].streak = 0;
                                 });
@@ -868,43 +787,33 @@
             let h = d.getHours(); const min = d.getMinutes().toString().padStart(2, '0'); const ampm = h >= 12 ? '下午' : '上午';
             if (h > 12) h -= 12; if (h === 0) h = 12; return `${m}月${day}日(${w}) ${ampm}${h.toString().padStart(2, '0')}:${min}`;
         }
-        
         function escapeHTML(str) {
             if (!str) return "";
-            return str.replace(/[&<>"']/g, function(m) {
-                switch (m) { case '&': return '&amp;'; case '<': return '&lt;'; case '>': return '&gt;'; case '"': return '&quot;'; case "'": return '&#39;'; }
-            });
+            return str.replace(/[&<>"']/g, function(m) { switch (m) { case '&': return '&amp;'; case '<': return '&lt;'; case '>': return '&gt;'; case '"': return '&quot;'; case "'": return '&#39;'; } });
         }
-        
         function getOverallStreak(uid) {
             try {
                 const uData = getUserData(uid); if(!uData) return 0;
                 let streak = 0; const checkDate = new Date();
                 const formatD = (date) => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
                 let hasToday = Object.values(uData.habits||{}).some(h => h?.logs?.[formatD(checkDate)]);
-                
                 if (!hasToday) { 
                     checkDate.setDate(checkDate.getDate() - 1); 
                     if (!Object.values(uData.habits||{}).some(h => h?.logs?.[formatD(checkDate)])) return 0; 
                 } else { streak++; checkDate.setDate(checkDate.getDate() - 1); }
-                
                 while(true) { 
-                    if (Object.values(uData.habits||{}).some(h => h?.logs?.[formatD(checkDate)])) { streak++; checkDate.setDate(checkDate.getDate() - 1); } 
-                    else { break; } 
+                    if (Object.values(uData.habits||{}).some(h => h?.logs?.[formatD(checkDate)])) { streak++; checkDate.setDate(checkDate.getDate() - 1); } else break; 
                 } 
                 return streak;
             } catch(e) { return 0; }
         }
-        
         function isFamilyBondActive(dateStr) {
             try {
-                const checkDate = dateStr ? new Date(dateStr) : new Date();
-                checkDate.setDate(checkDate.getDate() - 1); 
+                const checkDate = dateStr ? new Date(dateStr) : new Date(); checkDate.setDate(checkDate.getDate() - 1); 
                 const yStr = `${checkDate.getFullYear()}-${String(checkDate.getMonth()+1).padStart(2,'0')}-${String(checkDate.getDate()).padStart(2,'0')}`;
                 return users.every(u => Object.values(getUserData(u.uid)?.habits||{}).some(h => h?.logs?.[yStr] && !h.logs[yStr].isPruned));
             } catch(e) { return false; }
         }
-        
         function getIdentityBadge(hId, uid) {
             try {
                 const hData = getUserData(uid)?.habits?.[hId]; if(!hData) return "新手";
@@ -914,21 +823,16 @@
                 return currentRole;
             } catch(e) { return "新手"; }
         }
-
         function createPieChartSVG(data) {
             let total = data.reduce((sum, d) => sum + d.value, 0);
             if (total === 0) return `<div class="w-full h-full bg-gray-100 rounded-full border-4 border-gray-800 flex items-center justify-center text-xs font-bold text-gray-400">無數據</div>`;
-            
             let gradientStr = ""; let currentAngle = 0;
             data.forEach((d, i) => {
-                let percentage = (d.value / total) * 100;
-                gradientStr += `${d.color} ${currentAngle}% ${currentAngle + percentage}%`;
-                if (i < data.length - 1) gradientStr += ", ";
-                currentAngle += percentage;
+                let percentage = (d.value / total) * 100; gradientStr += `${d.color} ${currentAngle}% ${currentAngle + percentage}%`;
+                if (i < data.length - 1) gradientStr += ", "; currentAngle += percentage;
             });
             return `<div class="w-full h-full rounded-full border-4 border-gray-800 shadow-[4px_4px_0px_#1f2937]" style="background: conic-gradient(${gradientStr});"></div>`;
         }
-        
         function renderLeaderboard(data, unit) {
             if(data.length === 0) return `<p class="text-sm font-bold text-gray-400 text-center py-2">尚未開始</p>`;
             return data.map((d, i) => {
@@ -936,19 +840,16 @@
                 if(i===0) crown = `<div class="w-5 h-5 ml-1 flex-shrink-0">${SVGs.crown.replace('CROWN_COLOR', '#fde047')}</div>`;
                 else if(i===1) crown = `<div class="w-5 h-5 ml-1 flex-shrink-0">${SVGs.crown.replace('CROWN_COLOR', '#e5e7eb')}</div>`;
                 else if(i===2) crown = `<div class="w-5 h-5 ml-1 flex-shrink-0">${SVGs.crown.replace('CROWN_COLOR', '#fdba74')}</div>`;
-                
                 return `
                 <div class="flex justify-between items-center bg-gray-50 border-2 border-dashed border-gray-300 p-2 rounded-lg mb-1">
                     <div class="flex items-center gap-1.5 truncate">
                         <div class="w-3 h-3 rounded-full border border-gray-800 flex-shrink-0" style="background:${d.color}"></div>
-                        <span class="font-black text-sm text-gray-800 truncate max-w-[120px] md:max-w-[160px]">${d.title}</span>
-                        ${crown}
+                        <span class="font-black text-sm text-gray-800 truncate max-w-[120px] md:max-w-[160px]">${d.title}</span>${crown}
                     </div>
                     <span class="font-black text-sm text-gray-800 flex-shrink-0">${d.value} ${unit}</span>
                 </div>`;
             }).join('');
         }
-
         function getMonthlyCoinsForUser(uid, currentM, currentY) {
             try {
                 const u = getUserData(uid); if(!u) return 0;
@@ -964,76 +865,55 @@
         }
 
         const UI = {
-            footprintLimit: 7,
-            activeModals: [],
-            
+            footprintLimit: 7, activeModals: [],
             init() {
                 try {
                     PWA.init(); SwipeDetector.init(); this.injectModals();
-                    
                     const setIcon = (id, html) => { const el = document.getElementById(id); if(el) el.innerHTML = html; };
-                    
-                    setIcon('shop-btn', SVGs.ui.shopStand); 
-                    setIcon('trophy-btn', SVGs.ui.magicBook);
-                    const mailboxBtn = document.getElementById('mailbox-btn');
-                    if(mailboxBtn) mailboxBtn.innerHTML += `<div class="w-full h-full p-0.5">${SVGs.mailbox}</div>`;
-                    setIcon('coin-icon', SVGs.coin); 
-                    setIcon('flame-icon', SVGs.flame);
-                    setIcon('icon-crown-header', SVGs.crown.replace('CROWN_COLOR', '#fde047'));
-                    setIcon('icon-paw-title', SVGs.paw); 
-                    setIcon('icon-author-fox', SVGs.fox);
+                    setIcon('shop-btn', SVGs.ui.shopStand); setIcon('trophy-btn', SVGs.ui.magicBook);
+                    const mailboxBtn = document.getElementById('mailbox-btn'); if(mailboxBtn) mailboxBtn.innerHTML += `<div class="w-full h-full p-0.5">${SVGs.mailbox}</div>`;
+                    setIcon('coin-icon', SVGs.coin); setIcon('flame-icon', SVGs.flame); setIcon('icon-crown-header', SVGs.crown.replace('CROWN_COLOR', '#fde047'));
+                    setIcon('icon-paw-title', SVGs.paw); setIcon('icon-author-fox', SVGs.fox);
                     setIcon('mute-btn', `<div class="w-6 h-6">${AudioEngine.muted ? SVGs.ui.mute : SVGs.ui.speaker}</div>`);
-                    setIcon('icon-sync-btn', SVGs.ui.history);
-                    setIcon('icon-radio-btn', SVGs.icons.bulb);
-                    setIcon('icon-setting-btn', SVGs.ui.magicWand);
-                    setIcon('sync-mascot-img', SVGs.cat);
+                    setIcon('icon-sync-btn', SVGs.ui.history); setIcon('icon-radio-btn', SVGs.icons.bulb);
+                    setIcon('icon-setting-btn', SVGs.ui.magicWand); setIcon('sync-mascot-img', SVGs.cat);
                     setIcon('icon-install-btn', SVGs.icons.star);
                     
                     document.addEventListener("visibilitychange", () => { if (!document.hidden && !SyncEngine.isSyncing) this.renderAll(); });
-                    window.addEventListener('popstate', (e) => {
-                        if (this.activeModals.length > 0) { const topModal = this.activeModals.pop(); this.closeModal(topModal, true); }
-                    });
+                    window.addEventListener('popstate', (e) => { if (this.activeModals.length > 0) { const topModal = this.activeModals.pop(); this.closeModal(topModal, true); } });
                     
                     this.renderHabitDropdown(); this.renderUsers(); this.switchUser(currentUser.uid, true);
                 } catch(e) { console.error("UI Init Error:", e); }
             },
             
             renderAll() {
+                try { if (!appTemplates[currentHabitId]) { currentHabitId = Object.keys(appTemplates)[0]; localStorage.setItem('lastHabitId_v13', currentHabitId); } } catch(e){}
+                try { this.renderDashboard(); } catch(e) { console.error(e); }
+                try { this.renderButtons(); } catch(e) { console.error(e); }
+                try { this.renderCalendar(); } catch(e) { console.error(e); }
+                try { this.renderFootprints(); } catch(e) { console.error(e); }
+                try { this.updateMailBadge(); } catch(e) { console.error(e); }
                 try {
-                    if (!appTemplates[currentHabitId]) { currentHabitId = Object.keys(appTemplates)[0]; localStorage.setItem('lastHabitId_v13', currentHabitId); }
-                    this.renderDashboard(); this.renderButtons(); this.renderCalendar(); this.renderFootprints(); this.updateMailBadge();
-                    
                     const banner = document.getElementById('family-buff-banner');
                     if(banner) banner.classList.toggle('hidden', !isFamilyBondActive());
-                    
+                } catch(e) {}
+                try {
                     const identityText = document.getElementById('identity-text');
                     if(identityText) identityText.innerText = getIdentityBadge(currentHabitId, currentUser.uid);
-                } catch(e) { console.error("RenderAll Error:", e); }
+                } catch(e) {}
             },
 
             renderUsers() {
                 try {
                     const switcher = document.getElementById('user-switcher');
-                    if(switcher) {
-                        switcher.innerHTML = users.map(u => `
-                            <button id="btn-${u.uid}" onclick="UI.switchUser('${u.uid}')" class="w-10 h-10 rounded-xl transition-all duration-200 border-2 border-transparent flex items-center justify-center relative p-1.5 hover:scale-105">
-                                ${SVGs[u.svgKey]}
-                            </button>
-                        `).join('');
-                    }
-                } catch(e) { console.error(e); }
+                    if(switcher) switcher.innerHTML = users.map(u => `<button id="btn-${u.uid}" onclick="UI.switchUser('${u.uid}')" class="w-10 h-10 rounded-xl transition-all duration-200 border-2 border-transparent flex items-center justify-center relative p-1.5 hover:scale-105">${SVGs[u.svgKey]}</button>`).join('');
+                } catch(e) {}
             },
             
             renderDashboard() {
-                try {
-                    const uData = getUserData(currentUser.uid);
-                    if(uData) {
-                        const coinsEl = document.getElementById('current-coins');
-                        if(coinsEl) coinsEl.innerText = uData.currentCoins || 0;
-                        const streakEl = document.getElementById('overall-streak');
-                        if(streakEl) streakEl.innerText = getOverallStreak(currentUser.uid);
-                    }
-                } catch(e) { console.error(e); }
+                const uData = getUserData(currentUser.uid); if(!uData) return;
+                const coinsEl = document.getElementById('current-coins'); if(coinsEl) coinsEl.innerText = uData.currentCoins || 0;
+                const streakEl = document.getElementById('overall-streak'); if(streakEl) streakEl.innerText = getOverallStreak(currentUser.uid);
             },
             
             switchUser(uid, isInit=false, swipeDir=0) {
@@ -1047,8 +927,7 @@
                             else { btn.classList.remove('bg-yellow-200', 'scale-110', 'border-gray-800'); btn.classList.add('border-transparent'); btn.style.boxShadow = "none"; }
                         }
                     });
-                    const mascot = document.getElementById('mascot-img');
-                    if(mascot) mascot.innerHTML = SVGs[currentUser.svgKey];
+                    const mascot = document.getElementById('mascot-img'); if(mascot) mascot.innerHTML = SVGs[currentUser.svgKey];
                     if(isInit) this.switchHabit(currentHabitId); else this.renderAll();
                     this.showMascotMessage();
                 } catch(e) { console.error(e); }
@@ -1071,127 +950,111 @@
             switchHabit(hId) {
                 try {
                     currentHabitId = hId; localStorage.setItem('lastHabitId_v13', hId); 
-                    const dropdown = document.getElementById('habit-dropdown');
-                    if(dropdown) dropdown.classList.add('hidden'); 
+                    const dropdown = document.getElementById('habit-dropdown'); if(dropdown) dropdown.classList.add('hidden'); 
                     recoveryDate = null;
                     const habit = appTemplates[hId] || Object.values(appTemplates)[0]; const th = THEMES.find(t => t.id === habit.themeId) || THEMES[0];
                     const appTitle = document.getElementById('app-title'); if(appTitle) appTitle.innerText = habit.title; 
                     const header = document.getElementById('main-header'); if(header) header.style.background = th.grad;
                     this.renderAll();
-                } catch(e) { console.error(e); }
+                } catch(e) {}
             },
             
             renderButtons() {
-                try {
-                    const habit = appTemplates[currentHabitId] || Object.values(appTemplates)[0]; if(!habit) return;
-                    const th = THEMES.find(t => t.id === habit.themeId) || THEMES[0];
-                    const titleContainer = document.getElementById('action-title-container'); const titleText = document.getElementById('action-title-text'); const cancelBtn = document.getElementById('cancel-recovery-btn');
-                    
-                    if(titleContainer && titleText && cancelBtn) {
-                        if (recoveryDate) {
-                            titleText.innerHTML = `⏳ 任務補救模式 (${recoveryDate})`; titleContainer.classList.add('bg-orange-100', 'text-orange-800'); titleContainer.classList.remove('bg-white'); cancelBtn.classList.remove('hidden');
-                        } else {
-                            titleText.innerHTML = `準備好完成任務了嗎？`; titleContainer.classList.remove('bg-orange-100', 'text-orange-800'); titleContainer.classList.add('bg-white'); cancelBtn.classList.add('hidden');
-                        }
+                const habit = appTemplates[currentHabitId] || Object.values(appTemplates)[0]; if(!habit) return;
+                const th = THEMES.find(t => t.id === habit.themeId) || THEMES[0];
+                const titleContainer = document.getElementById('action-title-container'); const titleText = document.getElementById('action-title-text'); const cancelBtn = document.getElementById('cancel-recovery-btn');
+                
+                if(titleContainer && titleText && cancelBtn) {
+                    if (recoveryDate) {
+                        titleText.innerHTML = `⏳ 是否進入補救模式？(${recoveryDate})`; titleContainer.classList.add('bg-orange-100', 'text-orange-800'); titleContainer.classList.remove('bg-white'); cancelBtn.classList.remove('hidden');
+                    } else {
+                        titleText.innerHTML = `準備好完成任務了嗎？`; titleContainer.classList.remove('bg-orange-100', 'text-orange-800'); titleContainer.classList.add('bg-white'); cancelBtn.classList.add('hidden');
                     }
-                    
-                    const actionBtns = document.getElementById('action-buttons');
-                    if(actionBtns) {
-                        actionBtns.innerHTML = habit.actions.map(a => `
-                            <button onclick='Logic.openActionModal("${a.id}")' class="${th.btn} hand-drawn-border hand-drawn-btn p-3 flex flex-col items-center justify-center gap-1 relative active:scale-95 w-full no-select">
-                                <div class="w-12 h-12 mb-1">${SVGs.icons[a.icon] || SVGs.icons.star}</div>
-                                <span class="text-sm font-black text-gray-800">${escapeHTML(a.label)}</span>
-                                ${a.stackingText ? `<span class="text-[10px] font-bold text-gray-500 bg-white/50 px-1 rounded truncate max-w-full">${escapeHTML(a.stackingText)}</span>` : ''}
-                            </button>
-                        `).join('');
-                    }
-                } catch(e) { console.error(e); }
+                }
+                
+                const actionBtns = document.getElementById('action-buttons');
+                if(actionBtns) {
+                    actionBtns.innerHTML = habit.actions.map(a => `
+                        <button onclick='Logic.openActionModal("${a.id}")' class="${th.btn} hand-drawn-border hand-drawn-btn p-3 flex flex-col items-center justify-center gap-1 relative active:scale-95 w-full no-select">
+                            <div class="w-12 h-12 mb-1">${SVGs.icons[a.icon] || SVGs.icons.star}</div>
+                            <span class="text-sm font-black text-gray-800">${escapeHTML(a.label)}</span>
+                            ${a.stackingText ? `<span class="text-[10px] font-bold text-gray-500 bg-white/50 px-1 rounded truncate max-w-full">${escapeHTML(a.stackingText)}</span>` : ''}
+                        </button>
+                    `).join('');
+                }
             },
             
             renderCalendar() {
-                try {
-                    const uData = getUserData(currentUser.uid); if(!uData) return;
-                    let html = '';
-                    for (let i = 6; i >= 0; i--) {
-                        const d = new Date(); d.setDate(d.getDate() - i); 
-                        const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-                        const isToday = i === 0; 
-                        let isActive = false; let lastLog = null;
-                        
-                        Object.values(uData.habits||{}).forEach(h => {
-                            if(h?.logs?.[dateStr] && !h.logs[dateStr].isPruned) {
-                                isActive = true; if(!lastLog || h.logs[dateStr].timestamp > lastLog.timestamp) { lastLog = h.logs[dateStr]; lastLog.hId = h.id; }
-                            }
-                        });
-                        
-                        let statusClass = "bg-white border-4 border-gray-300 text-gray-400"; let iconContent = d.getDate(); let clickAction = "";
-                        
-                        if (isActive) { 
-                            let charStr = "✓";
-                            if(lastLog) {
-                                if(lastLog.bookTitle) charStr = lastLog.bookTitle.charAt(0);
-                                else { let act = null; if (appTemplates[lastLog.hId]) { let a = appTemplates[lastLog.hId].actions.find(aa=>aa.id===lastLog.actionId); if(a) act = a; } if(act) charStr = act.label.charAt(0); }
-                            }
-                            statusClass = "bg-green-400 border-4 border-gray-800 text-gray-900 shadow-[2px_2px_0px_#1f2937] scale-110"; 
-                            iconContent = `<span class="font-black text-lg">${escapeHTML(charStr)}</span>`; 
-                        } 
-                        else if (!isToday) { 
-                            statusClass = "bg-gray-100 border-4 border-dashed border-gray-400 text-gray-500 cursor-pointer hover:bg-gray-200"; 
-                            iconContent = `<div class="w-4 h-4">${SVGs.ui.history}</div>`; 
-                            clickAction = `onclick="Logic.startRecovery('${dateStr}')"`; 
+                const uData = getUserData(currentUser.uid); if(!uData) return;
+                let html = '';
+                for (let i = 6; i >= 0; i--) {
+                    const d = new Date(); d.setDate(d.getDate() - i); 
+                    const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                    const isToday = i === 0; let isActive = false; let lastLog = null;
+                    
+                    Object.values(uData.habits||{}).forEach(h => {
+                        if(h?.logs?.[dateStr] && !h.logs[dateStr].isPruned) {
+                            isActive = true; if(!lastLog || h.logs[dateStr].timestamp > lastLog.timestamp) { lastLog = h.logs[dateStr]; lastLog.hId = h.id; }
                         }
-                        
-                        html += `
-                            <div class="flex flex-col items-center gap-1.5 no-select" ${clickAction}>
-                                <span class="text-[11px] font-black ${isToday ? 'text-purple-600 bg-purple-100 px-2 border-2 border-gray-800 rounded-lg' : 'text-gray-500'}">
-                                    ${isToday ? '今天' : ["日","一","二","三","四","五","六"][d.getDay()]}
-                                </span>
-                                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black ${statusClass} transition-colors">${iconContent}</div>
-                            </div>
-                        `;
+                    });
+                    
+                    let statusClass = "bg-white border-4 border-gray-300 text-gray-400"; let iconContent = d.getDate(); let clickAction = "";
+                    
+                    if (isActive) { 
+                        let charStr = "✓";
+                        if(lastLog) {
+                            if(lastLog.bookTitle) charStr = lastLog.bookTitle.charAt(0);
+                            else { let act = null; if (appTemplates[lastLog.hId]) { let a = appTemplates[lastLog.hId].actions.find(aa=>aa.id===lastLog.actionId); if(a) act = a; } if(act) charStr = act.label.charAt(0); }
+                        }
+                        statusClass = "bg-green-400 border-4 border-gray-800 text-gray-900 shadow-[2px_2px_0px_#1f2937] scale-110"; 
+                        iconContent = `<span class="font-black text-lg">${escapeHTML(charStr)}</span>`; 
+                    } 
+                    else if (!isToday) { 
+                        statusClass = "bg-gray-100 border-4 border-dashed border-gray-400 text-gray-500 cursor-pointer hover:bg-gray-200"; 
+                        iconContent = `<div class="w-4 h-4">${SVGs.ui.history}</div>`; clickAction = `onclick="Logic.startRecovery('${dateStr}')"`; 
                     }
-                    const row = document.getElementById('calendar-row'); if(row) row.innerHTML = html;
-                } catch(e) { console.error(e); }
+                    
+                    html += `<div class="flex flex-col items-center gap-1.5 no-select" ${clickAction}><span class="text-[11px] font-black ${isToday ? 'text-purple-600 bg-purple-100 px-2 border-2 border-gray-800 rounded-lg' : 'text-gray-500'}">${isToday ? '今天' : ["日","一","二","三","四","五","六"][d.getDay()]}</span><div class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black ${statusClass} transition-colors">${iconContent}</div></div>`;
+                }
+                const row = document.getElementById('calendar-row'); if(row) row.innerHTML = html;
             },
             
             renderFootprints() {
-                try {
-                    const hData = getUserData(currentUser.uid)?.habits?.[currentHabitId] || {logs:{}};
-                    const habit = appTemplates[currentHabitId] || {actions:[]}; const container = document.getElementById('footprints-container');
-                    if(!container) return;
-                    let allLogs = []; Object.keys(hData.logs).forEach(k => { if(!hData.logs[k].isPruned) allLogs.push(hData.logs[k]) }); 
-                    allLogs.sort((a,b)=>b.timestamp - a.timestamp);
+                const hData = getUserData(currentUser.uid)?.habits?.[currentHabitId] || {logs:{}};
+                const habit = appTemplates[currentHabitId] || {actions:[]}; const container = document.getElementById('footprints-container');
+                if(!container) return;
+                let allLogs = []; Object.keys(hData.logs).forEach(k => { if(!hData.logs[k].isPruned) allLogs.push(hData.logs[k]) }); 
+                allLogs.sort((a,b)=>b.timestamp - a.timestamp);
+                
+                if(allLogs.length === 0) { container.innerHTML = `<p class="text-center text-gray-400 py-4 font-bold">還沒有足跡喔！</p>`; return; }
+                
+                container.innerHTML = allLogs.slice(0, this.footprintLimit).map(log => {
+                    const action = habit.actions.find(a=>a.id===log.actionId);
+                    if(!action) return `<div class="bg-gray-50 hand-drawn-border p-4 text-center text-gray-400 font-bold">已刪除的任務紀錄</div>`;
+                    const recoverBadge = log.isRecovery ? `<span class="bg-pink-200 text-pink-800 border-2 border-gray-800 text-[10px] px-1 rounded-md ml-1 font-black transform -rotate-3 flex-shrink-0">補打卡</span>` : '';
                     
-                    if(allLogs.length === 0) { container.innerHTML = `<p class="text-center text-gray-400 py-4 font-bold">還沒有足跡喔！</p>`; return; }
-                    
-                    container.innerHTML = allLogs.slice(0, this.footprintLimit).map(log => {
-                        const action = habit.actions.find(a=>a.id===log.actionId);
-                        if(!action) return `<div class="bg-gray-50 hand-drawn-border p-4 text-center text-gray-400 font-bold">已刪除的任務紀錄</div>`;
-                        const recoverBadge = log.isRecovery ? `<span class="bg-pink-200 text-pink-800 border-2 border-gray-800 text-[10px] px-1 rounded-md ml-1 font-black transform -rotate-3 flex-shrink-0">補救</span>` : '';
-                        
-                        return `
-                        <div class="bg-white hand-drawn-border p-4 flex flex-col gap-2 relative pop-in transform -rotate-1">
-                            <div class="flex justify-between items-start border-b-2 border-gray-100 pb-2">
-                                <div class="flex items-center gap-1 flex-wrap">
-                                    <span class="text-xs font-black text-white bg-gray-800 px-2 py-1 rounded-md">${formatFootprintDate(log.timestamp)}</span>
-                                    ${recoverBadge}
-                                    <span class="text-xs font-black text-gray-900 bg-yellow-300 px-2 py-1 rounded-md border-2 border-gray-800 ml-1 flex items-center gap-1">+${log.pointsEarned} <div class="w-3 h-3">${SVGs.coin}</div></span>
-                                </div>
-                                <div class="flex gap-2">
-                                    <button onclick="Logic.editAction(${log.timestamp})" class="w-7 h-7 p-1 bg-blue-50 hover:bg-blue-100 border border-gray-800 rounded hand-drawn-btn">${SVGs.ui.editPen}</button>
-                                    <button onclick="Logic.triggerDelete('${log.timestamp}')" class="w-7 h-7 p-1 bg-red-50 hover:bg-red-100 border border-gray-800 rounded hand-drawn-btn">${SVGs.ui.trash}</button>
-                                </div>
+                    return `
+                    <div class="bg-white hand-drawn-border p-4 flex flex-col gap-2 relative pop-in transform -rotate-1">
+                        <div class="flex justify-between items-start border-b-2 border-gray-100 pb-2">
+                            <div class="flex items-center gap-1 flex-wrap">
+                                <span class="text-xs font-black text-white bg-gray-800 px-2 py-1 rounded-md">${formatFootprintDate(log.timestamp)}</span>
+                                ${recoverBadge}
+                                <span class="text-xs font-black text-gray-900 bg-yellow-300 px-2 py-1 rounded-md border-2 border-gray-800 ml-1 flex items-center gap-1">+${log.pointsEarned} <div class="w-3 h-3">${SVGs.coin}</div></span>
                             </div>
-                            <p class="font-black text-gray-800 mt-1 flex flex-wrap gap-2 items-center">
-                                <span class="bg-purple-100 px-2 py-1 border-2 border-gray-800 rounded-lg text-xs truncate max-w-[120px]">項目：${escapeHTML(log.bookTitle)}</span>
-                                <span>共 <span class="text-blue-600">${escapeHTML(String(log.val))}</span> ${escapeHTML(action.unit||'')}</span>
-                            </p>
-                            ${log.memo ? `<p class="text-sm text-gray-700 bg-gray-50 border-2 border-dashed border-gray-400 p-2 rounded-xl mt-1 font-bold break-words">📝 ${escapeHTML(log.memo)}</p>` : ''}
-                        </div>`;
-                    }).join('');
-                    const btnMore = document.getElementById('btn-load-more-footprints');
-                    if(btnMore) btnMore.classList.toggle('hidden', allLogs.length <= this.footprintLimit);
-                } catch(e) { console.error(e); }
+                            <div class="flex gap-2">
+                                <button onclick="Logic.editAction(${log.timestamp})" class="w-7 h-7 p-1 bg-blue-50 hover:bg-blue-100 border border-gray-800 rounded hand-drawn-btn">${SVGs.ui.editPen}</button>
+                                <button onclick="Logic.triggerDelete('${log.timestamp}')" class="w-7 h-7 p-1 bg-red-50 hover:bg-red-100 border border-gray-800 rounded hand-drawn-btn">${SVGs.ui.trash}</button>
+                            </div>
+                        </div>
+                        <p class="font-black text-gray-800 mt-1 flex flex-wrap gap-2 items-center">
+                            <span class="bg-purple-100 px-2 py-1 border-2 border-gray-800 rounded-lg text-xs truncate max-w-[120px]">項目：${escapeHTML(log.bookTitle)}</span>
+                            <span>共 <span class="text-blue-600">${escapeHTML(String(log.val))}</span> ${escapeHTML(action.unit||'')}</span>
+                        </p>
+                        ${log.memo ? `<p class="text-sm text-gray-700 bg-gray-50 border-2 border-dashed border-gray-400 p-2 rounded-xl mt-1 font-bold break-words">📝 ${escapeHTML(log.memo)}</p>` : ''}
+                    </div>`;
+                }).join('');
+                const btnMore = document.getElementById('btn-load-more-footprints');
+                if(btnMore) btnMore.classList.toggle('hidden', allLogs.length <= this.footprintLimit);
             },
             
             loadMoreFootprints() { this.footprintLimit += 10; this.renderFootprints(); },
@@ -1199,8 +1062,7 @@
             pokeMascot() { EasterEggs.handleClick(); this.showMascotMessage(); },
             
             showToast(msg) { 
-                const toast = document.getElementById('toast'); 
-                const toastMsg = document.getElementById('toast-msg');
+                const toast = document.getElementById('toast'); const toastMsg = document.getElementById('toast-msg');
                 if(toast && toastMsg) {
                     toastMsg.innerText = msg; 
                     toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4'); toast.classList.add('opacity-100', 'translate-y-0'); 
@@ -1223,29 +1085,24 @@
                 }
             },
             toggleHabitMenu() { const d = document.getElementById('habit-dropdown'); if(d) d.classList.toggle('hidden'); },
-            
             updateMailBadge() { 
                 try {
                     const uData = getUserData(currentUser.uid); if(!uData) return;
                     const unread = (uData.mails || []).filter(m => !m.isRead || (m.attachedCoins && !m.isClaimed)).length; 
                     const badge = document.getElementById('mail-badge');
-                    if(badge) {
-                        badge.classList.toggle('hidden', unread === 0); 
-                        if(unread > 0) badge.innerText = unread > 9 ? '9+' : unread; 
-                    }
+                    if(badge) { badge.classList.toggle('hidden', unread === 0); if(unread > 0) badge.innerText = unread > 9 ? '9+' : unread; }
                 } catch(e) {}
             },
             
             injectModals() {
-                const container = document.getElementById('modals-container');
-                if(!container) return;
+                const container = document.getElementById('modals-container'); if(!container) return;
                 container.innerHTML = `
                     <div id="generic-confirm-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-center z-[160] transition-opacity opacity-0 px-2 md:px-4">
-                        <div class="bg-white w-[98vw] md:w-[98vw] max-w-[400px] rounded-[2rem] p-4 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative flex flex-col items-center box-border pb-[env(safe-area-inset-bottom)]">
-                            <div class="w-24 h-24 mb-2">${SVGs.cryCat}</div>
+                        <div class="bg-white w-[96vw] max-w-[400px] box-border overflow-hidden rounded-[2rem] p-4 md:p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative flex flex-col items-center pb-[env(safe-area-inset-bottom)]">
+                            <div class="w-24 h-24 mb-2 flex-shrink-0">${SVGs.cryCat}</div>
                             <h3 id="confirm-title" class="text-xl font-black text-gray-800 mb-2">確認視窗</h3>
                             <p id="confirm-desc" class="text-sm text-gray-600 font-bold mb-6 whitespace-pre-wrap">確定執行嗎？</p>
-                            <div class="flex gap-3 w-full">
+                            <div class="flex gap-3 w-full flex-shrink-0">
                                 <button onclick="UI.closeModal('generic-confirm-modal')" class="flex-1 py-3 rounded-xl font-black text-gray-800 bg-gray-200 border-4 border-gray-800 hand-drawn-btn">取消</button>
                                 <button id="confirm-btn-do" onclick="Confirm.execute()" class="flex-1 py-3 rounded-xl font-black text-white bg-red-500 border-4 border-gray-800 hand-drawn-btn shadow-[4px_4px_0px_#1f2937]">確認</button>
                             </div>
@@ -1253,21 +1110,21 @@
                     </div>
                     
                     <div id="math-confirm-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-center z-[160] transition-opacity opacity-0 px-2 md:px-4">
-                        <div class="bg-white w-[98vw] md:w-[98vw] max-w-[400px] rounded-[2rem] p-4 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative flex flex-col items-center box-border pb-[env(safe-area-inset-bottom)]">
-                            <div class="w-20 h-20 mb-2">${SVGs.icons.lightning}</div>
+                        <div class="bg-white w-[96vw] max-w-[400px] box-border overflow-hidden rounded-[2rem] p-4 md:p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative flex flex-col items-center pb-[env(safe-area-inset-bottom)]">
+                            <div class="w-20 h-20 mb-2 flex-shrink-0">${SVGs.icons.lightning}</div>
                             <h3 class="text-xl font-black text-red-600 mb-2">危險操作驗證</h3>
                             <p class="text-sm text-gray-600 font-bold mb-4 whitespace-pre-wrap">請計算以下數學題以確認您是清醒的：</p>
-                            <p id="math-question" class="text-2xl font-black tracking-widest text-gray-800 mb-4 bg-gray-100 py-3 px-6 rounded-xl border-4 border-dashed border-gray-400"></p>
-                            <input type="number" id="math-ans" placeholder="輸入答案" class="w-full box-border border-4 border-gray-800 rounded-lg p-3 font-bold text-center text-xl mb-6">
-                            <div class="flex gap-3 w-full">
+                            <p id="math-question" class="text-2xl font-black tracking-widest text-gray-800 mb-4 bg-gray-100 py-3 px-6 rounded-xl border-4 border-dashed border-gray-400 w-full text-center flex-shrink-0"></p>
+                            <input type="number" id="math-ans" placeholder="輸入答案" class="w-full box-border border-4 border-gray-800 rounded-lg p-3 font-bold text-center text-xl mb-6 flex-shrink-0">
+                            <div class="flex gap-3 w-full flex-shrink-0">
                                 <button onclick="UI.closeModal('math-confirm-modal')" class="flex-1 py-3 rounded-xl font-black text-gray-800 bg-gray-200 border-4 border-gray-800 hand-drawn-btn">取消</button>
                                 <button onclick="SystemConfig.executeReset()" class="flex-1 py-3 rounded-xl font-black text-white bg-red-500 border-4 border-gray-800 hand-drawn-btn shadow-[4px_4px_0px_#1f2937]">確認執行</button>
                             </div>
                         </div>
                     </div>
                     
-                    <div id="radio-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-1 md:px-2">
-                        <div class="bg-[#fff9f0] w-[98vw] md:w-[98vw] max-w-[98vw] lg:max-w-[1200px] h-[80vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] relative flex flex-col overflow-hidden box-border pb-[env(safe-area-inset-bottom)]">
+                    <div id="radio-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-2">
+                        <div class="bg-[#fff9f0] w-[96vw] max-w-[1200px] h-[80vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] relative flex flex-col overflow-hidden box-border pb-safe">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2 flex-shrink-0">
                                 <h3 class="text-xl md:text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.bulb}</div> 廣播台管理</h3>
                                 <button onclick="UI.closeModal('radio-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white font-black p-1 flex-shrink-0">${SVGs.ui.cross}</button>
@@ -1287,8 +1144,8 @@
                         </div>
                     </div>
                     
-                    <div id="shop-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-1 md:px-2">
-                        <div class="bg-[#fff9f0] w-[98vw] md:w-[98vw] max-w-[98vw] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border pb-safe">
+                    <div id="shop-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-2">
+                        <div class="bg-[#fff9f0] w-[96vw] max-w-[1200px] h-[90vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border pb-safe">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2 flex-shrink-0">
                                 <h3 class="text-xl md:text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6 md:w-8 md:h-8">${SVGs.ui.shopStand}</div> 兌換商店</h3>
                                 <button onclick="UI.closeModal('shop-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1 flex-shrink-0">${SVGs.ui.cross}</button>
@@ -1300,8 +1157,8 @@
                             </div>
                             
                             <div id="shop-area-shop" class="flex-1 overflow-y-auto custom-scroll pr-2 flex flex-col gap-4">
-                                <div class="bg-yellow-100 border-4 border-gray-800 rounded-xl p-3 flex justify-between items-center">
-                                    <span class="font-black text-sm md:text-base flex items-center gap-1"><div class="w-5 h-5">${SVGs.magicWand}</div> 保命符：<span id="shop-saver-count" class="text-purple-600">0</span> 張</span>
+                                <div class="bg-yellow-100 border-4 border-gray-800 rounded-xl p-3 flex justify-between items-center flex-shrink-0">
+                                    <span class="font-black text-sm md:text-base flex items-center gap-1"><div class="w-5 h-5">${SVGs.ui.sparkle}</div> 用努力換取獎勵！</span>
                                     <span class="font-black text-lg md:text-xl text-yellow-600 flex items-center gap-1"><div class="w-5 h-5 md:w-6 md:h-6">${SVGs.coin}</div> <span id="shop-current-coins">0</span></span>
                                 </div>
                                 <div id="shop-items-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 content-start pb-6"></div>
@@ -1333,8 +1190,8 @@
                         </div>
                     </div>
                     
-                    <div id="report-modal" class="fixed inset-0 bg-gray-900/80 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-1 md:px-2">
-                        <div class="bg-[#fef9f0] w-[98vw] md:w-[98vw] max-w-[98vw] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border pb-[env(safe-area-inset-bottom)]">
+                    <div id="report-modal" class="fixed inset-0 bg-gray-900/80 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-2">
+                        <div class="bg-[#fef9f0] w-[96vw] max-w-[1200px] h-[90vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border pb-safe">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2 flex-shrink-0">
                                 <h3 class="text-xl md:text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.ui.magicBook}</div> 魔法成就手帳</h3>
                                 <button onclick="UI.closeModal('report-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1 flex-shrink-0">${SVGs.ui.cross}</button>
@@ -1345,11 +1202,11 @@
                                 <button id="rep-tab-stats" onclick="Report.switchTab('stats')" class="flex-1 py-2 px-1 md:px-2 font-black rounded-xl border-4 border-gray-800 inline-flex justify-center items-center gap-1 transition-colors text-xs md:text-base whitespace-nowrap"><div class="w-4 h-4">${SVGs.ui.chart}</div> 成就</button>
                             </div>
                             
-                            <div id="rep-area-self" class="flex-1 overflow-y-auto custom-scroll flex flex-col md:flex-row gap-4 md:gap-6 pb-6">
+                            <div id="rep-area-self" class="flex-1 overflow-y-auto custom-scroll flex flex-col md:flex-row gap-4 md:gap-6 pb-6 w-full">
                                 <div class="flex-1 bg-white border-4 border-gray-800 rounded-3xl p-3 md:p-4 flex flex-col items-center justify-center relative min-h-[250px] md:min-h-[300px]" id="jar-container">
                                     <div class="absolute -top-3 -left-3 bg-yellow-300 border-2 border-gray-800 px-3 py-1 rounded-lg font-black text-xs md:text-sm z-20">無盡寶物瓶</div>
-                                    <div class="text-2xl md:text-3xl font-black text-yellow-600 mb-2 flex items-center gap-2 z-20"><div class="w-6 h-6 md:w-8 md:h-8">${SVGs.coin}</div> <span id="report-total-points">0</span></div>
-                                    <div class="relative w-full max-w-[200px] md:max-w-[250px] aspect-[4/5] mx-auto mt-2">
+                                    <div class="text-2xl md:text-3xl font-black text-yellow-600 flex items-center gap-2 z-20 flex-shrink-0 mb-2"><div class="w-6 h-6 md:w-8 md:h-8">${SVGs.coin}</div> <span id="report-total-points">0</span></div>
+                                    <div class="relative w-full max-w-[180px] md:max-w-[220px] aspect-[4/5] mx-auto flex-shrink-0">
                                         ${SVGs.fatJar}
                                         <div class="absolute bottom-0 left-0 w-full h-full" style="clip-path: polygon(15% 100%, 85% 100%, 100% 60%, 100% 30%, 0% 30%, 0% 60%);">
                                             <div id="jar-liquid-level" class="bg-yellow-300/80 absolute bottom-0 w-full liquid-fill" style="height: 0%;"></div>
@@ -1363,11 +1220,11 @@
                                         <span id="sticker-month-label">本月</span>貼紙
                                         <button onclick="Report.changeMonth(1)" class="w-5 h-5 bg-white/50 rounded flex items-center justify-center active:scale-90">▶</button>
                                     </div>
-                                    <div id="sticker-grid" class="grid grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-1 md:gap-2 flex-1 overflow-y-auto custom-scroll pr-1 mt-4 content-start"></div>
+                                    <div id="sticker-grid" class="grid grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-1 md:gap-2 flex-1 overflow-y-auto custom-scroll pr-1 mt-4 content-start min-h-0"></div>
                                 </div>
                             </div>
                             
-                            <div id="rep-area-family" class="flex-1 flex-col hidden relative overflow-hidden bg-blue-50 border-4 border-gray-800 rounded-3xl">
+                            <div id="rep-area-family" class="flex-1 flex-col hidden relative overflow-hidden bg-blue-50 border-4 border-gray-800 rounded-3xl w-full">
                                 <div class="absolute top-2 left-2 bg-white/80 p-2 rounded-lg border-2 border-gray-800 z-20 font-black text-xs md:text-sm" id="tree-month-title">本月爬樹大賽</div>
                                 <div id="tree-group-buff" class="absolute top-12 left-2 bg-yellow-200 p-2 rounded-lg border-2 border-gray-800 z-20 font-black text-xs hidden shadow-sm pop-in">🎉 大樹已進化！</div>
                                 <div class="absolute inset-0 z-0 flex justify-center items-end" id="tree-svg-container">${SVGs.fluffyTree}</div>
@@ -1375,7 +1232,7 @@
                                 <div id="tree-dialogue" class="absolute bg-white border-4 border-gray-800 rounded-2xl rounded-bl-none px-3 py-2 text-sm font-black text-gray-800 shadow-[4px_4px_0px_#1f2937] z-30 opacity-0 pointer-events-none transition-opacity duration-300" style="max-width: 150px; min-width: 100px;"></div>
                             </div>
                             
-                            <div id="rep-area-stats" class="flex-1 overflow-y-auto hidden flex-col gap-4 pb-6">
+                            <div id="rep-area-stats" class="flex-1 overflow-y-auto hidden flex-col gap-4 pb-6 w-full custom-scroll">
                                 <div class="bg-white border-4 border-gray-800 rounded-3xl p-3 md:p-4 flex flex-col items-center flex-shrink-0">
                                     <p class="font-black text-sm md:text-base">這月已活躍 <span id="stats-active-days" class="text-2xl md:text-3xl text-red-500">0</span> 天</p>
                                     <div id="stats-apple-mountain" class="w-full min-h-[60px] md:min-h-[80px] border-b-4 border-gray-300 mt-2 flex flex-col-reverse items-center pb-1 relative"></div>
@@ -1402,8 +1259,8 @@
                         </div>
                     </div>
                     
-                    <div id="mailbox-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0 px-1 md:px-2">
-                        <div class="bg-[#fff0f5] w-[98vw] md:w-[98vw] max-w-[98vw] lg:max-w-[1200px] rounded-t-[2rem] md:rounded-[2rem] p-3 md:p-4 border-t-8 border-gray-800 md:border-8 h-[85vh] md:h-[auto] md:max-h-[90vh] flex flex-col overflow-hidden box-border pb-[env(safe-area-inset-bottom)]">
+                    <div id="mailbox-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0 px-2">
+                        <div class="bg-[#fff0f5] w-[96vw] max-w-[1200px] rounded-t-[2rem] md:rounded-[2rem] p-4 md:p-6 border-t-8 border-gray-800 md:border-8 h-[85vh] md:h-[auto] md:max-h-[90vh] flex flex-col overflow-hidden box-border pb-safe">
                             <div class="flex-none flex justify-between items-center mb-4 pb-3 border-b-4 border-dashed border-gray-300">
                                 <h3 class="text-xl md:text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.mailbox}</div> 家庭信箱</h3>
                                 <button onclick="UI.closeModal('mailbox-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1 flex-shrink-0">${SVGs.ui.cross}</button>
@@ -1440,8 +1297,8 @@
                         </div>
                     </div>
                     
-                    <div id="editor-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-1 md:px-2">
-                        <div class="bg-[#fef9f0] w-[98vw] md:w-[98vw] max-w-[98vw] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border pb-[env(safe-area-inset-bottom)]">
+                    <div id="editor-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-2">
+                        <div class="bg-[#fef9f0] w-[96vw] max-w-[1200px] h-[90vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border pb-safe">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2 flex-shrink-0">
                                 <h3 class="text-xl md:text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.ui.magicWand}</div> 系統與習慣管理</h3>
                                 <button onclick="UI.closeModal('editor-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1 flex-shrink-0">${SVGs.ui.cross}</button>
@@ -1512,8 +1369,8 @@
                         </div>
                     </div>
                     
-                    <div id="input-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0 px-1 md:px-2">
-                        <div id="modal-content" class="bg-[#fff9f0] w-[98vw] md:w-[98vw] max-w-[480px] rounded-t-[2rem] md:rounded-[2rem] p-4 md:p-6 border-t-8 border-gray-800 md:border-8 relative box-border pb-[env(safe-area-inset-bottom)]">
+                    <div id="input-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0 px-2">
+                        <div id="modal-content" class="bg-[#fff9f0] w-[96vw] max-w-[480px] rounded-t-[2rem] md:rounded-[2rem] p-5 md:p-6 border-t-8 border-gray-800 md:border-8 relative box-border overflow-hidden pb-safe">
                             <div class="flex justify-between items-center mb-5 border-b-4 border-dashed border-gray-300 pb-3">
                                 <h3 class="text-xl md:text-2xl font-black" id="modal-title">紀錄進度</h3>
                                 <button onclick="UI.closeModal('input-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1">${SVGs.ui.cross}</button>
@@ -1534,8 +1391,8 @@
                         </div>
                     </div>
                     
-                    <div id="ios-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-2 md:px-4 pb-[env(safe-area-inset-bottom)]">
-                        <div class="bg-[#fff9f0] w-[96vw] md:w-[96vw] max-w-[400px] rounded-[2rem] p-4 border-8 border-gray-800 transform transition-transform translate-y-full md:translate-y-0 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
+                    <div id="ios-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-2 pb-[env(safe-area-inset-bottom)]">
+                        <div class="bg-[#fff9f0] w-[96vw] max-w-[400px] rounded-[2rem] p-6 border-8 border-gray-800 transform transition-transform translate-y-full md:translate-y-0 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
                             <h3 class="text-xl md:text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.bulb}</div> 安裝至桌面</h3>
                             <p class="font-bold text-sm md:text-base text-gray-600 mb-4 text-left leading-relaxed">蘋果設備專屬魔法：<br>1. 點擊下方工具列的 <b class="text-blue-500">分享圖示</b><br>2. 往下滑選擇 <b class="text-gray-800">「加入主畫面」</b></p>
                             <div class="text-4xl mb-6 flex justify-center w-8 h-8 mx-auto">${SVGs.icons.star}</div>
@@ -1543,16 +1400,16 @@
                         </div>
                     </div>
                     
-                    <div id="android-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-2 md:px-4 pb-[env(safe-area-inset-bottom)]">
-                        <div class="bg-[#fff9f0] w-[96vw] md:w-[96vw] max-w-[400px] rounded-[2rem] p-4 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
+                    <div id="android-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-2 pb-[env(safe-area-inset-bottom)]">
+                        <div class="bg-[#fff9f0] w-[96vw] max-w-[400px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
                             <h3 class="text-xl md:text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.star}</div> 安裝至桌面</h3>
                             <p class="font-bold text-sm md:text-base text-gray-600 mb-4 text-left leading-relaxed">安卓專屬魔法：<br>1. 點擊瀏覽器右上角的 <b class="text-blue-500">⋮ (選單)</b><br>2. 選擇 <b class="text-gray-800">「加到主畫面」</b> 或 <b class="text-gray-800">「安裝應用程式」</b></p>
                             <button onclick="UI.closeModal('android-pwa-modal')" class="w-full py-3 rounded-xl font-black text-gray-800 bg-yellow-300 border-4 border-gray-800 hand-drawn-btn">我知道了！</button>
                         </div>
                     </div>
                     
-                    <div id="inapp-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-2 md:px-4 pb-[env(safe-area-inset-bottom)]">
-                        <div class="bg-[#fff9f0] w-[96vw] md:w-[96vw] max-w-[400px] rounded-[2rem] p-4 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
+                    <div id="inapp-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-2 pb-[env(safe-area-inset-bottom)]">
+                        <div class="bg-[#fff9f0] w-[96vw] max-w-[400px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
                             <h3 class="text-xl md:text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.lightning}</div> 跳轉提示</h3>
                             <p class="font-bold text-sm md:text-base text-gray-600 mb-4 text-left leading-relaxed">您目前使用 App 內建瀏覽器。<br><br>請點擊右上角或右下角選單，選擇 <b class="text-blue-500">「使用預設瀏覽器開啟」</b> 或 <b class="text-blue-500">「在 Safari/Chrome 開啟」</b>，才能順利安裝到手機桌面喔！</p>
                             <button onclick="UI.closeModal('inapp-pwa-modal')" class="w-full py-3 rounded-xl font-black text-gray-800 bg-yellow-300 border-4 border-gray-800 hand-drawn-btn">我知道了！</button>
@@ -1568,8 +1425,7 @@
                     const today = getTodayStr(); 
                     const targetDateStr = recoveryDate || today;
                     
-                    const uData = getUserData(currentUser.uid);
-                    if(uData && uData.habits?.[currentHabitId]?.logs?.[targetDateStr]) {
+                    if(getUserData(currentUser.uid)?.habits?.[currentHabitId]?.logs?.[targetDateStr]) {
                         return UI.showToast(recoveryDate ? "補救的這天已經有打卡紀錄囉！" : "今天打過卡囉！可以修改歷史足跡喵"); 
                     }
 
@@ -1583,50 +1439,42 @@
                         currentActionObj = act; isEditMode = false; editTargetDate = null; this.saveAction(true); 
                     } else { 
                         currentActionObj = act; isEditMode = false; editTargetDate = null; 
-                        document.getElementById('input-book-title').value = uData?.habits?.[currentHabitId]?.lastBookTitle || ""; 
-                        document.getElementById('input-value').value = ""; 
-                        document.getElementById('input-memo').value = ""; 
-                        this.setupModalUI(act, !!recoveryDate); 
-                        UI.openModal('input-modal'); 
+                        document.getElementById('input-book-title').value = getUserData(currentUser.uid)?.habits?.[currentHabitId]?.lastBookTitle || ""; 
+                        document.getElementById('input-value').value = ""; document.getElementById('input-memo').value = ""; 
+                        this.setupModalUI(act, !!recoveryDate); UI.openModal('input-modal'); 
                     } 
-                } catch(e) { console.error(e); }
+                } catch(e) {}
             },
             
             editAction(ts) { 
                 try {
                     if(SyncEngine.isSyncing || isProcessing) return UI.showToast("系統處理中，請稍後操作");
-                    
-                    const uData = getUserData(currentUser.uid); if(!uData) return;
+                    const uData = getUserData(currentUser.uid);
                     let targetLog = null; let tDate = null;
                     
-                    Object.keys(uData.habits[currentHabitId]?.logs || {}).forEach(d => {
-                        if (uData.habits[currentHabitId].logs[d].timestamp.toString() === ts.toString()) { 
-                            targetLog = uData.habits[currentHabitId].logs[d]; tDate = d; 
-                        }
+                    Object.keys(uData.habits[currentHabitId].logs).forEach(d => {
+                        if (uData.habits[currentHabitId].logs[d].timestamp.toString() === ts.toString()) { targetLog = uData.habits[currentHabitId].logs[d]; tDate = d; }
                     });
                     
                     if (!targetLog) return; 
                     if (targetLog.isPruned) return UI.showToast("已封存的歷史足跡無法再修改囉！");
                     
                     const h = appTemplates[currentHabitId]; if (!h) return;
-                    currentActionObj = h.actions.find(a => a.id === targetLog.actionId); 
-                    if(!currentActionObj) return; 
+                    currentActionObj = h.actions.find(a => a.id === targetLog.actionId); if(!currentActionObj) return; 
                     
                     isEditMode = true; editTargetDate = tDate;
                     document.getElementById('input-book-title').value = targetLog.bookTitle; 
                     document.getElementById('input-value').value = targetLog.val === "..." ? "" : targetLog.val; 
                     document.getElementById('input-memo').value = targetLog.memo || ""; 
                     
-                    this.setupModalUI(currentActionObj, false); 
-                    UI.openModal('input-modal'); 
-                } catch(e) { console.error(e); }
+                    this.setupModalUI(currentActionObj, false); UI.openModal('input-modal'); 
+                } catch(e) {}
             },
             
             setupModalUI(act, isRec) { 
                 document.getElementById('modal-title').innerHTML = isRec ? `⏳ 補救：${escapeHTML(act.label)}` : (isEditMode ? `✏️ 修改：${escapeHTML(act.label)}` : `✨ 紀錄：${escapeHTML(act.label)}`); 
                 const iVal = document.getElementById('input-value'); 
                 document.getElementById('label-title').innerHTML = `<div class="w-5 h-5 inline-block align-middle mr-1">${SVGs.icons.star}</div> 相關紀錄項目？(選填)`; 
-                
                 if(act.isQuote) { 
                     document.getElementById('label-value').innerHTML = `<div class="w-5 h-5 inline-block align-middle mr-1">${SVGs.ui.editPen}</div> 寫下精選內容吧：`; 
                     iVal.type = "text"; iVal.placeholder = "輸入內容..."; iVal.removeAttribute("min"); 
@@ -1639,7 +1487,6 @@
             saveAction(auto = false) {
                 if(SyncEngine.isSyncing || isProcessing) return UI.showToast("系統處理中，請稍後操作");
                 isProcessing = true; 
-                
                 try {
                     let title = "無標題", val = "1", memo = ""; 
                     if (!auto) { 
@@ -1648,37 +1495,28 @@
                         memo = escapeHTML(document.getElementById('input-memo').value.trim()); 
                     } 
                     
-                    if(!currentActionObj.isQuote) { 
-                        let num = parseInt(val, 10); val = (isNaN(num) || num < 1) ? "1" : num.toString(); 
-                    } else { if(!val) val = "..."; }
+                    if(!currentActionObj.isQuote) { let num = parseInt(val, 10); val = (isNaN(num) || num < 1) ? "1" : num.toString(); } 
+                    else { if(!val) val = "..."; }
                     
                     const uData = getUserData(currentUser.uid);
                     const habit = uData.habits[currentHabitId]; 
                     const targetKey = isEditMode ? editTargetDate : (recoveryDate || getTodayStr());
-                    
                     let pts = currentActionObj.points; let msgs = [];
                     
-                    const todayD = new Date();
-                    const day = todayD.getDay();
+                    const todayD = new Date(); const day = todayD.getDay();
                     if (!isEditMode && !recoveryDate && (day === 0 || day === 6) && !uData.eggWeekend?.[targetKey]) {
                         if(!uData.eggWeekend) uData.eggWeekend = {};
-                        uData.eggWeekend[targetKey] = true;
-                        pts += 20; msgs.push(`🎉 週末狂歡 +20`);
+                        uData.eggWeekend[targetKey] = true; pts += 20; msgs.push(`🎉 週末狂歡 +20`);
                     }
 
                     if(!isEditMode && !recoveryDate && !(day === 0 || day === 6)) { 
                         const h = todayD.getHours(); 
-                        if(h < 7) { pts += 15; msgs.push(`☀️ 早鳥彩蛋 +15`); } 
-                        else if(h >= 23) { pts += 10; msgs.push(`🌙 夜貓彩蛋 +10`); } 
+                        if(h < 7) { pts += 15; msgs.push(`☀️ 早鳥彩蛋 +15`); } else if(h >= 23) { pts += 10; msgs.push(`🌙 夜貓彩蛋 +10`); } 
                     }
                     
                     let isGoldenRain = false; 
-                    if(!isEditMode && currentActionObj.isCrit && Math.random() < 0.15) { 
-                        pts *= 2; AudioEngine.playCoin(); msgs.push(`🔥 爆擊雙倍`); 
-                    } 
-                    if(!isEditMode && Math.random() < 0.01) { 
-                        pts += 50; isGoldenRain = true; msgs.push(`👑 黃金雨 +50`); 
-                    }
+                    if(!isEditMode && currentActionObj.isCrit && Math.random() < 0.15) { pts *= 2; AudioEngine.playCoin(); msgs.push(`🔥 爆擊雙倍`); } 
+                    if(!isEditMode && Math.random() < 0.01) { pts += 50; isGoldenRain = true; msgs.push(`👑 黃金雨 +50`); }
                     
                     if(!isEditMode && currentActionObj.isMicro) {
                         let todayMicroCount = 0;
@@ -1691,9 +1529,7 @@
                         if (todayMicroCount === 2) { pts += 15; msgs.push(`🎁 微习惯寶箱 +15`); }
                     }
                     
-                    if(!isEditMode && isFamilyBondActive(targetKey)) { 
-                        pts = Math.round(pts * 1.2); msgs.push(`👨‍👩‍👦 全家 x1.2`); 
-                    }
+                    if(!isEditMode && isFamilyBondActive(targetKey)) { pts = Math.round(pts * 1.2); msgs.push(`👨‍👩‍👦 全家 x1.2`); }
                     
                     if(!isEditMode) { 
                         uData.currentCoins += pts; uData.totalCoins += pts; habit.streak++; 
@@ -1709,8 +1545,7 @@
                     }; 
                     if(!isEditMode) habit.lastBookTitle = title;
                     
-                    saveLocal(); 
-                    UI.closeModal('input-modal'); this.cancelRecovery(); UI.renderAll(); editTargetDate = null;
+                    saveLocal(); UI.closeModal('input-modal'); this.cancelRecovery(); UI.renderAll(); editTargetDate = null;
                     
                     if(!isEditMode) { 
                         if(isGoldenRain) EasterEggs.triggerGoldenRain(); 
@@ -1718,8 +1553,7 @@
                     } else {
                         UI.showToast("紀錄修改成功！");
                     }
-                } catch(e) { console.error(e); UI.showToast("打卡發生錯誤！"); }
-                finally { setTimeout(() => isProcessing = false, 300); }
+                } catch(e) { console.error(e); UI.showToast("打卡發生錯誤！"); } finally { setTimeout(() => isProcessing = false, 300); }
             },
             
             triggerDelete(ts) { 
@@ -1735,22 +1569,17 @@
                             } 
                         }); 
                         saveLocal(); UI.renderAll(); UI.showToast("紀錄已刪除"); 
-                    } catch(e) {} finally { setTimeout(() => isProcessing = false, 300); }
+                    } finally { setTimeout(() => isProcessing = false, 300); }
                 }); 
             },
             startRecovery(d) {
-                try {
-                    const savers = getSavers(currentUser.uid);
-                    if(savers > 0) {
-                        Confirm.show("啟動時光機？", `將消耗 1 張「保命符」來補救 ${d} 的進度。\n(目前剩餘: ${savers} 張)`, "開啟", () => {
-                            addSavers(currentUser.uid, -1);
-                            recoveryDate = d; UI.renderAll();
-                            UI.showToast("時光機已啟動！請選擇要補救的習慣喵。");
-                        });
-                    } else {
-                        UI.showToast("需要「保命符」才能補救喔！快去商店看看喵～"); Shop.open();
-                    }
-                } catch(e) { console.error(e); }
+                if(SyncEngine.isSyncing || isProcessing) return UI.showToast("系統處理中，請稍後操作");
+                const today = new Date(); const targetDate = new Date(d);
+                if (targetDate > today) return UI.showToast("不能補救未來的日期喔！");
+                
+                Confirm.show("啟動補救模式？", `即將針對 ${d} 進行補打卡，是否繼續？`, "進入補救", () => {
+                    recoveryDate = d; UI.renderAll(); UI.showToast("已進入補救模式！請選擇要補打卡的任務喵。");
+                });
             }, 
             cancelRecovery() { recoveryDate = null; UI.renderAll(); }
         };
@@ -1760,10 +1589,7 @@
             open() { this.historyLimit = 10; this.switchTab('shop'); UI.openModal('shop-modal'); },
             switchTab(tab, swipeDir = 0) { 
                 try {
-                    ['shop','history','edit'].forEach(t => {
-                        const el = document.getElementById(`shop-tab-${t}`);
-                        if(el) { el.classList.toggle('bg-pink-500', tab === t); el.classList.toggle('text-white', tab === t); }
-                    }); 
+                    ['shop','history','edit'].forEach(t => { const el = document.getElementById(`shop-tab-${t}`); if(el){ el.classList.toggle('bg-pink-500', tab === t); el.classList.toggle('text-white', tab === t); } }); 
                     document.getElementById('shop-area-shop').classList.toggle('hidden', tab !== 'shop'); 
                     document.getElementById('shop-area-history').classList.toggle('hidden', tab !== 'history'); 
                     document.getElementById('shop-area-edit').classList.toggle('hidden', tab !== 'edit'); 
@@ -1776,7 +1602,6 @@
                 try {
                     const uData = getUserData(currentUser.uid); if(!uData) return;
                     document.getElementById('shop-current-coins').innerText = uData.currentCoins; 
-                    document.getElementById('shop-saver-count').innerText = getSavers(currentUser.uid);
                     
                     document.getElementById('shop-items-list').innerHTML = shopItems.map(i => `
                         <div class="bg-white border-4 border-gray-800 p-3 rounded-xl flex justify-between items-center shadow-sm">
@@ -1788,7 +1613,7 @@
                         </div>
                     `).join(''); 
                     this.renderHistory(); this.renderEditList(); 
-                } catch(e) {}
+                } catch(e){}
             },
             buyItem(id) { 
                 if(SyncEngine.isSyncing || isProcessing) return UI.showToast("系統處理中，請稍後操作");
@@ -1802,60 +1627,44 @@
                     }
                     if(uData.currentCoins < i.cost) return UI.showToast("金幣不夠！"); 
                     uData.currentCoins -= i.cost; 
-                    
-                    if (i.isSpecial === 'saver') addSavers(currentUser.uid, 1);
-                    
                     uData.shopHistory.unshift({ itemName: i.name, cost: i.cost, timestamp: Date.now() }); 
                     
                     saveLocal(); UI.renderAll(); this.renderItems(); AudioEngine.playCoin(); 
-                    UI.showToast(`兌換「${i.name}」成功！`); 
-                    Mascot.speak("換了禮物別太高興，明天還要繼續賺回來喵！");
-                } catch(e) {} finally { setTimeout(() => isProcessing = false, 300); }
+                    UI.showToast(`兌換「${i.name}」成功！`); Mascot.speak("換了禮物別太高興，明天還要繼續賺回來喵！");
+                } finally { setTimeout(() => isProcessing = false, 300); }
             },
             renderHistory() { 
                 try {
                     const u = getUserData(currentUser.uid); const display = u.shopHistory.slice(0, this.historyLimit); 
                     document.getElementById('shop-history-list').innerHTML = display.map(h => `
                         <div class="bg-gray-50 border-2 border-dashed border-gray-400 p-3 rounded-xl flex justify-between items-center">
-                            <div>
-                                <p class="font-black">${escapeHTML(h.itemName)}</p>
-                                <p class="text-xs text-gray-500">${formatFootprintDate(h.timestamp)}</p>
-                            </div>
+                            <div><p class="font-black">${escapeHTML(h.itemName)}</p><p class="text-xs text-gray-500">${formatFootprintDate(h.timestamp)}</p></div>
                             <span class="font-black text-yellow-600 flex items-center gap-1">${h.cost} <div class="w-4 h-4">${SVGs.coin}</div></span>
                         </div>
                     `).join(''); 
-                    const btn = document.getElementById('btn-load-more-shop');
-                    if(btn) btn.classList.toggle('hidden', u.shopHistory.length <= this.historyLimit); 
+                    const btn = document.getElementById('btn-load-more-shop'); if(btn) btn.classList.toggle('hidden', u.shopHistory.length <= this.historyLimit); 
                 } catch(e){}
             },
             loadMoreHistory() { this.historyLimit += 10; this.renderHistory(); },
             renderEditList() { 
                 try {
                     document.getElementById('shop-edit-list').innerHTML = shopItems.map(i => {
-                        let btnGroup = '';
-                        if (i.isSpecial === 'saver') {
-                            btnGroup = `<button onclick="Shop.editItem('${i.id}')" class="w-8 h-8 p-1.5 bg-blue-100 border border-gray-800 rounded hand-drawn-btn flex-shrink-0">${SVGs.ui.editPen}</button>`;
-                        } else {
-                            btnGroup = `
-                            <div class="flex gap-2">
-                                <button onclick="Shop.editItem('${i.id}')" class="w-8 h-8 p-1.5 bg-blue-100 border border-gray-800 rounded hand-drawn-btn flex-shrink-0">${SVGs.ui.editPen}</button>
-                                <button onclick="Shop.deleteItem('${i.id}')" class="w-8 h-8 p-1.5 bg-red-100 border border-gray-800 rounded hand-drawn-btn flex-shrink-0">${SVGs.ui.trash}</button>
-                            </div>`;
-                        }
                         return `
                         <div class="bg-white border-2 border-gray-800 p-2 rounded-xl flex justify-between items-center shadow-sm">
                             <span class="font-black truncate max-w-[60%] inline-flex items-center gap-1"><div class="w-4 h-4">${SVGs.icons[i.icon] || SVGs.icons.star}</div> ${escapeHTML(i.name)} (${i.cost})</span>
-                            ${btnGroup}
+                            <div class="flex gap-2">
+                                <button onclick="Shop.editItem('${i.id}')" class="w-8 h-8 p-1.5 bg-blue-100 border border-gray-800 rounded hand-drawn-btn flex-shrink-0">${SVGs.ui.editPen}</button>
+                                <button onclick="Shop.deleteItem('${i.id}')" class="w-8 h-8 p-1.5 bg-red-100 border border-gray-800 rounded hand-drawn-btn flex-shrink-0">${SVGs.ui.trash}</button>
+                            </div>
                         </div>
                     `}).join(''); 
-                } catch(e) {}
+                } catch(e){}
             },
             openAddItem() { 
                 this.tempIcon = 'star'; this.renderIconSelection(); this.editingId = null;
                 document.getElementById('shop-e-title').innerText = "新增獎品";
-                document.getElementById('shop-e-name').value = ''; document.getElementById('shop-e-name').disabled = false;
-                document.getElementById('shop-e-cost').value = ''; 
-                document.getElementById('shop-e-req').checked = false; document.getElementById('shop-e-req-container').style.display = 'block';
+                document.getElementById('shop-e-name').value = ''; document.getElementById('shop-e-cost').value = ''; 
+                document.getElementById('shop-e-req').checked = false; 
                 document.getElementById('shop-area-edit').classList.add('hidden'); document.getElementById('shop-area-form').classList.remove('hidden'); 
             },
             editItem(id) {
@@ -1863,18 +1672,12 @@
                 this.editingId = id; this.tempIcon = i.icon; this.renderIconSelection();
                 document.getElementById('shop-e-title').innerText = "編輯獎品";
                 document.getElementById('shop-e-name').value = i.name;
-                document.getElementById('shop-e-name').disabled = (i.isSpecial === 'saver');
                 document.getElementById('shop-e-cost').value = i.cost;
                 document.getElementById('shop-e-req').checked = i.reqLog;
-                document.getElementById('shop-e-req-container').style.display = (i.isSpecial === 'saver') ? 'none' : 'block';
                 document.getElementById('shop-area-edit').classList.add('hidden'); document.getElementById('shop-area-form').classList.remove('hidden');
             },
             renderIconSelection() { 
-                document.getElementById('shop-e-icons').innerHTML = Object.keys(SVGs.icons).map(key => `
-                    <div onclick="Shop.tempIcon='${key}'; Shop.renderIconSelection()" class="w-10 h-10 p-1.5 border-4 rounded-xl cursor-pointer ${this.tempIcon === key ? 'border-gray-800 bg-yellow-200 scale-110 shadow-sm' : 'border-transparent bg-gray-100 opacity-60'}">
-                        ${SVGs.icons[key]}
-                    </div>
-                `).join(''); 
+                document.getElementById('shop-e-icons').innerHTML = Object.keys(SVGs.icons).map(key => `<div onclick="Shop.tempIcon='${key}'; Shop.renderIconSelection()" class="w-10 h-10 p-1.5 border-4 rounded-xl cursor-pointer ${this.tempIcon === key ? 'border-gray-800 bg-yellow-200 scale-110 shadow-sm' : 'border-transparent bg-gray-100 opacity-60'}">${SVGs.icons[key]}</div>`).join(''); 
             },
             saveItem() { 
                 const n = document.getElementById('shop-e-name').value; const c = parseInt(document.getElementById('shop-e-cost').value); 
@@ -1883,11 +1686,7 @@
                 
                 if (this.editingId) {
                     const idx = shopItems.findIndex(x => x.id === this.editingId);
-                    if (idx > -1) {
-                        shopItems[idx].name = n; shopItems[idx].cost = c; 
-                        shopItems[idx].reqLog = shopItems[idx].isSpecial === 'saver' ? false : req; 
-                        shopItems[idx].icon = this.tempIcon || 'star';
-                    }
+                    if (idx > -1) { shopItems[idx].name = n; shopItems[idx].cost = c; shopItems[idx].reqLog = req; shopItems[idx].icon = this.tempIcon || 'star'; }
                 } else {
                     shopItems.push({ id: "s_"+Date.now(), name: n, cost: c, reqLog: req, icon: this.tempIcon || 'star' }); 
                 }
@@ -1927,9 +1726,7 @@
                 document.getElementById('mail-text-shortcuts').innerHTML = M_TEXTS.map(t => `<button onclick="Mail.insertText('${t.text}')" class="text-xs font-bold ${t.bg} border-2 border-gray-800 rounded-lg py-1.5 shadow-sm active:translate-y-1">${t.text}</button>`).join('');
                 document.getElementById('mail-icon-shortcuts').innerHTML = Object.keys(SVGs.icons).map(key => `<button onclick="Mail.insertIcon('${key}')" class="w-8 h-8 p-1 bg-white border-2 border-gray-800 rounded-lg shadow-sm active:translate-y-1">${SVGs.icons[key]}</button>`).join('');
             },
-            handlePaste(e) {
-                e.preventDefault(); const text = (e.clipboardData || window.clipboardData).getData('text/plain'); document.execCommand('insertText', false, escapeHTML(text));
-            },
+            handlePaste(e) { e.preventDefault(); const text = (e.clipboardData || window.clipboardData).getData('text/plain'); document.execCommand('insertText', false, escapeHTML(text)); },
             sendMail() { 
                 if(SyncEngine.isSyncing || isProcessing) return UI.showToast("系統處理中，請稍後操作");
                 isProcessing = true;
@@ -1947,7 +1744,7 @@
                     });
                     const safeHtml = div.innerHTML;
                     
-                    if (safeHtml.replace(/<[^>]*>?/gm, '').trim().length === 0 && safeHtml.indexOf('<svg') === -1) { return UI.showToast("信件內容不能只有空白或被破壞的格式喔！"); }
+                    if (safeHtml.replace(/<[^>]*>?/gm, '').trim().length === 0 && safeHtml.indexOf('<svg') === -1) return UI.showToast("信件內容不能只有空白或被破壞的格式喔！");
 
                     const t = document.getElementById('mail-target-select').value; const other = getUserData(t); 
                     other.mails.unshift({ 
@@ -1961,8 +1758,7 @@
                 const u = getUserData(currentUser.uid); const m = u.mails.find(x => x.id === id);
                 if (m && m.attachedCoins && !m.isClaimed) {
                     m.isClaimed = true; u.currentCoins += m.attachedCoins; u.totalCoins += m.attachedCoins;
-                    saveLocal(); this.renderMails(); UI.renderAll(); AudioEngine.playLevelUp(); EasterEggs.triggerGoldenRain();
-                    UI.showToast(`成功領取 ${m.attachedCoins} 金幣！`);
+                    saveLocal(); this.renderMails(); UI.renderAll(); AudioEngine.playLevelUp(); EasterEggs.triggerGoldenRain(); UI.showToast(`成功領取 ${m.attachedCoins} 金幣！`);
                 }
             },
             reply(id) {
@@ -1973,9 +1769,7 @@
                 const editor = document.getElementById('mail-input');
                 const quoteHtml = `
                     <blockquote contenteditable="false" style="border-left: 4px solid #cbd5e1; padding-left: 10px; margin-bottom: 10px; color: #64748b; font-size: 0.875rem; background: #f8fafc; border-radius: 8px; padding: 10px; user-select: none;">
-                        <div style="font-weight: 900; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
-                            <div style="width: 16px; height: 16px;">${SVGs[m.fromAvatarKey] || SVGs.fox}</div> 來自 ${escapeHTML(m.from)} 的信件：
-                        </div>
+                        <div style="font-weight: 900; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;"><div style="width: 16px; height: 16px;">${SVGs[m.fromAvatarKey] || SVGs.fox}</div> 來自 ${escapeHTML(m.from)} 的信件：</div>
                         <div>${m.content}</div>
                     </blockquote><p><br></p>`;
                 editor.innerHTML = quoteHtml; editor.focus();
@@ -1985,11 +1779,8 @@
                     const u = getUserData(currentUser.uid); 
                     document.getElementById('mail-list').innerHTML = u.mails.slice(0, this.mailLimit).map(m => {
                         let claimBtn = '';
-                        if (m.attachedCoins && !m.isClaimed) {
-                            claimBtn = `<button onclick="Mail.claimCoins('${m.id}')" class="mt-3 w-full py-2 bg-yellow-300 hover:bg-yellow-400 border-2 border-gray-800 rounded-lg font-black text-sm active:scale-95 transition-transform flex justify-center items-center gap-1 shadow-[2px_2px_0px_#1f2937]"><div class="w-5 h-5">${SVGs.coin}</div> 領取 ${m.attachedCoins} 金幣獎勵</button>`;
-                        } else if (m.attachedCoins && m.isClaimed) {
-                            claimBtn = `<div class="mt-3 text-center text-xs text-gray-500 font-bold bg-gray-100 py-2 rounded-lg border-2 border-dashed border-gray-300">已領取 ${m.attachedCoins} 金幣</div>`;
-                        }
+                        if (m.attachedCoins && !m.isClaimed) claimBtn = `<button onclick="Mail.claimCoins('${m.id}')" class="mt-3 w-full py-2 bg-yellow-300 hover:bg-yellow-400 border-2 border-gray-800 rounded-lg font-black text-sm active:scale-95 transition-transform flex justify-center items-center gap-1 shadow-[2px_2px_0px_#1f2937]"><div class="w-5 h-5">${SVGs.coin}</div> 領取 ${m.attachedCoins} 金幣獎勵</button>`;
+                        else if (m.attachedCoins && m.isClaimed) claimBtn = `<div class="mt-3 text-center text-xs text-gray-500 font-bold bg-gray-100 py-2 rounded-lg border-2 border-dashed border-gray-300">已領取 ${m.attachedCoins} 金幣</div>`;
                         return `
                         <div class="bg-white border-4 border-gray-800 p-4 rounded-xl shadow-[4px_4px_0px_#1f2937] flex flex-col">
                             <div class="flex justify-between items-start mb-2 border-b-2 border-gray-100 pb-2">
@@ -2005,8 +1796,7 @@
                         </div>`
                     }).join(''); 
                     u.mails.forEach(m => m.isRead = true); saveLocal(); UI.updateMailBadge(); 
-                    const btn = document.getElementById('btn-load-more-mails');
-                    if(btn) btn.classList.toggle('hidden', u.mails.length <= this.mailLimit); 
+                    const btn = document.getElementById('btn-load-more-mails'); if(btn) btn.classList.toggle('hidden', u.mails.length <= this.mailLimit); 
                 } catch(e) {}
             },
             loadMore() { this.mailLimit += 10; this.renderMails(); },
@@ -2025,7 +1815,6 @@
                     document.getElementById('rep-area-self').classList.toggle('hidden', tab !== 'self'); document.getElementById('rep-area-self').classList.toggle('flex', tab === 'self');
                     document.getElementById('rep-area-family').classList.toggle('hidden', tab !== 'family'); document.getElementById('rep-area-family').classList.toggle('flex', tab === 'family');
                     document.getElementById('rep-area-stats').classList.toggle('hidden', tab !== 'stats'); document.getElementById('rep-area-stats').classList.toggle('flex', tab === 'stats');
-                    
                     if(swipeDir !== 0) SwipeDetector.playSlide('rep-area-' + tab, swipeDir);
                     if(tab==='stats') this.renderStats(); if(tab==='self') this.renderSelf(); 
                     if(tab==='family') { this.checkMonthlySettlement(); this.renderFamily(); }
@@ -2058,14 +1847,11 @@
                                          <span class="absolute inset-0 flex items-center justify-center text-[11px] font-black text-gray-800" style="padding-top:2px;">${streak}</span>
                                       </div>`;
                     }
-                    
                     const jarContainer = document.getElementById('jar-container'); 
                     if(jarContainer) {
-                        const existingBadge = jarContainer.querySelector('.badge-element');
-                        if (existingBadge) existingBadge.remove();
+                        const existingBadge = jarContainer.querySelector('.badge-element'); if (existingBadge) existingBadge.remove();
                         if (badgeHtml) { const badgeDiv = document.createElement('div'); badgeDiv.className = 'badge-element absolute -top-2 -right-2 z-30'; badgeDiv.innerHTML = badgeHtml; jarContainer.appendChild(badgeDiv); }
                     }
-                    
                     setTimeout(() => { const liquid = document.getElementById('jar-liquid-level'); if(liquid) liquid.style.height = `${percent}%`; }, 100);
                     
                     const daysInMonth = new Date(this.viewYear, this.viewMonth + 1, 0).getDate();
@@ -2104,10 +1890,8 @@
                     }
 
                     dailyHabitData.systemFlags[flagKey] = true;
-                    let lmScores = users.map(u => ({ uid: u.uid, score: getMonthlyCoinsForUser(u.uid, lastM, lastY) }));
-                    lmScores.sort((a,b)=>b.score - a.score);
+                    let lmScores = users.map(u => ({ uid: u.uid, score: getMonthlyCoinsForUser(u.uid, lastM, lastY) })); lmScores.sort((a,b)=>b.score - a.score);
                     const topScore = lmScores[0].score;
-                    
                     if (topScore > 0) {
                         const winners = lmScores.filter(s => s.score === topScore);
                         winners.forEach(winner => {
@@ -2128,17 +1912,14 @@
                 try {
                     const currentM = new Date().getMonth(); const currentY = new Date().getFullYear();
                     document.getElementById('tree-month-title').innerText = `${currentM+1}月爬樹大賽`;
-                    
                     let lastMonth = currentM - 1; let lastYear = currentY;
                     if (lastMonth < 0) { lastMonth = 11; lastYear--; }
-                    let lmScores = users.map(u => ({ uid: u.uid, score: getMonthlyCoinsForUser(u.uid, lastMonth, lastYear) }));
-                    lmScores.sort((a,b)=>b.score - a.score);
+                    let lmScores = users.map(u => ({ uid: u.uid, score: getMonthlyCoinsForUser(u.uid, lastMonth, lastYear) })); lmScores.sort((a,b)=>b.score - a.score);
                     
                     const lmTopScore = lmScores.length > 0 ? lmScores[0].score : 0;
                     const lmWinnerIds = (lmTopScore > 0) ? lmScores.filter(x => x.score === lmTopScore).map(x => x.uid) : [];
                     
-                    let mScores = users.map(u => ({ uid: u.uid, score: getMonthlyCoinsForUser(u.uid, currentM, currentY) }));
-                    mScores.sort((a,b)=>b.score - a.score);
+                    let mScores = users.map(u => ({ uid: u.uid, score: getMonthlyCoinsForUser(u.uid, currentM, currentY) })); mScores.sort((a,b)=>b.score - a.score);
                     let totalCurrentScore = mScores.reduce((sum, x) => sum + x.score, 0);
                     
                     let treeSvg = `<svg viewBox="0 0 200 300" class="w-[120%] h-[110%] opacity-95 transform translate-y-6">
@@ -2173,7 +1954,6 @@
                 if(dlg) {
                     dlg.innerText = chosen; dlg.style.left = `calc(${left}% + 10px)`; dlg.style.bottom = `calc(${bottom}% + 45px)`;
                     dlg.classList.remove('opacity-0', 'pointer-events-none'); dlg.classList.add('pop-in');
-                    
                     if (this.activeTreeDialogueTimer) clearTimeout(this.activeTreeDialogueTimer);
                     this.activeTreeDialogueTimer = setTimeout(() => { dlg.classList.add('opacity-0', 'pointer-events-none'); dlg.classList.remove('pop-in'); }, 3000);
                 }
@@ -2183,7 +1963,6 @@
                 try {
                     const u = getUserData(currentUser.uid); const currentM = new Date().getMonth(); const currentY = new Date().getFullYear();
                     let coinData = []; let countData = []; let activeDays = new Set();
-                    
                     Object.keys(u.habits||{}).forEach(hId => {
                         let c = 0, p = 0;
                         Object.keys(u.habits[hId]?.logs||{}).forEach(dateStr => {
@@ -2228,9 +2007,7 @@
             },
             deleteHabit() { 
                 if(Object.keys(appTemplates).length <= 1) return UI.showToast("至少保留一個習慣！"); 
-                Confirm.show("刪除習慣", "紀錄會跟著消失喔！", "刪除", () => { 
-                    delete appTemplates[this.tempHabitId]; saveLocal(); currentHabitId = Object.keys(appTemplates)[0]; localStorage.setItem('lastHabitId_v13', currentHabitId); UI.closeModal('editor-modal'); UI.init(); 
-                }); 
+                Confirm.show("刪除習慣", "紀錄會跟著消失喔！", "刪除", () => { delete appTemplates[this.tempHabitId]; saveLocal(); currentHabitId = Object.keys(appTemplates)[0]; localStorage.setItem('lastHabitId_v13', currentHabitId); UI.closeModal('editor-modal'); UI.init(); }); 
             },
             editHabit(hId) { 
                 const h = appTemplates[hId]; document.getElementById('editor-h-title').value = h.title; 
@@ -2242,9 +2019,9 @@
             renderRolesEditor() { 
                 document.getElementById('editor-h-roles').innerHTML = this.tempRoles.map((r, i) => `
                     <div class="flex gap-2 items-center mb-2 w-full box-border">
-                        <span class="text-xs font-bold w-12 text-center">Lv.${i+1}</span>
-                        <input type="text" value="${escapeHTML(r.title)}" onchange="Editor.tempRoles[${i}].title=this.value" class="flex-1 w-full box-border border-4 border-gray-800 rounded-lg p-1.5 font-bold text-xs">
-                        <input type="number" value="${r.threshold}" ${i===0?'disabled':''} onchange="Editor.tempRoles[${i}].threshold=parseInt(this.value)||0" class="w-16 box-border border-4 border-gray-800 rounded-lg p-1.5 font-bold text-xs ${i===0?'bg-gray-200':''}" min="0">
+                        <span class="text-xs font-bold w-12 text-center flex-shrink-0">Lv.${i+1}</span>
+                        <input type="text" value="${escapeHTML(r.title)}" onchange="Editor.tempRoles[${i}].title=this.value" class="flex-1 w-full box-border border-4 border-gray-800 rounded-lg p-1.5 font-bold text-xs min-w-0">
+                        <input type="number" value="${r.threshold}" ${i===0?'disabled':''} onchange="Editor.tempRoles[${i}].threshold=parseInt(this.value)||0" class="w-16 flex-shrink-0 box-border border-4 border-gray-800 rounded-lg p-1.5 font-bold text-xs ${i===0?'bg-gray-200':''}" min="0">
                         ${i>0 ? `<button onclick="Editor.deleteRole(${i})" class="w-8 h-8 p-1.5 bg-red-100 border border-gray-800 rounded hand-drawn-btn flex items-center justify-center flex-shrink-0">${SVGs.ui.trash}</button>` : `<div class="w-8 flex-shrink-0"></div>`}
                     </div>
                 `).join(''); 
@@ -2256,9 +2033,9 @@
                 const th = THEMES.find(t => t.id === this.tempTheme) || THEMES[0]; 
                 document.getElementById('editor-h-actions').innerHTML = h.actions.map(a => `
                     <div onclick="Editor.editAction('${a.id}')" class="${th.btn} border-4 border-gray-800 rounded-xl p-3 flex items-center gap-3 cursor-pointer hand-drawn-btn mb-2">
-                        <div class="w-8 h-8">${SVGs.icons[a.icon] || SVGs.icons.star}</div>
-                        <div class="flex-1"><p class="font-black text-sm">${escapeHTML(a.label)}</p></div>
-                        <div class="w-8 h-8 p-1.5">${SVGs.ui.editPen}</div>
+                        <div class="w-8 h-8 flex-shrink-0">${SVGs.icons[a.icon] || SVGs.icons.star}</div>
+                        <div class="flex-1 min-w-0"><p class="font-black text-sm truncate">${escapeHTML(a.label)}</p></div>
+                        <div class="w-8 h-8 p-1.5 flex-shrink-0">${SVGs.ui.editPen}</div>
                     </div>
                 `).join(''); 
             },
@@ -2285,11 +2062,7 @@
                 document.getElementById('editor-view-detail').classList.add('hidden'); document.getElementById('editor-view-action').classList.remove('hidden'); 
             },
             renderIconSelection() { 
-                document.getElementById('editor-a-icongrid').innerHTML = Object.keys(SVGs.icons).map(key => `
-                    <div onclick="Editor.tempIcon='${key}'; Editor.renderIconSelection()" class="w-10 h-10 p-1.5 border-4 rounded-xl cursor-pointer ${this.tempIcon === key ? 'border-gray-800 bg-yellow-200 scale-110 shadow-sm' : 'border-transparent bg-gray-100 opacity-60'}">
-                        ${SVGs.icons[key]}
-                    </div>
-                `).join(''); 
+                document.getElementById('editor-a-icongrid').innerHTML = Object.keys(SVGs.icons).map(key => `<div onclick="Editor.tempIcon='${key}'; Editor.renderIconSelection()" class="w-10 h-10 p-1.5 border-4 rounded-xl cursor-pointer ${this.tempIcon === key ? 'border-gray-800 bg-yellow-200 scale-110 shadow-sm' : 'border-transparent bg-gray-100 opacity-60'}">${SVGs.icons[key]}</div>`).join(''); 
             },
             saveActionConfig() { 
                 const h = appTemplates[this.tempHabitId]; const a = h.actions.find(act => act.id === this.tempActionId); 
@@ -2303,24 +2076,16 @@
         };
 
         const Radio = {
-            pools: {}, 
-            shuffle(a) { let c=a.length, r; while(c!=0){ r=Math.floor(Math.random()*c); c--; [a[c],a[r]]=[a[r],a[c]]; } return a; },
+            pools: {}, shuffle(a) { let c=a.length, r; while(c!=0){ r=Math.floor(Math.random()*c); c--; [a[c],a[r]]=[a[r],a[c]]; } return a; },
             getLine() {
                 try {
                     const uid = currentUser.uid; const uData = getUserData(uid); const streak = getOverallStreak(uid);
                     if(!this.pools[uid] || this.pools[uid].length === 0) {
                         let lines = [];
-                        if (uid === 'user_dad') { 
-                            lines = [`穩紮穩打，今天也是好榜樣！`, `連勝 ${streak} 天了，繼續保持！`, `【綠公主廣播】老公辛苦了，真帥氣！`, `口袋裡有 ${uData.currentCoins} 金幣。`, `一步一腳印，我們慢慢來。`, `全家人一起努力的感覺真好！`, `爸爸會一直當你們最堅強的後盾！`]; 
-                        } 
-                        else if (uid === 'user_mom') { 
-                            lines = [`優雅地打卡了！給自己一個大大的擁抱～`, `已經累積 ${uData.totalCoins} 枚金幣了！`, `【狐狸廣播】老婆今天也閃閃發光！`, `今天也要像公主一樣優雅地完成任務喔！`, `我為你感到驕傲！`, `辛苦了，別忘了喝杯熱水休息一下。`]; 
-                        } 
-                        else { 
-                            lines = [`跑這麼快，後面有狗在追喵？`, `連勝 ${streak} 天？算你有乖乖完成任務喵。`, `【狐狸廣播】阿蛇今天也超棒的！`, `口袋有 ${uData.currentCoins} 金幣了喵？`, `別一直戳喵，本喵很忙的！`, `看在你這麼努力打卡的份上，本喵就勉為其難誇獎你一下。`, `快點去打卡，本喵等著買罐罐呢！`]; 
-                        }
-                        const valid = customRadios.filter(r => r.target === 'all' || r.target === uid).map(r=>escapeHTML(r.text)); 
-                        lines = lines.concat(valid); this.pools[uid] = this.shuffle(lines);
+                        if (uid === 'user_dad') { lines = [`穩紮穩打，今天也是好榜樣！`, `連勝 ${streak} 天了，繼續保持！`, `【綠公主廣播】老公辛苦了，真帥氣！`, `口袋裡有 ${uData.currentCoins} 金幣。`, `一步一腳印，我們慢慢來。`, `全家人一起努力的感覺真好！`, `爸爸會一直當你們最堅強的後盾！`]; } 
+                        else if (uid === 'user_mom') { lines = [`優雅地打卡了！給自己一個大大的擁抱～`, `已經累積 ${uData.totalCoins} 枚金幣了！`, `【狐狸廣播】老婆今天也閃閃發光！`, `今天也要像公主一樣優雅地完成任務喔！`, `我為你感到驕傲！`, `辛苦了，別忘了喝杯熱水休息一下。`]; } 
+                        else { lines = [`跑這麼快，後面有狗在追喵？`, `連勝 ${streak} 天？算你有乖乖完成任務喵。`, `【狐狸廣播】阿蛇今天也超棒的！`, `口袋有 ${uData.currentCoins} 金幣了喵？`, `別一直戳喵，本喵很忙的！`, `看在你這麼努力打卡的份上，本喵就勉為其難誇獎你一下。`, `快點去打卡，本喵等著買罐罐呢！`]; }
+                        const valid = customRadios.filter(r => r.target === 'all' || r.target === uid).map(r=>escapeHTML(r.text)); lines = lines.concat(valid); this.pools[uid] = this.shuffle(lines);
                     } 
                     return this.pools[uid].pop();
                 } catch(e) { return "大家好喵！"; }
@@ -2335,8 +2100,7 @@
                         else if (r.target === 'user_dad') { labelClass = "bg-orange-200 text-orange-800"; labelText = targetUser ? targetUser.name : '狐狸'; }
                         else if (r.target === 'user_mom') { labelClass = "bg-green-200 text-green-800"; labelText = targetUser ? targetUser.name : '綠公主'; }
                         else if (r.target !== 'all') { labelText = targetUser ? targetUser.name : '未知'; }
-                        return `
-                        <div class="bg-white border-2 border-gray-800 rounded-xl p-3 mb-2 flex justify-between items-center shadow-sm">
+                        return `<div class="bg-white border-2 border-gray-800 rounded-xl p-3 mb-2 flex justify-between items-center shadow-sm">
                             <div class="max-w-[70%] flex flex-col items-start gap-1">
                                 <span class="text-[10px] ${labelClass} px-2 py-0.5 rounded font-black">給${labelText}</span>
                                 <p class="font-bold text-sm break-words w-full">${escapeHTML(r.text)}</p>
@@ -2356,31 +2120,22 @@
             },
             editLine(id) {
                 const r = customRadios.find(x=>x.id===id); if(!r) return;
-                document.getElementById('radio-new-text').value = r.text; document.getElementById('radio-target').value = r.target;
-                customRadios = customRadios.filter(x=>x.id!==id); this.renderList();
+                document.getElementById('radio-new-text').value = r.text; document.getElementById('radio-target').value = r.target; customRadios = customRadios.filter(x=>x.id!==id); this.renderList();
             },
             deleteLine(id) { Confirm.show("刪除廣播", "確定刪除？", "刪除", () => { customRadios = customRadios.filter(r => r.id !== id); saveLocal(); this.pools = {}; this.renderList(); }); }
         };
 
         const Confirm = { 
-            execute() { 
-                if(this.cb) { const action = this.cb; this.cb = null; action(); } 
-                UI.closeModal('generic-confirm-modal'); 
-            }, 
+            execute() { if(this.cb) { const action = this.cb; this.cb = null; action(); } UI.closeModal('generic-confirm-modal'); }, 
             show(t, d, bt, cb) { 
-                const ct = document.getElementById('confirm-title'); if(ct) ct.innerText = t; 
-                const cd = document.getElementById('confirm-desc'); if(cd) cd.innerText = d; 
-                const cbtn = document.getElementById('confirm-btn-do'); if(cbtn) cbtn.innerText = bt; 
-                this.cb = cb; UI.openModal('generic-confirm-modal'); 
+                document.getElementById('confirm-title').innerText = t; document.getElementById('confirm-desc').innerText = d; 
+                document.getElementById('confirm-btn-do').innerText = bt; this.cb = cb; UI.openModal('generic-confirm-modal'); 
             } 
         };
         
         function getUserData(uid) { return dailyHabitData[uid]; }
 
-        window.addEventListener('DOMContentLoaded', async () => { 
-            await initDB(); 
-        });
-        
+        window.addEventListener('DOMContentLoaded', async () => { await initDB(); });
     </script>
 </body>
 </html>
