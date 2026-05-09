@@ -348,28 +348,19 @@
         
         let myAuthToken = localStorage.getItem('family_secret_token_v1') || "";
 
-        // 安全取得保命符數量，並強制修復結構
         function getSavers(uid) {
-            const uData = dailyHabitData[uid];
-            if (!uData) return 0;
-            if (!uData.inventory) {
-                uData.inventory = { streakSavers: 0 };
-                saveLocal();
-            }
-            if (typeof uData.inventory.streakSavers !== 'number') {
-                uData.inventory.streakSavers = 0;
-                saveLocal();
-            }
-            return uData.inventory.streakSavers;
+            try {
+                return dailyHabitData[uid]?.inventory?.streakSavers || 0;
+            } catch(e) { return 0; }
         }
 
-        // 安全增減保命符數量
         function addSavers(uid, amount) {
-            const uData = dailyHabitData[uid];
-            if (!uData) return;
-            getSavers(uid); // 確保結構存在
-            uData.inventory.streakSavers = Math.max(0, uData.inventory.streakSavers + amount);
-            saveLocal();
+            try {
+                if(dailyHabitData[uid] && dailyHabitData[uid].inventory) {
+                    dailyHabitData[uid].inventory.streakSavers = Math.max(0, dailyHabitData[uid].inventory.streakSavers + amount);
+                    saveLocal();
+                }
+            } catch(e) { console.error(e); }
         }
 
         async function initDB() {
@@ -383,13 +374,17 @@
             
             const savedTpl = localStorage.getItem('appTemplates_v13');
             if (savedTpl) {
-                appTemplates = JSON.parse(savedTpl); 
-                Object.values(appTemplates).forEach(h => { 
-                    if(h.roles && typeof h.roles[0] === 'string') {
-                        h.roles = h.roles.map((r, i) => ({ threshold: i===0?0:(i===1?10:30), title: r })); 
-                    }
-                });
-            } else {
+                try {
+                    appTemplates = JSON.parse(savedTpl); 
+                    Object.values(appTemplates).forEach(h => { 
+                        if(h.roles && typeof h.roles[0] === 'string') {
+                            h.roles = h.roles.map((r, i) => ({ threshold: i===0?0:(i===1?10:30), title: r })); 
+                        }
+                    });
+                } catch(e) { appTemplates = {}; }
+            } 
+            
+            if (Object.keys(appTemplates).length === 0) {
                 appTemplates = {
                     "reading": { 
                         id: "reading", title: "每日閱讀", themeId: "pink", 
@@ -406,18 +401,23 @@
             currentHabitId = appTemplates[lastHId] ? lastHId : Object.keys(appTemplates)[0];
 
             const savedShop = localStorage.getItem('shopItems_v13');
-            if (savedShop) shopItems = JSON.parse(savedShop);
-            else shopItems = [{ id: "s1", name: "看電視 30 分鐘", cost: 50, icon: "star", reqLog: true }];
+            if (savedShop) {
+                try { shopItems = JSON.parse(savedShop); } catch(e) { shopItems = []; }
+            } else {
+                shopItems = [{ id: "s1", name: "看電視 30 分鐘", cost: 50, icon: "star", reqLog: true }];
+            }
 
-            // 強制確保保命符存在於 shopItems 中，以解決 undefined 問題
+            // [重要修復]：在此階段將資料庫缺失的結構補齊，不依賴 Getter
             if (!shopItems.some(i => i.id === 'special_saver')) {
                 shopItems.unshift({ id: "special_saver", name: "保命符 (時光機)", cost: 500, icon: "magicWand", reqLog: false, isSpecial: 'saver' });
             }
 
             const savedRadios = localStorage.getItem('customRadios_v13');
-            if(savedRadios) customRadios = JSON.parse(savedRadios);
+            if(savedRadios) { try { customRadios = JSON.parse(savedRadios); } catch(e) { customRadios = []; } }
 
-            dailyHabitData = JSON.parse(localStorage.getItem('daily-habit-v13')) || {};
+            let rawData = localStorage.getItem('daily-habit-v13');
+            try { dailyHabitData = rawData ? JSON.parse(rawData) : {}; } catch(e) { dailyHabitData = {}; }
+            
             if (!dailyHabitData.systemFlags) dailyHabitData.systemFlags = {}; 
             
             users.forEach(u => {
@@ -425,7 +425,7 @@
                     dailyHabitData[u.uid] = { totalCoins: 0, currentCoins: 0, mails: [], habits: {}, shopHistory: [] };
                 }
                 
-                // 強制結構修復
+                // 強制結構修復：確保 inventory 與 streakSavers 永遠存在
                 if (!dailyHabitData[u.uid].inventory) dailyHabitData[u.uid].inventory = { streakSavers: 0 };
                 if (typeof dailyHabitData[u.uid].inventory.streakSavers !== 'number') dailyHabitData[u.uid].inventory.streakSavers = 0;
 
@@ -460,7 +460,6 @@
             const cutOffTime = Date.now() - (40 * 24 * 60 * 60 * 1000); 
             users.forEach(u => {
                 const uData = dailyHabitData[u.uid];
-                
                 if(uData.mails && uData.mails.length > 50) {
                     const mailsToPrune = uData.mails.slice(50);
                     let autoClaimedCoins = 0;
@@ -472,9 +471,7 @@
                     }
                     uData.mails = uData.mails.slice(0, 50);
                 }
-                
                 if(uData.shopHistory) uData.shopHistory = uData.shopHistory.slice(0, 50);
-                
                 Object.keys(uData.habits || {}).forEach(hId => {
                     const logs = uData.habits[hId]?.logs || {};
                     Object.keys(logs).forEach(dateStr => {
@@ -488,17 +485,19 @@
         }
 
         function saveLocal() {
-            pruneAllData();
-            localStorage.setItem('appTemplates_v13', JSON.stringify(appTemplates));
-            localStorage.setItem('shopItems_v13', JSON.stringify(shopItems));
-            localStorage.setItem('customRadios_v13', JSON.stringify(customRadios));
-            localStorage.setItem('daily-habit-v13', JSON.stringify(dailyHabitData));
-            
-            if(!SyncEngine.isSyncing) {
-                SyncEngine.push().catch(e => console.error("Background sync push failed:", e));
-            } else {
-                SyncEngine.syncPending = true;
-            }
+            try {
+                pruneAllData();
+                localStorage.setItem('appTemplates_v13', JSON.stringify(appTemplates));
+                localStorage.setItem('shopItems_v13', JSON.stringify(shopItems));
+                localStorage.setItem('customRadios_v13', JSON.stringify(customRadios));
+                localStorage.setItem('daily-habit-v13', JSON.stringify(dailyHabitData));
+                
+                if(!SyncEngine.isSyncing) {
+                    SyncEngine.push().catch(e => console.error("Background sync push failed:", e));
+                } else {
+                    SyncEngine.syncPending = true;
+                }
+            } catch(e) { console.error("Save Local Error:", e); }
         }
 
         const SyncEngine = {
@@ -528,9 +527,7 @@
                         if (!rawDaily.systemFlags) rawDaily.systemFlags = {}; 
                         
                         users.forEach(u => {
-                            if (!rawDaily[u.uid]) {
-                                rawDaily[u.uid] = { totalCoins: 0, currentCoins: 0, mails: [], habits: {}, shopHistory: [] };
-                            }
+                            if (!rawDaily[u.uid]) { rawDaily[u.uid] = { totalCoins: 0, currentCoins: 0, mails: [], habits: {}, shopHistory: [] }; }
                             if (!rawDaily[u.uid].mails) rawDaily[u.uid].mails = [];
                             if (!rawDaily[u.uid].shopHistory) rawDaily[u.uid].shopHistory = [];
                             if (!rawDaily[u.uid].habits) rawDaily[u.uid].habits = {};
@@ -549,20 +546,20 @@
             async push() {
                 if (this.isSyncing || !this.API_URL) return;
                 this.isSyncing = true;
-                const updates = {
-                    appTemplates_v13: JSON.parse(localStorage.getItem('appTemplates_v13') || "{}"),
-                    shopItems_v13: JSON.parse(localStorage.getItem('shopItems_v13') || "[]"),
-                    customRadios_v13: JSON.parse(localStorage.getItem('customRadios_v13') || "[]"),
-                    'daily-habit-v13': JSON.parse(localStorage.getItem('daily-habit-v13') || "{}"),
-                    token: myAuthToken
-                };
                 try {
+                    const updates = {
+                        appTemplates_v13: JSON.parse(localStorage.getItem('appTemplates_v13') || "{}"),
+                        shopItems_v13: JSON.parse(localStorage.getItem('shopItems_v13') || "[]"),
+                        customRadios_v13: JSON.parse(localStorage.getItem('customRadios_v13') || "[]"),
+                        'daily-habit-v13': JSON.parse(localStorage.getItem('daily-habit-v13') || "{}"),
+                        token: myAuthToken
+                    };
                     await fetch(this.API_URL, {
                         method: 'POST', mode: 'no-cors',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(updates)
                     });
-                } catch (e) {} 
+                } catch (e) { console.error(e); } 
                 finally {
                     this.isSyncing = false;
                     if (this.syncPending) {
@@ -595,49 +592,58 @@
             },
             toggleMute() { 
                 this.muted = !this.muted; 
-                document.getElementById('mute-btn').innerHTML = `<div class="w-6 h-6">${this.muted ? SVGs.ui.mute : SVGs.ui.speaker}</div>`; 
-                if(!this.muted) { this.init(); if(this.ctx.state === 'suspended') this.ctx.resume(); this.playCoin(); } 
+                const btn = document.getElementById('mute-btn');
+                if(btn) btn.innerHTML = `<div class="w-6 h-6">${this.muted ? SVGs.ui.mute : SVGs.ui.speaker}</div>`; 
+                if(!this.muted) { this.init(); if(this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); this.playCoin(); } 
             },
             playCoin() { 
                 if(this.muted || !this.ctx) return; 
-                const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain(); 
-                osc.type = 'square'; osc.frequency.setValueAtTime(987, this.ctx.currentTime); osc.frequency.setValueAtTime(1318, this.ctx.currentTime + 0.1); 
-                gain.gain.setValueAtTime(0.1, this.ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.4); 
-                osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.4); 
+                try {
+                    const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain(); 
+                    osc.type = 'square'; osc.frequency.setValueAtTime(987, this.ctx.currentTime); osc.frequency.setValueAtTime(1318, this.ctx.currentTime + 0.1); 
+                    gain.gain.setValueAtTime(0.1, this.ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.4); 
+                    osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.4); 
+                } catch(e){}
             },
             playLevelUp() { 
                 if(this.muted || !this.ctx) return; 
-                const notes = [523, 659, 783, 1046]; 
-                notes.forEach((freq, i) => { 
-                    const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain(); 
-                    osc.type = 'square'; osc.frequency.value = freq; 
-                    gain.gain.setValueAtTime(0.1, this.ctx.currentTime + i*0.1); gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + i*0.1 + 0.3); 
-                    osc.connect(gain); gain.connect(this.ctx.destination); osc.start(this.ctx.currentTime + i*0.1); osc.stop(this.ctx.currentTime + i*0.1 + 0.3); 
-                }); 
+                try {
+                    const notes = [523, 659, 783, 1046]; 
+                    notes.forEach((freq, i) => { 
+                        const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain(); 
+                        osc.type = 'square'; osc.frequency.value = freq; 
+                        gain.gain.setValueAtTime(0.1, this.ctx.currentTime + i*0.1); gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + i*0.1 + 0.3); 
+                        osc.connect(gain); gain.connect(this.ctx.destination); osc.start(this.ctx.currentTime + i*0.1); osc.stop(this.ctx.currentTime + i*0.1 + 0.3); 
+                    }); 
+                } catch(e){}
             },
             playAnimal(type) { 
                 if(this.muted || !this.ctx) return; 
-                const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain(); 
-                if(type === 'cat') { 
-                    osc.type = 'sine'; osc.frequency.setValueAtTime(600, this.ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(300, this.ctx.currentTime + 0.4); 
-                    gain.gain.setValueAtTime(0.1, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.4); 
-                } else if (type === 'fox') { 
-                    osc.type = 'triangle'; osc.frequency.setValueAtTime(800, this.ctx.currentTime); osc.frequency.linearRampToValueAtTime(1000, this.ctx.currentTime + 0.1); 
-                    gain.gain.setValueAtTime(0.1, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.1); 
-                } else { 
-                    osc.type = 'sine'; osc.frequency.setValueAtTime(1200, this.ctx.currentTime); osc.frequency.linearRampToValueAtTime(1600, this.ctx.currentTime + 0.3); 
-                    gain.gain.setValueAtTime(0.05, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.3); 
-                } 
-                osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.4); 
+                try {
+                    const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain(); 
+                    if(type === 'cat') { 
+                        osc.type = 'sine'; osc.frequency.setValueAtTime(600, this.ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(300, this.ctx.currentTime + 0.4); 
+                        gain.gain.setValueAtTime(0.1, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.4); 
+                    } else if (type === 'fox') { 
+                        osc.type = 'triangle'; osc.frequency.setValueAtTime(800, this.ctx.currentTime); osc.frequency.linearRampToValueAtTime(1000, this.ctx.currentTime + 0.1); 
+                        gain.gain.setValueAtTime(0.1, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.1); 
+                    } else { 
+                        osc.type = 'sine'; osc.frequency.setValueAtTime(1200, this.ctx.currentTime); osc.frequency.linearRampToValueAtTime(1600, this.ctx.currentTime + 0.3); 
+                        gain.gain.setValueAtTime(0.05, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.3); 
+                    } 
+                    osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.4); 
+                } catch(e){}
             },
             playPurr() { 
                 if(this.muted || !this.ctx) return; 
-                const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain(); 
-                osc.type = 'sawtooth'; osc.frequency.value = 40; 
-                gain.gain.setValueAtTime(0.2, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 2); 
-                osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 2); 
+                try {
+                    const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain(); 
+                    osc.type = 'sawtooth'; osc.frequency.value = 40; 
+                    gain.gain.setValueAtTime(0.2, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 2); 
+                    osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 2); 
+                } catch(e){}
             },
-            vibrate(pattern) { if(navigator.vibrate) navigator.vibrate(pattern); }
+            vibrate(pattern) { if(navigator.vibrate) try{ navigator.vibrate(pattern); }catch(e){} }
         };
 
         const PWA = {
@@ -673,9 +679,11 @@
             },
             bindGlobalSwipe() {
                 let startX = 0, startY = 0; const wrapper = document.querySelector('.app-wrapper');
+                if(!wrapper) return;
                 wrapper.addEventListener('touchstart', e => { startX = e.changedTouches[0].screenX; startY = e.changedTouches[0].screenY; }, {passive: true});
                 wrapper.addEventListener('touchend', e => {
-                    if (!document.getElementById('modals-container').innerText.includes('hidden') && Array.from(document.getElementById('modals-container').children).some(m => !m.classList.contains('hidden'))) return;
+                    const modContainer = document.getElementById('modals-container');
+                    if (modContainer && !modContainer.innerText.includes('hidden') && Array.from(modContainer.children).some(m => !m.classList.contains('hidden'))) return;
                     if (startX < 30) return; 
                     let endX = e.changedTouches[0].screenX, endY = e.changedTouches[0].screenY;
                     let dx = endX - startX, dy = endY - startY;
@@ -696,7 +704,7 @@
                         let endX = e.changedTouches[0].screenX, endY = e.changedTouches[0].screenY;
                         let dx = endX - startX, dy = endY - startY;
                         if(Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 2) {
-                            let activeIdx = tabsArray.findIndex(t => document.getElementById(`${t.prefix}-tab-${t.id}`).classList.contains(t.activeClass));
+                            let activeIdx = tabsArray.findIndex(t => { const tabEl = document.getElementById(`${t.prefix}-tab-${t.id}`); return tabEl && tabEl.classList.contains(t.activeClass); });
                             if(activeIdx === -1) activeIdx = 0;
                             if(dx > 0) { let prev = activeIdx - 1 < 0 ? tabsArray.length - 1 : activeIdx - 1; switchFn(tabsArray[prev].id, -1); } 
                             else { let next = activeIdx + 1 >= tabsArray.length ? 0 : activeIdx + 1; switchFn(tabsArray[next].id, 1); }
@@ -714,7 +722,8 @@
         const Mascot = {
             speechTimer: null,
             speak(text) {
-                const speech = document.getElementById('mascot-speech'); speech.innerText = text;
+                const speech = document.getElementById('mascot-speech'); if(!speech) return;
+                speech.innerText = text;
                 speech.classList.remove('opacity-0', 'pointer-events-none'); speech.classList.add('pop-in');
                 if(this.speechTimer) clearTimeout(this.speechTimer);
                 this.speechTimer = setTimeout(() => { speech.classList.add('opacity-0', 'pointer-events-none'); speech.classList.remove('pop-in'); }, 5500);
@@ -748,7 +757,7 @@
                 } else { AudioEngine.playAnimal(currentUser.svgKey); return false; }
             },
             spawnHearts() { 
-                const container = document.getElementById('mascot-img'); 
+                const container = document.getElementById('mascot-img'); if(!container) return;
                 for(let i=0; i<5; i++) { 
                     const heart = document.createElement('div'); heart.className = 'heart-float w-6 h-6'; heart.innerHTML = SVGs.icons.heart; 
                     heart.style.left = (Math.random() * 80 + 10) + 'px'; heart.style.top = (Math.random() * 20 + 20) + 'px'; heart.style.animationDelay = (Math.random() * 0.5) + 's'; 
@@ -756,7 +765,8 @@
                 } 
             },
             triggerGoldenRain() { 
-                const rain = document.getElementById('golden-rain'); rain.style.display = 'block'; 
+                const rain = document.getElementById('golden-rain'); if(!rain) return;
+                rain.style.display = 'block'; 
                 for(let i=0; i<30; i++) { 
                     const coin = document.createElement('div'); coin.className = 'falling-coin w-8 h-8'; coin.innerHTML = SVGs.coin; 
                     coin.style.left = Math.random() * 100 + 'vw'; coin.style.animationDuration = (Math.random() * 1 + 1) + 's'; 
@@ -779,6 +789,7 @@
         };
 
         const SystemConfig = {
+            expectedMathAnswer: null,
             saveToken() {
                 const token = document.getElementById('auth-input').value.trim();
                 if (!token) return;
@@ -789,9 +800,11 @@
                 initDB();
             },
             downloadBackup() {
-                const payload = { appTemplates_v13: appTemplates, shopItems_v13: shopItems, customRadios_v13: customRadios, 'daily-habit-v13': dailyHabitData };
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload));
-                const anchor = document.createElement('a'); anchor.href = dataStr; anchor.download = `AtomicHabits_Backup_${getTodayStr()}.json`; anchor.click();
+                try {
+                    const payload = { appTemplates_v13: appTemplates, shopItems_v13: shopItems, customRadios_v13: customRadios, 'daily-habit-v13': dailyHabitData };
+                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload));
+                    const anchor = document.createElement('a'); anchor.href = dataStr; anchor.download = `AtomicHabits_Backup_${getTodayStr()}.json`; anchor.click();
+                } catch(e) { UI.showToast("備份失敗！"); }
             },
             triggerRestore() { Confirm.show("警告：還原備份", "這會覆蓋目前所有的資料與雲端，確定要繼續嗎？", "選擇檔案", () => { document.getElementById('backup-file-input').click(); }); },
             handleRestoreBackup(event) {
@@ -811,14 +824,17 @@
             },
             triggerReset() {
                 Confirm.show("嚴重警告", "這會清空所有歷史資料！確定要繼續嗎？", "繼續", () => {
-                    const isMathAdd = Math.random() > 0.5;
-                    const num1 = isMathAdd ? Math.floor(Math.random() * 90) + 10 : Math.floor(Math.random() * 90) + 10;
-                    const num2 = isMathAdd ? Math.floor(Math.random() * 90) + 10 : Math.floor(Math.random() * 9) + 1;
-                    const opStr = isMathAdd ? '+' : '×';
-                    const answer = isMathAdd ? (num1 + num2) : (num1 * num2);
+                    const isAdd = Math.random() > 0.5;
+                    const num1 = Math.floor(Math.random() * 90) + 10;
+                    const num2 = isAdd ? Math.floor(Math.random() * 90) + 10 : Math.floor(Math.random() * 9) + 1;
+                    const opStr = isAdd ? '+' : '×';
+                    const answer = isAdd ? (num1 + num2) : (num1 * num2);
                     
-                    document.getElementById('math-ans').value = '';
-                    document.getElementById('math-question').innerText = `${num1} ${opStr} ${num2} = ?`;
+                    const ansInput = document.getElementById('math-ans');
+                    if(ansInput) ansInput.value = '';
+                    const questionEl = document.getElementById('math-question');
+                    if(questionEl) questionEl.innerText = `${num1} ${opStr} ${num2} = ?`;
+                    
                     this.expectedMathAnswer = answer;
                     UI.openModal('math-confirm-modal');
                 });
@@ -826,15 +842,19 @@
             executeReset() {
                 const inputVal = parseInt(document.getElementById('math-ans').value.trim());
                 if (inputVal === this.expectedMathAnswer) {
-                    users.forEach(u => {
-                        dailyHabitData[u.uid].currentCoins = 0; dailyHabitData[u.uid].totalCoins = 0;
-                        dailyHabitData[u.uid].mails = []; dailyHabitData[u.uid].shopHistory = [];
-                        dailyHabitData[u.uid].inventory = { streakSavers: 0 };
-                        Object.keys(dailyHabitData[u.uid].habits).forEach(hId => {
-                            dailyHabitData[u.uid].habits[hId].logs = {}; dailyHabitData[u.uid].habits[hId].streak = 0;
+                    try {
+                        users.forEach(u => {
+                            if(dailyHabitData[u.uid]) {
+                                dailyHabitData[u.uid].currentCoins = 0; dailyHabitData[u.uid].totalCoins = 0;
+                                dailyHabitData[u.uid].mails = []; dailyHabitData[u.uid].shopHistory = [];
+                                dailyHabitData[u.uid].inventory = { streakSavers: 0 };
+                                Object.keys(dailyHabitData[u.uid].habits).forEach(hId => {
+                                    dailyHabitData[u.uid].habits[hId].logs = {}; dailyHabitData[u.uid].habits[hId].streak = 0;
+                                });
+                            }
                         });
-                    });
-                    saveLocal(); UI.showToast("資料已完全重置"); UI.closeModal('math-confirm-modal'); UI.closeModal('editor-modal'); UI.renderAll();
+                        saveLocal(); UI.showToast("資料已完全重置"); UI.closeModal('math-confirm-modal'); UI.closeModal('editor-modal'); UI.renderAll();
+                    } catch(e) { UI.showToast("重置失敗！"); }
                 } else {
                     UI.showToast("答案錯誤，取消重置保護機制");
                     UI.closeModal('math-confirm-modal');
@@ -857,35 +877,42 @@
         }
         
         function getOverallStreak(uid) {
-            const uData = getUserData(uid); let streak = 0; const checkDate = new Date();
-            const formatD = (date) => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
-            let hasToday = Object.values(uData.habits||{}).some(h => h?.logs?.[formatD(checkDate)]);
-            
-            if (!hasToday) { 
-                checkDate.setDate(checkDate.getDate() - 1); 
-                if (!Object.values(uData.habits||{}).some(h => h?.logs?.[formatD(checkDate)])) return 0; 
-            } else { streak++; checkDate.setDate(checkDate.getDate() - 1); }
-            
-            while(true) { 
-                if (Object.values(uData.habits||{}).some(h => h?.logs?.[formatD(checkDate)])) { streak++; checkDate.setDate(checkDate.getDate() - 1); } 
-                else { break; } 
-            } 
-            return streak;
+            try {
+                const uData = getUserData(uid); if(!uData) return 0;
+                let streak = 0; const checkDate = new Date();
+                const formatD = (date) => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+                let hasToday = Object.values(uData.habits||{}).some(h => h?.logs?.[formatD(checkDate)]);
+                
+                if (!hasToday) { 
+                    checkDate.setDate(checkDate.getDate() - 1); 
+                    if (!Object.values(uData.habits||{}).some(h => h?.logs?.[formatD(checkDate)])) return 0; 
+                } else { streak++; checkDate.setDate(checkDate.getDate() - 1); }
+                
+                while(true) { 
+                    if (Object.values(uData.habits||{}).some(h => h?.logs?.[formatD(checkDate)])) { streak++; checkDate.setDate(checkDate.getDate() - 1); } 
+                    else { break; } 
+                } 
+                return streak;
+            } catch(e) { return 0; }
         }
         
         function isFamilyBondActive(dateStr) {
-            const checkDate = dateStr ? new Date(dateStr) : new Date();
-            checkDate.setDate(checkDate.getDate() - 1); 
-            const yStr = `${checkDate.getFullYear()}-${String(checkDate.getMonth()+1).padStart(2,'0')}-${String(checkDate.getDate()).padStart(2,'0')}`;
-            return users.every(u => Object.values(getUserData(u.uid)?.habits||{}).some(h => h?.logs?.[yStr] && !h.logs[yStr].isPruned));
+            try {
+                const checkDate = dateStr ? new Date(dateStr) : new Date();
+                checkDate.setDate(checkDate.getDate() - 1); 
+                const yStr = `${checkDate.getFullYear()}-${String(checkDate.getMonth()+1).padStart(2,'0')}-${String(checkDate.getDate()).padStart(2,'0')}`;
+                return users.every(u => Object.values(getUserData(u.uid)?.habits||{}).some(h => h?.logs?.[yStr] && !h.logs[yStr].isPruned));
+            } catch(e) { return false; }
         }
         
         function getIdentityBadge(hId, uid) {
-            const hData = getUserData(uid)?.habits?.[hId]; if(!hData) return "新手";
-            const logsCount = Object.keys(hData.logs||{}).length; const roles = appTemplates[hId]?.roles || [{threshold:0, title:"新手"}];
-            let currentRole = roles[0].title; const sortedRoles = [...roles].sort((a,b)=>a.threshold - b.threshold);
-            for(let r of sortedRoles) { if(logsCount >= r.threshold) currentRole = r.title; } 
-            return currentRole;
+            try {
+                const hData = getUserData(uid)?.habits?.[hId]; if(!hData) return "新手";
+                const logsCount = Object.keys(hData.logs||{}).length; const roles = appTemplates[hId]?.roles || [{threshold:0, title:"新手"}];
+                let currentRole = roles[0].title; const sortedRoles = [...roles].sort((a,b)=>a.threshold - b.threshold);
+                for(let r of sortedRoles) { if(logsCount >= r.threshold) currentRole = r.title; } 
+                return currentRole;
+            } catch(e) { return "新手"; }
         }
 
         function createPieChartSVG(data) {
@@ -923,14 +950,17 @@
         }
 
         function getMonthlyCoinsForUser(uid, currentM, currentY) {
-            const u = getUserData(uid); let coins = 0;
-            Object.keys(u.habits||{}).forEach(hId => {
-                Object.keys(u.habits[hId]?.logs||{}).forEach(dateStr => {
-                    const d = new Date(dateStr);
-                    if(d.getMonth() === currentM && d.getFullYear() === currentY) { coins += u.habits[hId].logs[dateStr].pointsEarned; }
+            try {
+                const u = getUserData(uid); if(!u) return 0;
+                let coins = 0;
+                Object.keys(u.habits||{}).forEach(hId => {
+                    Object.keys(u.habits[hId]?.logs||{}).forEach(dateStr => {
+                        const d = new Date(dateStr);
+                        if(d.getMonth() === currentM && d.getFullYear() === currentY) { coins += u.habits[hId].logs[dateStr].pointsEarned; }
+                    });
                 });
-            });
-            return coins;
+                return coins;
+            } catch(e) { return 0; }
         }
 
         const UI = {
@@ -938,179 +968,230 @@
             activeModals: [],
             
             init() {
-                PWA.init(); SwipeDetector.init(); this.injectModals();
-                
-                document.getElementById('shop-btn').innerHTML = SVGs.ui.shopStand; 
-                document.getElementById('trophy-btn').innerHTML = SVGs.ui.magicBook;
-                document.getElementById('mailbox-btn').innerHTML += `<div class="w-full h-full p-0.5">${SVGs.mailbox}</div>`;
-                document.getElementById('coin-icon').innerHTML = SVGs.coin; 
-                document.getElementById('flame-icon').innerHTML = SVGs.flame;
-                document.getElementById('icon-crown-header').innerHTML = SVGs.crown.replace('CROWN_COLOR', '#fde047');
-                document.getElementById('icon-paw-title').innerHTML = SVGs.paw; 
-                document.getElementById('icon-author-fox').innerHTML = SVGs.fox;
-                document.getElementById('mute-btn').innerHTML = `<div class="w-6 h-6">${AudioEngine.muted ? SVGs.ui.mute : SVGs.ui.speaker}</div>`;
-                document.getElementById('icon-sync-btn').innerHTML = SVGs.ui.history;
-                document.getElementById('icon-radio-btn').innerHTML = SVGs.icons.bulb;
-                document.getElementById('icon-setting-btn').innerHTML = SVGs.ui.magicWand;
-                document.getElementById('sync-mascot-img').innerHTML = SVGs.cat;
-                
-                const installIcon = document.getElementById('icon-install-btn');
-                if(installIcon) installIcon.innerHTML = SVGs.icons.star;
-                
-                document.addEventListener("visibilitychange", () => { if (!document.hidden && !SyncEngine.isSyncing) this.renderAll(); });
-                window.addEventListener('popstate', (e) => {
-                    if (this.activeModals.length > 0) { const topModal = this.activeModals.pop(); this.closeModal(topModal, true); }
-                });
-                
-                this.renderHabitDropdown(); this.renderUsers(); this.switchUser(currentUser.uid, true);
+                try {
+                    PWA.init(); SwipeDetector.init(); this.injectModals();
+                    
+                    const setIcon = (id, html) => { const el = document.getElementById(id); if(el) el.innerHTML = html; };
+                    
+                    setIcon('shop-btn', SVGs.ui.shopStand); 
+                    setIcon('trophy-btn', SVGs.ui.magicBook);
+                    const mailboxBtn = document.getElementById('mailbox-btn');
+                    if(mailboxBtn) mailboxBtn.innerHTML += `<div class="w-full h-full p-0.5">${SVGs.mailbox}</div>`;
+                    setIcon('coin-icon', SVGs.coin); 
+                    setIcon('flame-icon', SVGs.flame);
+                    setIcon('icon-crown-header', SVGs.crown.replace('CROWN_COLOR', '#fde047'));
+                    setIcon('icon-paw-title', SVGs.paw); 
+                    setIcon('icon-author-fox', SVGs.fox);
+                    setIcon('mute-btn', `<div class="w-6 h-6">${AudioEngine.muted ? SVGs.ui.mute : SVGs.ui.speaker}</div>`);
+                    setIcon('icon-sync-btn', SVGs.ui.history);
+                    setIcon('icon-radio-btn', SVGs.icons.bulb);
+                    setIcon('icon-setting-btn', SVGs.ui.magicWand);
+                    setIcon('sync-mascot-img', SVGs.cat);
+                    setIcon('icon-install-btn', SVGs.icons.star);
+                    
+                    document.addEventListener("visibilitychange", () => { if (!document.hidden && !SyncEngine.isSyncing) this.renderAll(); });
+                    window.addEventListener('popstate', (e) => {
+                        if (this.activeModals.length > 0) { const topModal = this.activeModals.pop(); this.closeModal(topModal, true); }
+                    });
+                    
+                    this.renderHabitDropdown(); this.renderUsers(); this.switchUser(currentUser.uid, true);
+                } catch(e) { console.error("UI Init Error:", e); }
             },
             
             renderAll() {
-                if (!appTemplates[currentHabitId]) { currentHabitId = Object.keys(appTemplates)[0]; localStorage.setItem('lastHabitId_v13', currentHabitId); }
-                this.renderDashboard(); this.renderButtons(); this.renderCalendar(); this.renderFootprints(); this.updateMailBadge();
-                document.getElementById('family-buff-banner').classList.toggle('hidden', !isFamilyBondActive());
-                document.getElementById('identity-text').innerText = getIdentityBadge(currentHabitId, currentUser.uid);
+                try {
+                    if (!appTemplates[currentHabitId]) { currentHabitId = Object.keys(appTemplates)[0]; localStorage.setItem('lastHabitId_v13', currentHabitId); }
+                    this.renderDashboard(); this.renderButtons(); this.renderCalendar(); this.renderFootprints(); this.updateMailBadge();
+                    
+                    const banner = document.getElementById('family-buff-banner');
+                    if(banner) banner.classList.toggle('hidden', !isFamilyBondActive());
+                    
+                    const identityText = document.getElementById('identity-text');
+                    if(identityText) identityText.innerText = getIdentityBadge(currentHabitId, currentUser.uid);
+                } catch(e) { console.error("RenderAll Error:", e); }
             },
 
             renderUsers() {
-                document.getElementById('user-switcher').innerHTML = users.map(u => `
-                    <button id="btn-${u.uid}" onclick="UI.switchUser('${u.uid}')" class="w-10 h-10 rounded-xl transition-all duration-200 border-2 border-transparent flex items-center justify-center relative p-1.5 hover:scale-105">
-                        ${SVGs[u.svgKey]}
-                    </button>
-                `).join('');
+                try {
+                    const switcher = document.getElementById('user-switcher');
+                    if(switcher) {
+                        switcher.innerHTML = users.map(u => `
+                            <button id="btn-${u.uid}" onclick="UI.switchUser('${u.uid}')" class="w-10 h-10 rounded-xl transition-all duration-200 border-2 border-transparent flex items-center justify-center relative p-1.5 hover:scale-105">
+                                ${SVGs[u.svgKey]}
+                            </button>
+                        `).join('');
+                    }
+                } catch(e) { console.error(e); }
             },
             
             renderDashboard() {
-                const uData = getUserData(currentUser.uid);
-                document.getElementById('current-coins').innerText = uData.currentCoins || 0;
-                document.getElementById('overall-streak').innerText = getOverallStreak(currentUser.uid);
+                try {
+                    const uData = getUserData(currentUser.uid);
+                    if(uData) {
+                        const coinsEl = document.getElementById('current-coins');
+                        if(coinsEl) coinsEl.innerText = uData.currentCoins || 0;
+                        const streakEl = document.getElementById('overall-streak');
+                        if(streakEl) streakEl.innerText = getOverallStreak(currentUser.uid);
+                    }
+                } catch(e) { console.error(e); }
             },
             
             switchUser(uid, isInit=false, swipeDir=0) {
-                if(swipeDir !== 0) SwipeDetector.playSlide('main-panel-left', swipeDir);
-                currentUser = users.find(u => u.uid === uid);
-                users.forEach(u => {
-                    const btn = document.getElementById(`btn-${u.uid}`);
-                    if (u.uid === uid) { btn.classList.add('bg-yellow-200', 'scale-110', 'border-gray-800'); btn.classList.remove('border-transparent'); btn.style.boxShadow = "2px 2px 0 #1f2937"; } 
-                    else { btn.classList.remove('bg-yellow-200', 'scale-110', 'border-gray-800'); btn.classList.add('border-transparent'); btn.style.boxShadow = "none"; }
-                });
-                document.getElementById('mascot-img').innerHTML = SVGs[currentUser.svgKey];
-                if(isInit) this.switchHabit(currentHabitId); else this.renderAll();
-                this.showMascotMessage();
+                try {
+                    if(swipeDir !== 0) SwipeDetector.playSlide('main-panel-left', swipeDir);
+                    currentUser = users.find(u => u.uid === uid) || users[0];
+                    users.forEach(u => {
+                        const btn = document.getElementById(`btn-${u.uid}`);
+                        if(btn) {
+                            if (u.uid === uid) { btn.classList.add('bg-yellow-200', 'scale-110', 'border-gray-800'); btn.classList.remove('border-transparent'); btn.style.boxShadow = "2px 2px 0 #1f2937"; } 
+                            else { btn.classList.remove('bg-yellow-200', 'scale-110', 'border-gray-800'); btn.classList.add('border-transparent'); btn.style.boxShadow = "none"; }
+                        }
+                    });
+                    const mascot = document.getElementById('mascot-img');
+                    if(mascot) mascot.innerHTML = SVGs[currentUser.svgKey];
+                    if(isInit) this.switchHabit(currentHabitId); else this.renderAll();
+                    this.showMascotMessage();
+                } catch(e) { console.error(e); }
             },
             
             renderHabitDropdown() { 
-                document.getElementById('habit-list-container').innerHTML = Object.values(appTemplates).map(h => `
-                    <button onclick="UI.switchHabit('${h.id}')" class="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg font-black text-gray-800 flex items-center gap-2 truncate">
-                        <div class="w-3 h-3 flex-shrink-0 rounded-full border border-gray-800 ${THEMES.find(t=>t.id===h.themeId)?.dot || 'bg-gray-400'}"></div>
-                        <span class="truncate">${escapeHTML(h.title)}</span>
-                    </button>
-                `).join(''); 
+                try {
+                    const container = document.getElementById('habit-list-container');
+                    if(container) {
+                        container.innerHTML = Object.values(appTemplates).map(h => `
+                            <button onclick="UI.switchHabit('${h.id}')" class="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg font-black text-gray-800 flex items-center gap-2 truncate">
+                                <div class="w-3 h-3 flex-shrink-0 rounded-full border border-gray-800 ${THEMES.find(t=>t.id===h.themeId)?.dot || 'bg-gray-400'}"></div>
+                                <span class="truncate">${escapeHTML(h.title)}</span>
+                            </button>
+                        `).join(''); 
+                    }
+                } catch(e) {}
             },
             
             switchHabit(hId) {
-                currentHabitId = hId; localStorage.setItem('lastHabitId_v13', hId); document.getElementById('habit-dropdown').classList.add('hidden'); recoveryDate = null;
-                const habit = appTemplates[hId] || Object.values(appTemplates)[0]; const th = THEMES.find(t => t.id === habit.themeId) || THEMES[0];
-                document.getElementById('app-title').innerText = habit.title; document.getElementById('main-header').style.background = th.grad;
-                this.renderAll();
+                try {
+                    currentHabitId = hId; localStorage.setItem('lastHabitId_v13', hId); 
+                    const dropdown = document.getElementById('habit-dropdown');
+                    if(dropdown) dropdown.classList.add('hidden'); 
+                    recoveryDate = null;
+                    const habit = appTemplates[hId] || Object.values(appTemplates)[0]; const th = THEMES.find(t => t.id === habit.themeId) || THEMES[0];
+                    const appTitle = document.getElementById('app-title'); if(appTitle) appTitle.innerText = habit.title; 
+                    const header = document.getElementById('main-header'); if(header) header.style.background = th.grad;
+                    this.renderAll();
+                } catch(e) { console.error(e); }
             },
             
             renderButtons() {
-                const habit = appTemplates[currentHabitId] || Object.values(appTemplates)[0]; const th = THEMES.find(t => t.id === habit.themeId) || THEMES[0];
-                const titleContainer = document.getElementById('action-title-container'); const titleText = document.getElementById('action-title-text'); const cancelBtn = document.getElementById('cancel-recovery-btn');
-                
-                if (recoveryDate) {
-                    titleText.innerHTML = `⏳ 任務補救模式 (${recoveryDate})`; titleContainer.classList.add('bg-orange-100', 'text-orange-800'); titleContainer.classList.remove('bg-white'); cancelBtn.classList.remove('hidden');
-                } else {
-                    titleText.innerHTML = `準備好完成任務了嗎？`; titleContainer.classList.remove('bg-orange-100', 'text-orange-800'); titleContainer.classList.add('bg-white'); cancelBtn.classList.add('hidden');
-                }
-                
-                document.getElementById('action-buttons').innerHTML = habit.actions.map(a => `
-                    <button onclick='Logic.openActionModal("${a.id}")' class="${th.btn} hand-drawn-border hand-drawn-btn p-3 flex flex-col items-center justify-center gap-1 relative active:scale-95 w-full no-select">
-                        <div class="w-12 h-12 mb-1">${SVGs.icons[a.icon] || SVGs.icons.star}</div>
-                        <span class="text-sm font-black text-gray-800">${escapeHTML(a.label)}</span>
-                        ${a.stackingText ? `<span class="text-[10px] font-bold text-gray-500 bg-white/50 px-1 rounded truncate max-w-full">${escapeHTML(a.stackingText)}</span>` : ''}
-                    </button>
-                `).join('');
+                try {
+                    const habit = appTemplates[currentHabitId] || Object.values(appTemplates)[0]; if(!habit) return;
+                    const th = THEMES.find(t => t.id === habit.themeId) || THEMES[0];
+                    const titleContainer = document.getElementById('action-title-container'); const titleText = document.getElementById('action-title-text'); const cancelBtn = document.getElementById('cancel-recovery-btn');
+                    
+                    if(titleContainer && titleText && cancelBtn) {
+                        if (recoveryDate) {
+                            titleText.innerHTML = `⏳ 任務補救模式 (${recoveryDate})`; titleContainer.classList.add('bg-orange-100', 'text-orange-800'); titleContainer.classList.remove('bg-white'); cancelBtn.classList.remove('hidden');
+                        } else {
+                            titleText.innerHTML = `準備好完成任務了嗎？`; titleContainer.classList.remove('bg-orange-100', 'text-orange-800'); titleContainer.classList.add('bg-white'); cancelBtn.classList.add('hidden');
+                        }
+                    }
+                    
+                    const actionBtns = document.getElementById('action-buttons');
+                    if(actionBtns) {
+                        actionBtns.innerHTML = habit.actions.map(a => `
+                            <button onclick='Logic.openActionModal("${a.id}")' class="${th.btn} hand-drawn-border hand-drawn-btn p-3 flex flex-col items-center justify-center gap-1 relative active:scale-95 w-full no-select">
+                                <div class="w-12 h-12 mb-1">${SVGs.icons[a.icon] || SVGs.icons.star}</div>
+                                <span class="text-sm font-black text-gray-800">${escapeHTML(a.label)}</span>
+                                ${a.stackingText ? `<span class="text-[10px] font-bold text-gray-500 bg-white/50 px-1 rounded truncate max-w-full">${escapeHTML(a.stackingText)}</span>` : ''}
+                            </button>
+                        `).join('');
+                    }
+                } catch(e) { console.error(e); }
             },
             
             renderCalendar() {
-                const uData = getUserData(currentUser.uid); let html = '';
-                for (let i = 6; i >= 0; i--) {
-                    const d = new Date(); d.setDate(d.getDate() - i); 
-                    const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-                    const isToday = i === 0; 
-                    let isActive = false; let lastLog = null;
-                    
-                    Object.values(uData.habits||{}).forEach(h => {
-                        if(h?.logs?.[dateStr] && !h.logs[dateStr].isPruned) {
-                            isActive = true; if(!lastLog || h.logs[dateStr].timestamp > lastLog.timestamp) { lastLog = h.logs[dateStr]; lastLog.hId = h.id; }
+                try {
+                    const uData = getUserData(currentUser.uid); if(!uData) return;
+                    let html = '';
+                    for (let i = 6; i >= 0; i--) {
+                        const d = new Date(); d.setDate(d.getDate() - i); 
+                        const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                        const isToday = i === 0; 
+                        let isActive = false; let lastLog = null;
+                        
+                        Object.values(uData.habits||{}).forEach(h => {
+                            if(h?.logs?.[dateStr] && !h.logs[dateStr].isPruned) {
+                                isActive = true; if(!lastLog || h.logs[dateStr].timestamp > lastLog.timestamp) { lastLog = h.logs[dateStr]; lastLog.hId = h.id; }
+                            }
+                        });
+                        
+                        let statusClass = "bg-white border-4 border-gray-300 text-gray-400"; let iconContent = d.getDate(); let clickAction = "";
+                        
+                        if (isActive) { 
+                            let charStr = "✓";
+                            if(lastLog) {
+                                if(lastLog.bookTitle) charStr = lastLog.bookTitle.charAt(0);
+                                else { let act = null; if (appTemplates[lastLog.hId]) { let a = appTemplates[lastLog.hId].actions.find(aa=>aa.id===lastLog.actionId); if(a) act = a; } if(act) charStr = act.label.charAt(0); }
+                            }
+                            statusClass = "bg-green-400 border-4 border-gray-800 text-gray-900 shadow-[2px_2px_0px_#1f2937] scale-110"; 
+                            iconContent = `<span class="font-black text-lg">${escapeHTML(charStr)}</span>`; 
+                        } 
+                        else if (!isToday) { 
+                            statusClass = "bg-gray-100 border-4 border-dashed border-gray-400 text-gray-500 cursor-pointer hover:bg-gray-200"; 
+                            iconContent = `<div class="w-4 h-4">${SVGs.ui.history}</div>`; 
+                            clickAction = `onclick="Logic.startRecovery('${dateStr}')"`; 
                         }
-                    });
-                    
-                    let statusClass = "bg-white border-4 border-gray-300 text-gray-400"; let iconContent = d.getDate(); let clickAction = "";
-                    
-                    if (isActive) { 
-                        let charStr = "✓";
-                        if(lastLog) {
-                            if(lastLog.bookTitle) charStr = lastLog.bookTitle.charAt(0);
-                            else { let act = null; if (appTemplates[lastLog.hId]) { let a = appTemplates[lastLog.hId].actions.find(aa=>aa.id===lastLog.actionId); if(a) act = a; } if(act) charStr = act.label.charAt(0); }
-                        }
-                        statusClass = "bg-green-400 border-4 border-gray-800 text-gray-900 shadow-[2px_2px_0px_#1f2937] scale-110"; 
-                        iconContent = `<span class="font-black text-lg">${escapeHTML(charStr)}</span>`; 
-                    } 
-                    else if (!isToday) { 
-                        statusClass = "bg-gray-100 border-4 border-dashed border-gray-400 text-gray-500 cursor-pointer hover:bg-gray-200"; 
-                        iconContent = `<div class="w-4 h-4">${SVGs.ui.history}</div>`; 
-                        clickAction = `onclick="Logic.startRecovery('${dateStr}')"`; 
+                        
+                        html += `
+                            <div class="flex flex-col items-center gap-1.5 no-select" ${clickAction}>
+                                <span class="text-[11px] font-black ${isToday ? 'text-purple-600 bg-purple-100 px-2 border-2 border-gray-800 rounded-lg' : 'text-gray-500'}">
+                                    ${isToday ? '今天' : ["日","一","二","三","四","五","六"][d.getDay()]}
+                                </span>
+                                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black ${statusClass} transition-colors">${iconContent}</div>
+                            </div>
+                        `;
                     }
-                    
-                    html += `
-                        <div class="flex flex-col items-center gap-1.5 no-select" ${clickAction}>
-                            <span class="text-[11px] font-black ${isToday ? 'text-purple-600 bg-purple-100 px-2 border-2 border-gray-800 rounded-lg' : 'text-gray-500'}">
-                                ${isToday ? '今天' : ["日","一","二","三","四","五","六"][d.getDay()]}
-                            </span>
-                            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black ${statusClass} transition-colors">${iconContent}</div>
-                        </div>
-                    `;
-                }
-                document.getElementById('calendar-row').innerHTML = html;
+                    const row = document.getElementById('calendar-row'); if(row) row.innerHTML = html;
+                } catch(e) { console.error(e); }
             },
             
             renderFootprints() {
-                const hData = getUserData(currentUser.uid)?.habits?.[currentHabitId] || {logs:{}};
-                const habit = appTemplates[currentHabitId] || {actions:[]}; const container = document.getElementById('footprints-container');
-                let allLogs = []; Object.keys(hData.logs).forEach(k => { if(!hData.logs[k].isPruned) allLogs.push(hData.logs[k]) }); 
-                allLogs.sort((a,b)=>b.timestamp - a.timestamp);
-                
-                if(allLogs.length === 0) return container.innerHTML = `<p class="text-center text-gray-400 py-4 font-bold">還沒有足跡喔！</p>`;
-                
-                container.innerHTML = allLogs.slice(0, this.footprintLimit).map(log => {
-                    const action = habit.actions.find(a=>a.id===log.actionId);
-                    if(!action) return `<div class="bg-gray-50 hand-drawn-border p-4 text-center text-gray-400 font-bold">已刪除的任務紀錄</div>`;
-                    const recoverBadge = log.isRecovery ? `<span class="bg-pink-200 text-pink-800 border-2 border-gray-800 text-[10px] px-1 rounded-md ml-1 font-black transform -rotate-3 flex-shrink-0">補救</span>` : '';
+                try {
+                    const hData = getUserData(currentUser.uid)?.habits?.[currentHabitId] || {logs:{}};
+                    const habit = appTemplates[currentHabitId] || {actions:[]}; const container = document.getElementById('footprints-container');
+                    if(!container) return;
+                    let allLogs = []; Object.keys(hData.logs).forEach(k => { if(!hData.logs[k].isPruned) allLogs.push(hData.logs[k]) }); 
+                    allLogs.sort((a,b)=>b.timestamp - a.timestamp);
                     
-                    return `
-                    <div class="bg-white hand-drawn-border p-4 flex flex-col gap-2 relative pop-in transform -rotate-1">
-                        <div class="flex justify-between items-start border-b-2 border-gray-100 pb-2">
-                            <div class="flex items-center gap-1 flex-wrap">
-                                <span class="text-xs font-black text-white bg-gray-800 px-2 py-1 rounded-md">${formatFootprintDate(log.timestamp)}</span>
-                                ${recoverBadge}
-                                <span class="text-xs font-black text-gray-900 bg-yellow-300 px-2 py-1 rounded-md border-2 border-gray-800 ml-1 flex items-center gap-1">+${log.pointsEarned} <div class="w-3 h-3">${SVGs.coin}</div></span>
+                    if(allLogs.length === 0) { container.innerHTML = `<p class="text-center text-gray-400 py-4 font-bold">還沒有足跡喔！</p>`; return; }
+                    
+                    container.innerHTML = allLogs.slice(0, this.footprintLimit).map(log => {
+                        const action = habit.actions.find(a=>a.id===log.actionId);
+                        if(!action) return `<div class="bg-gray-50 hand-drawn-border p-4 text-center text-gray-400 font-bold">已刪除的任務紀錄</div>`;
+                        const recoverBadge = log.isRecovery ? `<span class="bg-pink-200 text-pink-800 border-2 border-gray-800 text-[10px] px-1 rounded-md ml-1 font-black transform -rotate-3 flex-shrink-0">補救</span>` : '';
+                        
+                        return `
+                        <div class="bg-white hand-drawn-border p-4 flex flex-col gap-2 relative pop-in transform -rotate-1">
+                            <div class="flex justify-between items-start border-b-2 border-gray-100 pb-2">
+                                <div class="flex items-center gap-1 flex-wrap">
+                                    <span class="text-xs font-black text-white bg-gray-800 px-2 py-1 rounded-md">${formatFootprintDate(log.timestamp)}</span>
+                                    ${recoverBadge}
+                                    <span class="text-xs font-black text-gray-900 bg-yellow-300 px-2 py-1 rounded-md border-2 border-gray-800 ml-1 flex items-center gap-1">+${log.pointsEarned} <div class="w-3 h-3">${SVGs.coin}</div></span>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="Logic.editAction(${log.timestamp})" class="w-7 h-7 p-1 bg-blue-50 hover:bg-blue-100 border border-gray-800 rounded hand-drawn-btn">${SVGs.ui.editPen}</button>
+                                    <button onclick="Logic.triggerDelete('${log.timestamp}')" class="w-7 h-7 p-1 bg-red-50 hover:bg-red-100 border border-gray-800 rounded hand-drawn-btn">${SVGs.ui.trash}</button>
+                                </div>
                             </div>
-                            <div class="flex gap-2">
-                                <button onclick="Logic.editAction(${log.timestamp})" class="w-7 h-7 p-1 bg-blue-50 hover:bg-blue-100 border border-gray-800 rounded hand-drawn-btn">${SVGs.ui.editPen}</button>
-                                <button onclick="Logic.triggerDelete('${log.timestamp}')" class="w-7 h-7 p-1 bg-red-50 hover:bg-red-100 border border-gray-800 rounded hand-drawn-btn">${SVGs.ui.trash}</button>
-                            </div>
-                        </div>
-                        <p class="font-black text-gray-800 mt-1 flex flex-wrap gap-2 items-center">
-                            <span class="bg-purple-100 px-2 py-1 border-2 border-gray-800 rounded-lg text-xs truncate max-w-[120px]">項目：${escapeHTML(log.bookTitle)}</span>
-                            <span>共 <span class="text-blue-600">${escapeHTML(String(log.val))}</span> ${escapeHTML(action.unit||'')}</span>
-                        </p>
-                        ${log.memo ? `<p class="text-sm text-gray-700 bg-gray-50 border-2 border-dashed border-gray-400 p-2 rounded-xl mt-1 font-bold break-words">📝 ${escapeHTML(log.memo)}</p>` : ''}
-                    </div>`;
-                }).join('');
-                document.getElementById('btn-load-more-footprints').classList.toggle('hidden', allLogs.length <= this.footprintLimit);
+                            <p class="font-black text-gray-800 mt-1 flex flex-wrap gap-2 items-center">
+                                <span class="bg-purple-100 px-2 py-1 border-2 border-gray-800 rounded-lg text-xs truncate max-w-[120px]">項目：${escapeHTML(log.bookTitle)}</span>
+                                <span>共 <span class="text-blue-600">${escapeHTML(String(log.val))}</span> ${escapeHTML(action.unit||'')}</span>
+                            </p>
+                            ${log.memo ? `<p class="text-sm text-gray-700 bg-gray-50 border-2 border-dashed border-gray-400 p-2 rounded-xl mt-1 font-bold break-words">📝 ${escapeHTML(log.memo)}</p>` : ''}
+                        </div>`;
+                    }).join('');
+                    const btnMore = document.getElementById('btn-load-more-footprints');
+                    if(btnMore) btnMore.classList.toggle('hidden', allLogs.length <= this.footprintLimit);
+                } catch(e) { console.error(e); }
             },
             
             loadMoreFootprints() { this.footprintLimit += 10; this.renderFootprints(); },
@@ -1118,31 +1199,49 @@
             pokeMascot() { EasterEggs.handleClick(); this.showMascotMessage(); },
             
             showToast(msg) { 
-                const toast = document.getElementById('toast'); document.getElementById('toast-msg').innerText = msg; 
-                toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4'); toast.classList.add('opacity-100', 'translate-y-0'); 
-                setTimeout(() => { toast.classList.remove('opacity-100', 'translate-y-0'); toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4'); }, 3000); 
+                const toast = document.getElementById('toast'); 
+                const toastMsg = document.getElementById('toast-msg');
+                if(toast && toastMsg) {
+                    toastMsg.innerText = msg; 
+                    toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4'); toast.classList.add('opacity-100', 'translate-y-0'); 
+                    setTimeout(() => { toast.classList.remove('opacity-100', 'translate-y-0'); toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4'); }, 3000); 
+                }
             },
             
             openModal(id) { 
-                document.getElementById(id).classList.remove('hidden'); setTimeout(() => document.getElementById(id).classList.remove('opacity-0'), 10); 
-                window.history.pushState({ modal: id }, ''); this.activeModals.push(id);
+                const m = document.getElementById(id);
+                if(m) {
+                    m.classList.remove('hidden'); setTimeout(() => m.classList.remove('opacity-0'), 10); 
+                    window.history.pushState({ modal: id }, ''); this.activeModals.push(id);
+                }
             },
             closeModal(id, fromPop = false) { 
-                document.getElementById(id).classList.add('opacity-0'); setTimeout(() => document.getElementById(id).classList.add('hidden'), 300); 
-                if (!fromPop) { this.activeModals = this.activeModals.filter(m => m !== id); }
+                const m = document.getElementById(id);
+                if(m) {
+                    m.classList.add('opacity-0'); setTimeout(() => m.classList.add('hidden'), 300); 
+                    if (!fromPop) { this.activeModals = this.activeModals.filter(x => x !== id); }
+                }
             },
-            toggleHabitMenu() { document.getElementById('habit-dropdown').classList.toggle('hidden'); },
+            toggleHabitMenu() { const d = document.getElementById('habit-dropdown'); if(d) d.classList.toggle('hidden'); },
             
             updateMailBadge() { 
-                const unread = (getUserData(currentUser.uid).mails || []).filter(m => !m.isRead || (m.attachedCoins && !m.isClaimed)).length; 
-                document.getElementById('mail-badge').classList.toggle('hidden', unread === 0); 
-                if(unread > 0) document.getElementById('mail-badge').innerText = unread > 9 ? '9+' : unread; 
+                try {
+                    const uData = getUserData(currentUser.uid); if(!uData) return;
+                    const unread = (uData.mails || []).filter(m => !m.isRead || (m.attachedCoins && !m.isClaimed)).length; 
+                    const badge = document.getElementById('mail-badge');
+                    if(badge) {
+                        badge.classList.toggle('hidden', unread === 0); 
+                        if(unread > 0) badge.innerText = unread > 9 ? '9+' : unread; 
+                    }
+                } catch(e) {}
             },
             
             injectModals() {
-                document.getElementById('modals-container').innerHTML = `
+                const container = document.getElementById('modals-container');
+                if(!container) return;
+                container.innerHTML = `
                     <div id="generic-confirm-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-center z-[160] transition-opacity opacity-0 px-2 md:px-4">
-                        <div class="bg-white w-[96vw] md:w-[400px] max-w-[400px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative flex flex-col items-center box-border pb-[env(safe-area-inset-bottom)]">
+                        <div class="bg-white w-[98vw] md:w-[98vw] max-w-[400px] rounded-[2rem] p-4 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative flex flex-col items-center box-border pb-[env(safe-area-inset-bottom)]">
                             <div class="w-24 h-24 mb-2">${SVGs.cryCat}</div>
                             <h3 id="confirm-title" class="text-xl font-black text-gray-800 mb-2">確認視窗</h3>
                             <p id="confirm-desc" class="text-sm text-gray-600 font-bold mb-6 whitespace-pre-wrap">確定執行嗎？</p>
@@ -1154,7 +1253,7 @@
                     </div>
                     
                     <div id="math-confirm-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-center z-[160] transition-opacity opacity-0 px-2 md:px-4">
-                        <div class="bg-white w-[96vw] md:w-[400px] max-w-[400px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative flex flex-col items-center box-border pb-[env(safe-area-inset-bottom)]">
+                        <div class="bg-white w-[98vw] md:w-[98vw] max-w-[400px] rounded-[2rem] p-4 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative flex flex-col items-center box-border pb-[env(safe-area-inset-bottom)]">
                             <div class="w-20 h-20 mb-2">${SVGs.icons.lightning}</div>
                             <h3 class="text-xl font-black text-red-600 mb-2">危險操作驗證</h3>
                             <p class="text-sm text-gray-600 font-bold mb-4 whitespace-pre-wrap">請計算以下數學題以確認您是清醒的：</p>
@@ -1167,9 +1266,8 @@
                         </div>
                     </div>
                     
-                    <!-- 彈窗容器寬高放寬、padding縮小 -->
                     <div id="radio-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-1 md:px-2">
-                        <div class="bg-[#fff9f0] w-[98vw] md:w-[98vw] max-w-[98vw] lg:max-w-[1200px] h-[85vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] relative flex flex-col overflow-hidden box-border pb-[env(safe-area-inset-bottom)]">
+                        <div class="bg-[#fff9f0] w-[98vw] md:w-[98vw] max-w-[98vw] lg:max-w-[1200px] h-[80vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] relative flex flex-col overflow-hidden box-border pb-[env(safe-area-inset-bottom)]">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2 flex-shrink-0">
                                 <h3 class="text-xl md:text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.bulb}</div> 廣播台管理</h3>
                                 <button onclick="UI.closeModal('radio-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white font-black p-1 flex-shrink-0">${SVGs.ui.cross}</button>
@@ -1190,13 +1288,13 @@
                     </div>
                     
                     <div id="shop-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-1 md:px-2">
-                        <div class="bg-[#fff9f0] w-[98vw] md:w-[98vw] max-w-[98vw] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border pb-[env(safe-area-inset-bottom)]">
+                        <div class="bg-[#fff9f0] w-[98vw] md:w-[98vw] max-w-[98vw] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border pb-safe">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2 flex-shrink-0">
                                 <h3 class="text-xl md:text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6 md:w-8 md:h-8">${SVGs.ui.shopStand}</div> 兌換商店</h3>
                                 <button onclick="UI.closeModal('shop-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1 flex-shrink-0">${SVGs.ui.cross}</button>
                             </div>
                             <div class="flex flex-nowrap gap-2 mb-4 overflow-x-auto no-scrollbar justify-center flex-shrink-0">
-                                <button id="shop-tab-shop" onclick="Shop.switchTab('shop')" class="flex-1 py-2 px-2 md:px-3 font-black rounded-xl border-4 border-gray-800 transition-colors text-xs md:text-sm whitespace-nowrap inline-flex justify-center items-center gap-1"><div class="w-4 h-4">${SVGs.ui.shopStand}</div> 商店</button>
+                                <button id="shop-tab-shop" onclick="Shop.switchTab('shop')" class="flex-1 py-2 px-2 md:px-3 font-black rounded-xl border-4 border-gray-800 transition-colors text-xs md:text-sm whitespace-nowrap inline-flex justify-center items-center gap-1"><div class="w-4 h-4">${SVGs.ui.shopStand}</div>商店</button>
                                 <button id="shop-tab-history" onclick="Shop.switchTab('history')" class="flex-1 py-2 px-2 md:px-3 font-black rounded-xl border-4 border-gray-800 transition-colors text-xs md:text-sm whitespace-nowrap inline-flex justify-center items-center gap-1"><div class="w-4 h-4">${SVGs.ui.history}</div> 紀錄</button>
                                 <button id="shop-tab-edit" onclick="Shop.switchTab('edit')" class="flex-1 py-2 px-2 md:px-3 font-black rounded-xl border-4 border-gray-800 transition-colors text-xs md:text-sm whitespace-nowrap inline-flex justify-center items-center gap-1"><div class="w-4 h-4">${SVGs.ui.setting}</div> 新商品</button>
                             </div>
@@ -1251,7 +1349,7 @@
                                 <div class="flex-1 bg-white border-4 border-gray-800 rounded-3xl p-3 md:p-4 flex flex-col items-center justify-center relative min-h-[250px] md:min-h-[300px]" id="jar-container">
                                     <div class="absolute -top-3 -left-3 bg-yellow-300 border-2 border-gray-800 px-3 py-1 rounded-lg font-black text-xs md:text-sm z-20">無盡寶物瓶</div>
                                     <div class="text-2xl md:text-3xl font-black text-yellow-600 mb-2 flex items-center gap-2 z-20"><div class="w-6 h-6 md:w-8 md:h-8">${SVGs.coin}</div> <span id="report-total-points">0</span></div>
-                                    <div class="relative w-full max-w-[200px] md:max-w-[250px] aspect-[4/5] mt-2">
+                                    <div class="relative w-full max-w-[200px] md:max-w-[250px] aspect-[4/5] mx-auto mt-2">
                                         ${SVGs.fatJar}
                                         <div class="absolute bottom-0 left-0 w-full h-full" style="clip-path: polygon(15% 100%, 85% 100%, 100% 60%, 100% 30%, 0% 30%, 0% 60%);">
                                             <div id="jar-liquid-level" class="bg-yellow-300/80 absolute bottom-0 w-full liquid-fill" style="height: 0%;"></div>
@@ -1415,7 +1513,7 @@
                     </div>
                     
                     <div id="input-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0 px-1 md:px-2">
-                        <div id="modal-content" class="bg-[#fff9f0] w-[98vw] md:w-[98vw] max-w-[480px] rounded-t-[2rem] md:rounded-[2rem] p-5 md:p-6 border-t-8 border-gray-800 md:border-8 relative box-border pb-[env(safe-area-inset-bottom)]">
+                        <div id="modal-content" class="bg-[#fff9f0] w-[98vw] md:w-[98vw] max-w-[480px] rounded-t-[2rem] md:rounded-[2rem] p-4 md:p-6 border-t-8 border-gray-800 md:border-8 relative box-border pb-[env(safe-area-inset-bottom)]">
                             <div class="flex justify-between items-center mb-5 border-b-4 border-dashed border-gray-300 pb-3">
                                 <h3 class="text-xl md:text-2xl font-black" id="modal-title">紀錄進度</h3>
                                 <button onclick="UI.closeModal('input-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1">${SVGs.ui.cross}</button>
@@ -1437,7 +1535,7 @@
                     </div>
                     
                     <div id="ios-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-2 md:px-4 pb-[env(safe-area-inset-bottom)]">
-                        <div class="bg-[#fff9f0] w-[96vw] md:w-[96vw] max-w-[400px] rounded-[2rem] p-6 border-8 border-gray-800 transform transition-transform translate-y-full md:translate-y-0 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
+                        <div class="bg-[#fff9f0] w-[96vw] md:w-[96vw] max-w-[400px] rounded-[2rem] p-4 border-8 border-gray-800 transform transition-transform translate-y-full md:translate-y-0 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
                             <h3 class="text-xl md:text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.bulb}</div> 安裝至桌面</h3>
                             <p class="font-bold text-sm md:text-base text-gray-600 mb-4 text-left leading-relaxed">蘋果設備專屬魔法：<br>1. 點擊下方工具列的 <b class="text-blue-500">分享圖示</b><br>2. 往下滑選擇 <b class="text-gray-800">「加入主畫面」</b></p>
                             <div class="text-4xl mb-6 flex justify-center w-8 h-8 mx-auto">${SVGs.icons.star}</div>
@@ -1446,7 +1544,7 @@
                     </div>
                     
                     <div id="android-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-2 md:px-4 pb-[env(safe-area-inset-bottom)]">
-                        <div class="bg-[#fff9f0] w-[96vw] md:w-[96vw] max-w-[400px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
+                        <div class="bg-[#fff9f0] w-[96vw] md:w-[96vw] max-w-[400px] rounded-[2rem] p-4 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
                             <h3 class="text-xl md:text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.star}</div> 安裝至桌面</h3>
                             <p class="font-bold text-sm md:text-base text-gray-600 mb-4 text-left leading-relaxed">安卓專屬魔法：<br>1. 點擊瀏覽器右上角的 <b class="text-blue-500">⋮ (選單)</b><br>2. 選擇 <b class="text-gray-800">「加到主畫面」</b> 或 <b class="text-gray-800">「安裝應用程式」</b></p>
                             <button onclick="UI.closeModal('android-pwa-modal')" class="w-full py-3 rounded-xl font-black text-gray-800 bg-yellow-300 border-4 border-gray-800 hand-drawn-btn">我知道了！</button>
@@ -1454,7 +1552,7 @@
                     </div>
                     
                     <div id="inapp-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-2 md:px-4 pb-[env(safe-area-inset-bottom)]">
-                        <div class="bg-[#fff9f0] w-[96vw] md:w-[96vw] max-w-[400px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
+                        <div class="bg-[#fff9f0] w-[96vw] md:w-[96vw] max-w-[400px] rounded-[2rem] p-4 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
                             <h3 class="text-xl md:text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.lightning}</div> 跳轉提示</h3>
                             <p class="font-bold text-sm md:text-base text-gray-600 mb-4 text-left leading-relaxed">您目前使用 App 內建瀏覽器。<br><br>請點擊右上角或右下角選單，選擇 <b class="text-blue-500">「使用預設瀏覽器開啟」</b> 或 <b class="text-blue-500">「在 Safari/Chrome 開啟」</b>，才能順利安裝到手機桌面喔！</p>
                             <button onclick="UI.closeModal('inapp-pwa-modal')" class="w-full py-3 rounded-xl font-black text-gray-800 bg-yellow-300 border-4 border-gray-800 hand-drawn-btn">我知道了！</button>
@@ -1466,58 +1564,62 @@
 
         const Logic = {
             openActionModal(aId) { 
-                const today = getTodayStr(); 
-                const targetDateStr = recoveryDate || today;
-                
-                if(getUserData(currentUser.uid)?.habits?.[currentHabitId]?.logs?.[targetDateStr]) {
-                    return UI.showToast(recoveryDate ? "補救的這天已經有打卡紀錄囉！" : "今天打過卡囉！可以修改歷史足跡喵"); 
-                }
+                try {
+                    const today = getTodayStr(); 
+                    const targetDateStr = recoveryDate || today;
+                    
+                    const uData = getUserData(currentUser.uid);
+                    if(uData && uData.habits?.[currentHabitId]?.logs?.[targetDateStr]) {
+                        return UI.showToast(recoveryDate ? "補救的這天已經有打卡紀錄囉！" : "今天打過卡囉！可以修改歷史足跡喵"); 
+                    }
 
-                if(SyncEngine.isSyncing || isProcessing) return UI.showToast("系統處理中，請稍後操作");
-                
-                const h = appTemplates[currentHabitId] || {actions:[]};
-                const act = h.actions.find(a=>a.id===aId); 
-                if(!act) return;
-                
-                if(act.isOneClick && !recoveryDate) { 
-                    currentActionObj = act; isEditMode = false; editTargetDate = null; this.saveAction(true); 
-                } else { 
-                    currentActionObj = act; isEditMode = false; editTargetDate = null; 
-                    document.getElementById('input-book-title').value = getUserData(currentUser.uid)?.habits?.[currentHabitId]?.lastBookTitle || ""; 
-                    document.getElementById('input-value').value = ""; 
-                    document.getElementById('input-memo').value = ""; 
-                    this.setupModalUI(act, !!recoveryDate); 
-                    UI.openModal('input-modal'); 
-                } 
+                    if(SyncEngine.isSyncing || isProcessing) return UI.showToast("系統處理中，請稍後操作");
+                    
+                    const h = appTemplates[currentHabitId] || {actions:[]};
+                    const act = h.actions.find(a=>a.id===aId); 
+                    if(!act) return;
+                    
+                    if(act.isOneClick && !recoveryDate) { 
+                        currentActionObj = act; isEditMode = false; editTargetDate = null; this.saveAction(true); 
+                    } else { 
+                        currentActionObj = act; isEditMode = false; editTargetDate = null; 
+                        document.getElementById('input-book-title').value = uData?.habits?.[currentHabitId]?.lastBookTitle || ""; 
+                        document.getElementById('input-value').value = ""; 
+                        document.getElementById('input-memo').value = ""; 
+                        this.setupModalUI(act, !!recoveryDate); 
+                        UI.openModal('input-modal'); 
+                    } 
+                } catch(e) { console.error(e); }
             },
             
             editAction(ts) { 
-                if(SyncEngine.isSyncing || isProcessing) return UI.showToast("系統處理中，請稍後操作");
-                
-                const uData = getUserData(currentUser.uid);
-                let targetLog = null; let tDate = null;
-                
-                Object.keys(uData.habits[currentHabitId].logs).forEach(d => {
-                    if (uData.habits[currentHabitId].logs[d].timestamp.toString() === ts.toString()) { 
-                        targetLog = uData.habits[currentHabitId].logs[d]; tDate = d; 
-                    }
-                });
-                
-                if (!targetLog) return; 
-                if (targetLog.isPruned) return UI.showToast("已封存的歷史足跡無法再修改囉！");
-                
-                const h = appTemplates[currentHabitId];
-                if (!h) return;
-                currentActionObj = h.actions.find(a => a.id === targetLog.actionId); 
-                if(!currentActionObj) return; 
-                
-                isEditMode = true; editTargetDate = tDate;
-                document.getElementById('input-book-title').value = targetLog.bookTitle; 
-                document.getElementById('input-value').value = targetLog.val === "..." ? "" : targetLog.val; 
-                document.getElementById('input-memo').value = targetLog.memo || ""; 
-                
-                this.setupModalUI(currentActionObj, false); 
-                UI.openModal('input-modal'); 
+                try {
+                    if(SyncEngine.isSyncing || isProcessing) return UI.showToast("系統處理中，請稍後操作");
+                    
+                    const uData = getUserData(currentUser.uid); if(!uData) return;
+                    let targetLog = null; let tDate = null;
+                    
+                    Object.keys(uData.habits[currentHabitId]?.logs || {}).forEach(d => {
+                        if (uData.habits[currentHabitId].logs[d].timestamp.toString() === ts.toString()) { 
+                            targetLog = uData.habits[currentHabitId].logs[d]; tDate = d; 
+                        }
+                    });
+                    
+                    if (!targetLog) return; 
+                    if (targetLog.isPruned) return UI.showToast("已封存的歷史足跡無法再修改囉！");
+                    
+                    const h = appTemplates[currentHabitId]; if (!h) return;
+                    currentActionObj = h.actions.find(a => a.id === targetLog.actionId); 
+                    if(!currentActionObj) return; 
+                    
+                    isEditMode = true; editTargetDate = tDate;
+                    document.getElementById('input-book-title').value = targetLog.bookTitle; 
+                    document.getElementById('input-value').value = targetLog.val === "..." ? "" : targetLog.val; 
+                    document.getElementById('input-memo').value = targetLog.memo || ""; 
+                    
+                    this.setupModalUI(currentActionObj, false); 
+                    UI.openModal('input-modal'); 
+                } catch(e) { console.error(e); }
             },
             
             setupModalUI(act, isRec) { 
@@ -1586,9 +1688,7 @@
                                 if (actDef && actDef.isMicro) todayMicroCount++;
                             }
                         });
-                        if (todayMicroCount === 2) {
-                            pts += 15; msgs.push(`🎁 微习惯寶箱 +15`);
-                        }
+                        if (todayMicroCount === 2) { pts += 15; msgs.push(`🎁 微习惯寶箱 +15`); }
                     }
                     
                     if(!isEditMode && isFamilyBondActive(targetKey)) { 
@@ -1610,7 +1710,6 @@
                     if(!isEditMode) habit.lastBookTitle = title;
                     
                     saveLocal(); 
-                    
                     UI.closeModal('input-modal'); this.cancelRecovery(); UI.renderAll(); editTargetDate = null;
                     
                     if(!isEditMode) { 
@@ -1619,7 +1718,8 @@
                     } else {
                         UI.showToast("紀錄修改成功！");
                     }
-                } finally { setTimeout(() => isProcessing = false, 300); }
+                } catch(e) { console.error(e); UI.showToast("打卡發生錯誤！"); }
+                finally { setTimeout(() => isProcessing = false, 300); }
             },
             
             triggerDelete(ts) { 
@@ -1635,20 +1735,22 @@
                             } 
                         }); 
                         saveLocal(); UI.renderAll(); UI.showToast("紀錄已刪除"); 
-                    } finally { setTimeout(() => isProcessing = false, 300); }
+                    } catch(e) {} finally { setTimeout(() => isProcessing = false, 300); }
                 }); 
             },
             startRecovery(d) {
-                const savers = getSavers(currentUser.uid);
-                if(savers > 0) {
-                    Confirm.show("啟動時光機？", `將消耗 1 張「保命符」來補救 ${d} 的進度。\n(目前剩餘: ${savers} 張)`, "開啟", () => {
-                        addSavers(currentUser.uid, -1);
-                        recoveryDate = d; UI.renderAll();
-                        UI.showToast("時光機已啟動！請選擇要補救的習慣喵。");
-                    });
-                } else {
-                    UI.showToast("需要「保命符」才能補救喔！快去商店看看喵～"); Shop.open();
-                }
+                try {
+                    const savers = getSavers(currentUser.uid);
+                    if(savers > 0) {
+                        Confirm.show("啟動時光機？", `將消耗 1 張「保命符」來補救 ${d} 的進度。\n(目前剩餘: ${savers} 張)`, "開啟", () => {
+                            addSavers(currentUser.uid, -1);
+                            recoveryDate = d; UI.renderAll();
+                            UI.showToast("時光機已啟動！請選擇要補救的習慣喵。");
+                        });
+                    } else {
+                        UI.showToast("需要「保命符」才能補救喔！快去商店看看喵～"); Shop.open();
+                    }
+                } catch(e) { console.error(e); }
             }, 
             cancelRecovery() { recoveryDate = null; UI.renderAll(); }
         };
@@ -1657,36 +1759,43 @@
             historyLimit: 10,
             open() { this.historyLimit = 10; this.switchTab('shop'); UI.openModal('shop-modal'); },
             switchTab(tab, swipeDir = 0) { 
-                ['shop','history','edit'].forEach(t => document.getElementById(`shop-tab-${t}`).classList.toggle('bg-pink-500', tab === t)); 
-                ['shop','history','edit'].forEach(t => document.getElementById(`shop-tab-${t}`).classList.toggle('text-white', tab === t)); 
-                document.getElementById('shop-area-shop').classList.toggle('hidden', tab !== 'shop'); 
-                document.getElementById('shop-area-history').classList.toggle('hidden', tab !== 'history'); 
-                document.getElementById('shop-area-edit').classList.toggle('hidden', tab !== 'edit'); 
-                if (tab !== 'edit') document.getElementById('shop-area-form').classList.add('hidden');
-                if(swipeDir !== 0) SwipeDetector.playSlide('shop-area-' + tab, swipeDir);
-                this.renderItems(); 
+                try {
+                    ['shop','history','edit'].forEach(t => {
+                        const el = document.getElementById(`shop-tab-${t}`);
+                        if(el) { el.classList.toggle('bg-pink-500', tab === t); el.classList.toggle('text-white', tab === t); }
+                    }); 
+                    document.getElementById('shop-area-shop').classList.toggle('hidden', tab !== 'shop'); 
+                    document.getElementById('shop-area-history').classList.toggle('hidden', tab !== 'history'); 
+                    document.getElementById('shop-area-edit').classList.toggle('hidden', tab !== 'edit'); 
+                    if (tab !== 'edit') document.getElementById('shop-area-form').classList.add('hidden');
+                    if(swipeDir !== 0) SwipeDetector.playSlide('shop-area-' + tab, swipeDir);
+                    this.renderItems(); 
+                } catch(e){}
             },
             renderItems() { 
-                const uData = getUserData(currentUser.uid); 
-                document.getElementById('shop-current-coins').innerText = uData.currentCoins; 
-                document.getElementById('shop-saver-count').innerText = getSavers(currentUser.uid);
-                
-                document.getElementById('shop-items-list').innerHTML = shopItems.map(i => `
-                    <div class="bg-white border-4 border-gray-800 p-3 rounded-xl flex justify-between items-center shadow-sm">
-                        <div class="flex flex-col">
-                            <span class="font-black truncate max-w-[150px] inline-flex items-center gap-1"><div class="w-5 h-5">${SVGs.icons[i.icon] || SVGs.icons.star}</div> ${escapeHTML(i.name)}</span>
-                            ${i.reqLog ? `<span class="text-[10px] text-pink-600 font-bold inline-flex items-center gap-1"><div class="w-3 h-3">${SVGs.ui.lock}</div> 需打卡解鎖</span>` : ''}
+                try {
+                    const uData = getUserData(currentUser.uid); if(!uData) return;
+                    document.getElementById('shop-current-coins').innerText = uData.currentCoins; 
+                    document.getElementById('shop-saver-count').innerText = getSavers(currentUser.uid);
+                    
+                    document.getElementById('shop-items-list').innerHTML = shopItems.map(i => `
+                        <div class="bg-white border-4 border-gray-800 p-3 rounded-xl flex justify-between items-center shadow-sm">
+                            <div class="flex flex-col">
+                                <span class="font-black truncate max-w-[150px] inline-flex items-center gap-1"><div class="w-5 h-5">${SVGs.icons[i.icon] || SVGs.icons.star}</div> ${escapeHTML(i.name)}</span>
+                                ${i.reqLog ? `<span class="text-[10px] text-pink-600 font-bold inline-flex items-center gap-1"><div class="w-3 h-3">${SVGs.ui.lock}</div> 需打卡解鎖</span>` : ''}
+                            </div>
+                            <button onclick="Shop.buyItem('${i.id}')" class="bg-yellow-200 border-2 border-gray-800 px-3 py-1 font-black rounded-lg flex-shrink-0 active:scale-95 shadow-sm">${i.cost}</button>
                         </div>
-                        <button onclick="Shop.buyItem('${i.id}')" class="bg-yellow-200 border-2 border-gray-800 px-3 py-1 font-black rounded-lg flex-shrink-0 active:scale-95 shadow-sm">${i.cost}</button>
-                    </div>
-                `).join(''); 
-                this.renderHistory(); this.renderEditList(); 
+                    `).join(''); 
+                    this.renderHistory(); this.renderEditList(); 
+                } catch(e) {}
             },
             buyItem(id) { 
                 if(SyncEngine.isSyncing || isProcessing) return UI.showToast("系統處理中，請稍後操作");
                 isProcessing = true;
                 try {
                     const uData = getUserData(currentUser.uid); const i = shopItems.find(x=>x.id===id); 
+                    if(!i || !uData) return;
                     if (i.reqLog) {
                         const today = getTodayStr(); const hasHabitToday = Object.values(uData.habits||{}).some(h => h?.logs?.[today] && !h.logs[today].isPruned);
                         if (!hasHabitToday) return UI.showToast("此獎品需要今天有打卡才能兌換喔！");
@@ -1701,41 +1810,45 @@
                     saveLocal(); UI.renderAll(); this.renderItems(); AudioEngine.playCoin(); 
                     UI.showToast(`兌換「${i.name}」成功！`); 
                     Mascot.speak("換了禮物別太高興，明天還要繼續賺回來喵！");
-                } finally { setTimeout(() => isProcessing = false, 300); }
+                } catch(e) {} finally { setTimeout(() => isProcessing = false, 300); }
             },
             renderHistory() { 
-                const u = getUserData(currentUser.uid); const display = u.shopHistory.slice(0, this.historyLimit); 
-                document.getElementById('shop-history-list').innerHTML = display.map(h => `
-                    <div class="bg-gray-50 border-2 border-dashed border-gray-400 p-3 rounded-xl flex justify-between items-center">
-                        <div>
-                            <p class="font-black">${escapeHTML(h.itemName)}</p>
-                            <p class="text-xs text-gray-500">${formatFootprintDate(h.timestamp)}</p>
+                try {
+                    const u = getUserData(currentUser.uid); const display = u.shopHistory.slice(0, this.historyLimit); 
+                    document.getElementById('shop-history-list').innerHTML = display.map(h => `
+                        <div class="bg-gray-50 border-2 border-dashed border-gray-400 p-3 rounded-xl flex justify-between items-center">
+                            <div>
+                                <p class="font-black">${escapeHTML(h.itemName)}</p>
+                                <p class="text-xs text-gray-500">${formatFootprintDate(h.timestamp)}</p>
+                            </div>
+                            <span class="font-black text-yellow-600 flex items-center gap-1">${h.cost} <div class="w-4 h-4">${SVGs.coin}</div></span>
                         </div>
-                        <span class="font-black text-yellow-600 flex items-center gap-1">${h.cost} <div class="w-4 h-4">${SVGs.coin}</div></span>
-                    </div>
-                `).join(''); 
-                document.getElementById('btn-load-more-shop').classList.toggle('hidden', u.shopHistory.length <= this.historyLimit); 
+                    `).join(''); 
+                    const btn = document.getElementById('btn-load-more-shop');
+                    if(btn) btn.classList.toggle('hidden', u.shopHistory.length <= this.historyLimit); 
+                } catch(e){}
             },
             loadMoreHistory() { this.historyLimit += 10; this.renderHistory(); },
             renderEditList() { 
-                document.getElementById('shop-edit-list').innerHTML = shopItems.map(i => {
-                    let btnGroup = '';
-                    if (i.isSpecial === 'saver') {
-                        btnGroup = `<button onclick="Shop.editItem('${i.id}')" class="w-8 h-8 p-1.5 bg-blue-100 border border-gray-800 rounded hand-drawn-btn flex-shrink-0">${SVGs.ui.editPen}</button>`;
-                    } else {
-                        btnGroup = `
-                        <div class="flex gap-2">
-                            <button onclick="Shop.editItem('${i.id}')" class="w-8 h-8 p-1.5 bg-blue-100 border border-gray-800 rounded hand-drawn-btn flex-shrink-0">${SVGs.ui.editPen}</button>
-                            <button onclick="Shop.deleteItem('${i.id}')" class="w-8 h-8 p-1.5 bg-red-100 border border-gray-800 rounded hand-drawn-btn flex-shrink-0">${SVGs.ui.trash}</button>
-                        </div>`;
-                    }
-                    
-                    return `
-                    <div class="bg-white border-2 border-gray-800 p-2 rounded-xl flex justify-between items-center shadow-sm">
-                        <span class="font-black truncate max-w-[60%] inline-flex items-center gap-1"><div class="w-4 h-4">${SVGs.icons[i.icon] || SVGs.icons.star}</div> ${escapeHTML(i.name)} (${i.cost})</span>
-                        ${btnGroup}
-                    </div>
-                `}).join(''); 
+                try {
+                    document.getElementById('shop-edit-list').innerHTML = shopItems.map(i => {
+                        let btnGroup = '';
+                        if (i.isSpecial === 'saver') {
+                            btnGroup = `<button onclick="Shop.editItem('${i.id}')" class="w-8 h-8 p-1.5 bg-blue-100 border border-gray-800 rounded hand-drawn-btn flex-shrink-0">${SVGs.ui.editPen}</button>`;
+                        } else {
+                            btnGroup = `
+                            <div class="flex gap-2">
+                                <button onclick="Shop.editItem('${i.id}')" class="w-8 h-8 p-1.5 bg-blue-100 border border-gray-800 rounded hand-drawn-btn flex-shrink-0">${SVGs.ui.editPen}</button>
+                                <button onclick="Shop.deleteItem('${i.id}')" class="w-8 h-8 p-1.5 bg-red-100 border border-gray-800 rounded hand-drawn-btn flex-shrink-0">${SVGs.ui.trash}</button>
+                            </div>`;
+                        }
+                        return `
+                        <div class="bg-white border-2 border-gray-800 p-2 rounded-xl flex justify-between items-center shadow-sm">
+                            <span class="font-black truncate max-w-[60%] inline-flex items-center gap-1"><div class="w-4 h-4">${SVGs.icons[i.icon] || SVGs.icons.star}</div> ${escapeHTML(i.name)} (${i.cost})</span>
+                            ${btnGroup}
+                        </div>
+                    `}).join(''); 
+                } catch(e) {}
             },
             openAddItem() { 
                 this.tempIcon = 'star'; this.renderIconSelection(); this.editingId = null;
@@ -1750,7 +1863,7 @@
                 this.editingId = id; this.tempIcon = i.icon; this.renderIconSelection();
                 document.getElementById('shop-e-title').innerText = "編輯獎品";
                 document.getElementById('shop-e-name').value = i.name;
-                document.getElementById('shop-e-name').disabled = (i.isSpecial === 'saver'); // 保命符不准改名
+                document.getElementById('shop-e-name').disabled = (i.isSpecial === 'saver');
                 document.getElementById('shop-e-cost').value = i.cost;
                 document.getElementById('shop-e-req').checked = i.reqLog;
                 document.getElementById('shop-e-req-container').style.display = (i.isSpecial === 'saver') ? 'none' : 'block';
@@ -1789,17 +1902,19 @@
             mailLimit: 10,
             open() { this.mailLimit = 10; this.switchTab('read'); UI.openModal('mailbox-modal'); },
             switchTab(tab, swipeDir = 0) { 
-                document.getElementById('m-tab-read').classList.toggle('bg-pink-300', tab === 'read');
-                document.getElementById('m-tab-write').classList.toggle('bg-pink-300', tab === 'write');
-                document.getElementById('mail-read-area').classList.toggle('hidden', tab !== 'read');
-                if (tab === 'write') {
-                    document.getElementById('mail-write-area').classList.remove('hidden'); document.getElementById('mail-write-area').classList.add('flex');
-                    this.renderTargetOptions(); this.renderShortcuts();
-                    if(swipeDir !== 0) SwipeDetector.playSlide('mail-write-area', swipeDir);
-                } else {
-                    document.getElementById('mail-write-area').classList.add('hidden'); document.getElementById('mail-write-area').classList.remove('flex'); this.renderMails(); 
-                    if(swipeDir !== 0) SwipeDetector.playSlide('mail-read-area', swipeDir);
-                }
+                try {
+                    document.getElementById('m-tab-read').classList.toggle('bg-pink-300', tab === 'read');
+                    document.getElementById('m-tab-write').classList.toggle('bg-pink-300', tab === 'write');
+                    document.getElementById('mail-read-area').classList.toggle('hidden', tab !== 'read');
+                    if (tab === 'write') {
+                        document.getElementById('mail-write-area').classList.remove('hidden'); document.getElementById('mail-write-area').classList.add('flex');
+                        this.renderTargetOptions(); this.renderShortcuts();
+                        if(swipeDir !== 0) SwipeDetector.playSlide('mail-write-area', swipeDir);
+                    } else {
+                        document.getElementById('mail-write-area').classList.add('hidden'); document.getElementById('mail-write-area').classList.remove('flex'); this.renderMails(); 
+                        if(swipeDir !== 0) SwipeDetector.playSlide('mail-read-area', swipeDir);
+                    }
+                } catch(e){}
             },
             renderTargetOptions() { document.getElementById('mail-target-select').innerHTML = users.filter(u => u.uid !== currentUser.uid).map(u => `<option value="${u.uid}">${u.name}</option>`).join(''); },
             renderShortcuts() {
@@ -1866,30 +1981,33 @@
                 editor.innerHTML = quoteHtml; editor.focus();
             },
             renderMails() { 
-                const u = getUserData(currentUser.uid); 
-                document.getElementById('mail-list').innerHTML = u.mails.slice(0, this.mailLimit).map(m => {
-                    let claimBtn = '';
-                    if (m.attachedCoins && !m.isClaimed) {
-                        claimBtn = `<button onclick="Mail.claimCoins('${m.id}')" class="mt-3 w-full py-2 bg-yellow-300 hover:bg-yellow-400 border-2 border-gray-800 rounded-lg font-black text-sm active:scale-95 transition-transform flex justify-center items-center gap-1 shadow-[2px_2px_0px_#1f2937]"><div class="w-5 h-5">${SVGs.coin}</div> 領取 ${m.attachedCoins} 金幣獎勵</button>`;
-                    } else if (m.attachedCoins && m.isClaimed) {
-                        claimBtn = `<div class="mt-3 text-center text-xs text-gray-500 font-bold bg-gray-100 py-2 rounded-lg border-2 border-dashed border-gray-300">已領取 ${m.attachedCoins} 金幣</div>`;
-                    }
-                    return `
-                    <div class="bg-white border-4 border-gray-800 p-4 rounded-xl shadow-[4px_4px_0px_#1f2937] flex flex-col">
-                        <div class="flex justify-between items-start mb-2 border-b-2 border-gray-100 pb-2">
-                            <p class="font-black text-blue-600 flex items-center gap-2"><div class="w-6 h-6">${SVGs[m.fromAvatarKey] || SVGs.fox}</div>來自 ${escapeHTML(m.from)}</p>
-                            <div class="flex gap-2">
-                                ${m.fromAvatarKey !== 'leaf' ? `<button onclick="Mail.reply('${m.id}')" class="w-6 h-6 p-1 bg-blue-50 hover:bg-blue-100 rounded border border-gray-300 flex items-center justify-center transition-colors" title="回覆">${SVGs.ui.send}</button>` : ''}
-                                <button onclick="Mail.deleteMail('${m.id}')" class="w-6 h-6 p-1 bg-red-50 hover:bg-red-100 rounded border border-gray-300 flex items-center justify-center transition-colors" title="刪除">${SVGs.ui.trash}</button>
+                try {
+                    const u = getUserData(currentUser.uid); 
+                    document.getElementById('mail-list').innerHTML = u.mails.slice(0, this.mailLimit).map(m => {
+                        let claimBtn = '';
+                        if (m.attachedCoins && !m.isClaimed) {
+                            claimBtn = `<button onclick="Mail.claimCoins('${m.id}')" class="mt-3 w-full py-2 bg-yellow-300 hover:bg-yellow-400 border-2 border-gray-800 rounded-lg font-black text-sm active:scale-95 transition-transform flex justify-center items-center gap-1 shadow-[2px_2px_0px_#1f2937]"><div class="w-5 h-5">${SVGs.coin}</div> 領取 ${m.attachedCoins} 金幣獎勵</button>`;
+                        } else if (m.attachedCoins && m.isClaimed) {
+                            claimBtn = `<div class="mt-3 text-center text-xs text-gray-500 font-bold bg-gray-100 py-2 rounded-lg border-2 border-dashed border-gray-300">已領取 ${m.attachedCoins} 金幣</div>`;
+                        }
+                        return `
+                        <div class="bg-white border-4 border-gray-800 p-4 rounded-xl shadow-[4px_4px_0px_#1f2937] flex flex-col">
+                            <div class="flex justify-between items-start mb-2 border-b-2 border-gray-100 pb-2">
+                                <p class="font-black text-blue-600 flex items-center gap-2"><div class="w-6 h-6">${SVGs[m.fromAvatarKey] || SVGs.fox}</div>來自 ${escapeHTML(m.from)}</p>
+                                <div class="flex gap-2">
+                                    ${m.fromAvatarKey !== 'leaf' ? `<button onclick="Mail.reply('${m.id}')" class="w-6 h-6 p-1 bg-blue-50 hover:bg-blue-100 rounded border border-gray-300 flex items-center justify-center transition-colors" title="回覆">${SVGs.ui.send}</button>` : ''}
+                                    <button onclick="Mail.deleteMail('${m.id}')" class="w-6 h-6 p-1 bg-red-50 hover:bg-red-100 rounded border border-gray-300 flex items-center justify-center transition-colors" title="刪除">${SVGs.ui.trash}</button>
+                                </div>
                             </div>
-                        </div>
-                        <div class="text-gray-700 font-bold leading-relaxed break-words flex-1">${m.content}</div>
-                        ${claimBtn}
-                        <p class="text-[10px] text-gray-400 mt-2 text-right">${formatFootprintDate(m.timestamp)}</p>
-                    </div>`
-                }).join(''); 
-                u.mails.forEach(m => m.isRead = true); saveLocal(); UI.updateMailBadge(); 
-                document.getElementById('btn-load-more-mails').classList.toggle('hidden', u.mails.length <= this.mailLimit); 
+                            <div class="text-gray-700 font-bold leading-relaxed break-words flex-1">${m.content}</div>
+                            ${claimBtn}
+                            <p class="text-[10px] text-gray-400 mt-2 text-right">${formatFootprintDate(m.timestamp)}</p>
+                        </div>`
+                    }).join(''); 
+                    u.mails.forEach(m => m.isRead = true); saveLocal(); UI.updateMailBadge(); 
+                    const btn = document.getElementById('btn-load-more-mails');
+                    if(btn) btn.classList.toggle('hidden', u.mails.length <= this.mailLimit); 
+                } catch(e) {}
             },
             loadMore() { this.mailLimit += 10; this.renderMails(); },
             deleteMail(id) { Confirm.show("刪除信件", "確定要刪除這封信喵？", "刪除", () => { const u = getUserData(currentUser.uid); u.mails = u.mails.filter(m => m.id !== id); saveLocal(); this.renderMails(); }); },
@@ -1901,15 +2019,17 @@
             viewYear: new Date().getFullYear(), viewMonth: new Date().getMonth(), activeTreeDialogueTimer: null,
             open() { this.viewYear = new Date().getFullYear(); this.viewMonth = new Date().getMonth(); this.switchTab('self'); UI.openModal('report-modal'); },
             switchTab(tab, swipeDir = 0) { 
-                ['self','family','stats'].forEach(t => document.getElementById(`rep-tab-${t}`).classList.toggle('bg-purple-500', tab === t)); 
-                ['self','family','stats'].forEach(t => document.getElementById(`rep-tab-${t}`).classList.toggle('text-white', tab === t)); 
-                document.getElementById('rep-area-self').classList.toggle('hidden', tab !== 'self'); document.getElementById('rep-area-self').classList.toggle('flex', tab === 'self');
-                document.getElementById('rep-area-family').classList.toggle('hidden', tab !== 'family'); document.getElementById('rep-area-family').classList.toggle('flex', tab === 'family');
-                document.getElementById('rep-area-stats').classList.toggle('hidden', tab !== 'stats'); document.getElementById('rep-area-stats').classList.toggle('flex', tab === 'stats');
-                
-                if(swipeDir !== 0) SwipeDetector.playSlide('rep-area-' + tab, swipeDir);
-                if(tab==='stats') this.renderStats(); if(tab==='self') this.renderSelf(); 
-                if(tab==='family') { this.checkMonthlySettlement(); this.renderFamily(); }
+                try {
+                    ['self','family','stats'].forEach(t => document.getElementById(`rep-tab-${t}`).classList.toggle('bg-purple-500', tab === t)); 
+                    ['self','family','stats'].forEach(t => document.getElementById(`rep-tab-${t}`).classList.toggle('text-white', tab === t)); 
+                    document.getElementById('rep-area-self').classList.toggle('hidden', tab !== 'self'); document.getElementById('rep-area-self').classList.toggle('flex', tab === 'self');
+                    document.getElementById('rep-area-family').classList.toggle('hidden', tab !== 'family'); document.getElementById('rep-area-family').classList.toggle('flex', tab === 'family');
+                    document.getElementById('rep-area-stats').classList.toggle('hidden', tab !== 'stats'); document.getElementById('rep-area-stats').classList.toggle('flex', tab === 'stats');
+                    
+                    if(swipeDir !== 0) SwipeDetector.playSlide('rep-area-' + tab, swipeDir);
+                    if(tab==='stats') this.renderStats(); if(tab==='self') this.renderSelf(); 
+                    if(tab==='family') { this.checkMonthlySettlement(); this.renderFamily(); }
+                } catch(e){}
             },
             changeMonth(offset) {
                 this.viewMonth += offset;
@@ -1918,120 +2038,129 @@
                 this.renderSelf();
             },
             renderSelf() { 
-                const u = getUserData(currentUser.uid); const safeTotal = Math.max(0, u.totalCoins || 0);
-                document.getElementById('report-total-points').innerText = safeTotal; 
-                
-                const cycle = Math.floor(safeTotal / 1000); const currentLevel = safeTotal % 1000; const percent = Math.max(5, (currentLevel / 1000) * 100); 
-                let treasuresHtml = '';
-                for(let i=0; i<cycle; i++) {
-                    const icons = ['star', 'moon', 'chest', 'crown2']; const chosen = icons[i % icons.length];
-                    treasuresHtml += `<div class="w-8 h-8 pop-in" style="animation-delay: ${i*0.1}s">${SVGs.icons[chosen]}</div>`;
-                }
-                document.getElementById('cycle-treasures').innerHTML = treasuresHtml;
-                
-                const streak = getOverallStreak(currentUser.uid); let badgeHtml = '';
-                if (streak >= 7) {
-                     let badgeColor = streak >= 21 ? '#fde047' : (streak >= 14 ? '#94a3b8' : '#fb923c');
-                     badgeHtml = `<div class="absolute -top-4 -right-4 w-12 h-12 pop-in drop-shadow-md z-30 pointer-events-none" title="連勝徽章">
-                                     ${SVGs.icons.star.replace('#fde047', badgeColor).replace('stroke="#1f2937"', 'stroke="#1f2937" stroke-width="6"')}
-                                     <span class="absolute inset-0 flex items-center justify-center text-[11px] font-black text-gray-800" style="padding-top:2px;">${streak}</span>
-                                  </div>`;
-                }
-                
-                const jarContainer = document.getElementById('jar-container'); const existingBadge = jarContainer.querySelector('.badge-element');
-                if (existingBadge) existingBadge.remove();
-                if (badgeHtml) { const badgeDiv = document.createElement('div'); badgeDiv.className = 'badge-element absolute -top-2 -right-2 z-30'; badgeDiv.innerHTML = badgeHtml; jarContainer.appendChild(badgeDiv); }
-                
-                setTimeout(() => { const liquid = document.getElementById('jar-liquid-level'); if(liquid) liquid.style.height = `${percent}%`; }, 100);
-                
-                const daysInMonth = new Date(this.viewYear, this.viewMonth + 1, 0).getDate();
-                const now = new Date(); let monthLabelStr = `${this.viewMonth + 1}月`;
-                if (this.viewYear === now.getFullYear() && this.viewMonth === now.getMonth()) { monthLabelStr = "本月"; } 
-                else if (this.viewYear !== now.getFullYear()) { monthLabelStr = `${this.viewYear}年${this.viewMonth + 1}月`; }
-                document.getElementById('sticker-month-label').innerText = monthLabelStr;
-                
-                let stickersHtml = '';
-                for(let day = 1; day <= daysInMonth; day++) {
-                    const dateStr = `${this.viewYear}-${String(this.viewMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`; let hasLog = false;
-                    Object.keys(u.habits||{}).forEach(hId => { if(u.habits[hId]?.logs?.[dateStr] && !u.habits[hId].logs[dateStr].isPruned) hasLog = true; });
-                    if(hasLog) stickersHtml += `<div class="w-full aspect-square p-1 md:p-2 border-2 border-gray-800 rounded-lg transform rotate-${Math.floor(Math.random()*6)-3} hover:scale-110 cursor-pointer bg-yellow-100 shadow-sm flex items-center justify-center" title="${dateStr}"><div class="w-[80%] h-[80%]">${SVGs[currentUser.svgKey]}</div></div>`;
-                    else stickersHtml += `<div class="w-full aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-300 font-black text-sm md:text-base bg-gray-50/50">${day}</div>`;
-                }
-                document.getElementById('sticker-grid').innerHTML = stickersHtml;
+                try {
+                    const u = getUserData(currentUser.uid); const safeTotal = Math.max(0, u.totalCoins || 0);
+                    document.getElementById('report-total-points').innerText = safeTotal; 
+                    
+                    const cycle = Math.floor(safeTotal / 1000); const currentLevel = safeTotal % 1000; const percent = Math.max(5, (currentLevel / 1000) * 100); 
+                    let treasuresHtml = '';
+                    for(let i=0; i<cycle; i++) {
+                        const icons = ['star', 'moon', 'chest', 'crown2']; const chosen = icons[i % icons.length];
+                        treasuresHtml += `<div class="w-8 h-8 pop-in" style="animation-delay: ${i*0.1}s">${SVGs.icons[chosen]}</div>`;
+                    }
+                    document.getElementById('cycle-treasures').innerHTML = treasuresHtml;
+                    
+                    const streak = getOverallStreak(currentUser.uid); let badgeHtml = '';
+                    if (streak >= 7) {
+                         let badgeColor = streak >= 21 ? '#fde047' : (streak >= 14 ? '#94a3b8' : '#fb923c');
+                         badgeHtml = `<div class="absolute -top-4 -right-4 w-12 h-12 pop-in drop-shadow-md z-30 pointer-events-none" title="連勝徽章">
+                                         ${SVGs.icons.star.replace('#fde047', badgeColor).replace('stroke="#1f2937"', 'stroke="#1f2937" stroke-width="6"')}
+                                         <span class="absolute inset-0 flex items-center justify-center text-[11px] font-black text-gray-800" style="padding-top:2px;">${streak}</span>
+                                      </div>`;
+                    }
+                    
+                    const jarContainer = document.getElementById('jar-container'); 
+                    if(jarContainer) {
+                        const existingBadge = jarContainer.querySelector('.badge-element');
+                        if (existingBadge) existingBadge.remove();
+                        if (badgeHtml) { const badgeDiv = document.createElement('div'); badgeDiv.className = 'badge-element absolute -top-2 -right-2 z-30'; badgeDiv.innerHTML = badgeHtml; jarContainer.appendChild(badgeDiv); }
+                    }
+                    
+                    setTimeout(() => { const liquid = document.getElementById('jar-liquid-level'); if(liquid) liquid.style.height = `${percent}%`; }, 100);
+                    
+                    const daysInMonth = new Date(this.viewYear, this.viewMonth + 1, 0).getDate();
+                    const now = new Date(); let monthLabelStr = `${this.viewMonth + 1}月`;
+                    if (this.viewYear === now.getFullYear() && this.viewMonth === now.getMonth()) { monthLabelStr = "本月"; } 
+                    else if (this.viewYear !== now.getFullYear()) { monthLabelStr = `${this.viewYear}年${this.viewMonth + 1}月`; }
+                    document.getElementById('sticker-month-label').innerText = monthLabelStr;
+                    
+                    let stickersHtml = '';
+                    for(let day = 1; day <= daysInMonth; day++) {
+                        const dateStr = `${this.viewYear}-${String(this.viewMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`; let hasLog = false;
+                        Object.keys(u.habits||{}).forEach(hId => { if(u.habits[hId]?.logs?.[dateStr] && !u.habits[hId].logs[dateStr].isPruned) hasLog = true; });
+                        if(hasLog) stickersHtml += `<div class="w-full aspect-square p-1 md:p-2 border-2 border-gray-800 rounded-lg transform rotate-${Math.floor(Math.random()*6)-3} hover:scale-110 cursor-pointer bg-yellow-100 shadow-sm flex items-center justify-center" title="${dateStr}"><div class="w-[80%] h-[80%]">${SVGs[currentUser.svgKey]}</div></div>`;
+                        else stickersHtml += `<div class="w-full aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-300 font-black text-sm md:text-base bg-gray-50/50">${day}</div>`;
+                    }
+                    document.getElementById('sticker-grid').innerHTML = stickersHtml;
+                } catch(e) {}
             },
             
             async checkMonthlySettlement() {
-                const currentD = new Date(); let lastM = currentD.getMonth() - 1; let lastY = currentD.getFullYear();
-                if (lastM < 0) { lastM = 11; lastY--; }
-                const flagKey = `reward_sent_${lastY}_${lastM}`;
+                try {
+                    const currentD = new Date(); let lastM = currentD.getMonth() - 1; let lastY = currentD.getFullYear();
+                    if (lastM < 0) { lastM = 11; lastY--; }
+                    const flagKey = `reward_sent_${lastY}_${lastM}`;
 
-                if (!dailyHabitData.systemFlags) dailyHabitData.systemFlags = {};
-                if (dailyHabitData.systemFlags[flagKey]) return; 
+                    if (!dailyHabitData.systemFlags) dailyHabitData.systemFlags = {};
+                    if (dailyHabitData.systemFlags[flagKey]) return; 
 
-                if(navigator.onLine) {
-                    try {
-                        const result = await fetch(SyncEngine.API_URL + "?token=" + encodeURIComponent(myAuthToken)); const json = await result.json();
-                        if(json.data && json.data['daily-habit-v13'] && json.data['daily-habit-v13'].systemFlags?.[flagKey]) {
-                             dailyHabitData.systemFlags[flagKey] = true; saveLocal(); return;
-                        }
-                    } catch(e) {}
-                }
+                    if(navigator.onLine) {
+                        try {
+                            const result = await fetch(SyncEngine.API_URL + "?token=" + encodeURIComponent(myAuthToken)); const json = await result.json();
+                            if(json.data && json.data['daily-habit-v13'] && json.data['daily-habit-v13'].systemFlags?.[flagKey]) {
+                                 dailyHabitData.systemFlags[flagKey] = true; saveLocal(); return;
+                            }
+                        } catch(e) {}
+                    }
 
-                dailyHabitData.systemFlags[flagKey] = true;
-                let lmScores = users.map(u => ({ uid: u.uid, score: getMonthlyCoinsForUser(u.uid, lastM, lastY) }));
-                lmScores.sort((a,b)=>b.score - a.score);
-                const topScore = lmScores[0].score;
-                
-                if (topScore > 0) {
-                    const winners = lmScores.filter(s => s.score === topScore);
-                    winners.forEach(winner => {
-                        const winnerData = getUserData(winner.uid);
-                        winnerData.mails.unshift({
-                            id: 'sys_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-                            from: "大樹守護精靈", fromAvatarKey: "leaf",
-                            content: `恭喜你在 ${lastM+1} 月的爬樹大賽獲得最高分！<br>這是屬於你的登頂專屬寶藏！繼續保持喔！✨`,
-                            timestamp: Date.now(), isRead: false, attachedCoins: 100, isClaimed: false
+                    dailyHabitData.systemFlags[flagKey] = true;
+                    let lmScores = users.map(u => ({ uid: u.uid, score: getMonthlyCoinsForUser(u.uid, lastM, lastY) }));
+                    lmScores.sort((a,b)=>b.score - a.score);
+                    const topScore = lmScores[0].score;
+                    
+                    if (topScore > 0) {
+                        const winners = lmScores.filter(s => s.score === topScore);
+                        winners.forEach(winner => {
+                            const winnerData = getUserData(winner.uid);
+                            winnerData.mails.unshift({
+                                id: 'sys_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                                from: "大樹守護精靈", fromAvatarKey: "leaf",
+                                content: `恭喜你在 ${lastM+1} 月的爬樹大賽獲得最高分！<br>這是屬於你的登頂專屬寶藏！繼續保持喔！✨`,
+                                timestamp: Date.now(), isRead: false, attachedCoins: 100, isClaimed: false
+                            });
                         });
-                    });
-                    saveLocal(); UI.updateMailBadge();
-                }
+                        saveLocal(); UI.updateMailBadge();
+                    }
+                } catch(e) {}
             },
 
             renderFamily() { 
-                const currentM = new Date().getMonth(); const currentY = new Date().getFullYear();
-                document.getElementById('tree-month-title').innerText = `${currentM+1}月爬樹大賽`;
-                
-                let lastMonth = currentM - 1; let lastYear = currentY;
-                if (lastMonth < 0) { lastMonth = 11; lastYear--; }
-                let lmScores = users.map(u => ({ uid: u.uid, score: getMonthlyCoinsForUser(u.uid, lastMonth, lastYear) }));
-                lmScores.sort((a,b)=>b.score - a.score);
-                
-                const lmTopScore = lmScores.length > 0 ? lmScores[0].score : 0;
-                const lmWinnerIds = (lmTopScore > 0) ? lmScores.filter(x => x.score === lmTopScore).map(x => x.uid) : [];
-                
-                let mScores = users.map(u => ({ uid: u.uid, score: getMonthlyCoinsForUser(u.uid, currentM, currentY) }));
-                mScores.sort((a,b)=>b.score - a.score);
-                let totalCurrentScore = mScores.reduce((sum, x) => sum + x.score, 0);
-                
-                let treeSvg = `<svg viewBox="0 0 200 300" class="w-[120%] h-[110%] opacity-95 transform translate-y-6">
-                    <path d="M 80 130 C 80 200, 50 280, 30 300 L 170 300 C 150 280, 120 200, 120 130 Z" fill="#78350f" stroke="#1f2937" stroke-width="4"/>
-                    <g class="tree-sway">
-                        <path d="M 100 140 C 160 160, 200 150, 190 90 C 180 30, 150 10, 110 20 C 70 -10, 20 20, 20 70 C 10 120, 50 160, 100 140 Z" fill="${totalCurrentScore < 300 ? '#86efac' : '#22c55e'}" stroke="#1f2937" stroke-width="4"/>`;
-                if (totalCurrentScore >= 600) treeSvg += `<g class="pop-in" fill="#fbcfe8" stroke="#1f2937" stroke-width="2"><circle cx="80" cy="50" r="6"/><circle cx="140" cy="70" r="6"/><circle cx="60" cy="100" r="6"/><circle cx="160" cy="110" r="6"/><circle cx="100" cy="130" r="6"/></g>`;
-                if (totalCurrentScore >= 1000) treeSvg += `<g class="pop-in" fill="#ef4444" stroke="#1f2937" stroke-width="2"><circle cx="100" cy="40" r="8"/><circle cx="60" cy="80" r="8"/><circle cx="140" cy="100" r="8"/><circle cx="40" cy="120" r="8"/><circle cx="160" cy="130" r="8"/><circle cx="80" cy="160" r="8"/><circle cx="120" cy="150" r="8"/></g>`;
-                treeSvg += `</g></svg>`;
+                try {
+                    const currentM = new Date().getMonth(); const currentY = new Date().getFullYear();
+                    document.getElementById('tree-month-title').innerText = `${currentM+1}月爬樹大賽`;
+                    
+                    let lastMonth = currentM - 1; let lastYear = currentY;
+                    if (lastMonth < 0) { lastMonth = 11; lastYear--; }
+                    let lmScores = users.map(u => ({ uid: u.uid, score: getMonthlyCoinsForUser(u.uid, lastMonth, lastYear) }));
+                    lmScores.sort((a,b)=>b.score - a.score);
+                    
+                    const lmTopScore = lmScores.length > 0 ? lmScores[0].score : 0;
+                    const lmWinnerIds = (lmTopScore > 0) ? lmScores.filter(x => x.score === lmTopScore).map(x => x.uid) : [];
+                    
+                    let mScores = users.map(u => ({ uid: u.uid, score: getMonthlyCoinsForUser(u.uid, currentM, currentY) }));
+                    mScores.sort((a,b)=>b.score - a.score);
+                    let totalCurrentScore = mScores.reduce((sum, x) => sum + x.score, 0);
+                    
+                    let treeSvg = `<svg viewBox="0 0 200 300" class="w-[120%] h-[110%] opacity-95 transform translate-y-6">
+                        <path d="M 80 130 C 80 200, 50 280, 30 300 L 170 300 C 150 280, 120 200, 120 130 Z" fill="#78350f" stroke="#1f2937" stroke-width="4"/>
+                        <g class="tree-sway">
+                            <path d="M 100 140 C 160 160, 200 150, 190 90 C 180 30, 150 10, 110 20 C 70 -10, 20 20, 20 70 C 10 120, 50 160, 100 140 Z" fill="${totalCurrentScore < 300 ? '#86efac' : '#22c55e'}" stroke="#1f2937" stroke-width="4"/>`;
+                    if (totalCurrentScore >= 600) treeSvg += `<g class="pop-in" fill="#fbcfe8" stroke="#1f2937" stroke-width="2"><circle cx="80" cy="50" r="6"/><circle cx="140" cy="70" r="6"/><circle cx="60" cy="100" r="6"/><circle cx="160" cy="110" r="6"/><circle cx="100" cy="130" r="6"/></g>`;
+                    if (totalCurrentScore >= 1000) treeSvg += `<g class="pop-in" fill="#ef4444" stroke="#1f2937" stroke-width="2"><circle cx="100" cy="40" r="8"/><circle cx="60" cy="80" r="8"/><circle cx="140" cy="100" r="8"/><circle cx="40" cy="120" r="8"/><circle cx="160" cy="130" r="8"/><circle cx="80" cy="160" r="8"/><circle cx="120" cy="150" r="8"/></g>`;
+                    treeSvg += `</g></svg>`;
 
-                document.getElementById('tree-svg-container').innerHTML = treeSvg;
-                document.getElementById('tree-group-buff').classList.toggle('hidden', totalCurrentScore < 1000);
-                
-                document.getElementById('tree-nodes-container').innerHTML = users.map((u,i) => {
-                    const myRank = mScores.findIndex(x=>x.uid === u.uid) + 1; const myScore = mScores.find(x=>x.uid === u.uid).score;
-                    let h = Math.min(80, 10 + (myScore / 10)); let left = 20 + i * 25 + (Math.random() * 10 - 5);
-                    let crownHtml = lmWinnerIds.includes(u.uid) ? `<div class="absolute -top-4 -right-2 w-6 h-6 transform rotate-12">${SVGs.crown.replace('CROWN_COLOR', '#fde047')}</div>` : '';
-                    return `<div class="absolute w-12 h-12 hover:scale-125 transition-transform cursor-pointer drop-shadow-md no-select" style="bottom:${h}%; left:${left}%" onclick="Report.clickTreeCharacter('${myRank}', '${u.name}', ${left}, ${h})">
-                        ${SVGs[u.svgKey]} ${crownHtml}
-                    </div>`;
-                }).join(''); 
+                    document.getElementById('tree-svg-container').innerHTML = treeSvg;
+                    document.getElementById('tree-group-buff').classList.toggle('hidden', totalCurrentScore < 1000);
+                    
+                    document.getElementById('tree-nodes-container').innerHTML = users.map((u,i) => {
+                        const myRank = mScores.findIndex(x=>x.uid === u.uid) + 1; const myScore = mScores.find(x=>x.uid === u.uid).score;
+                        let h = Math.min(80, 10 + (myScore / 10)); let left = 20 + i * 25 + (Math.random() * 10 - 5);
+                        let crownHtml = lmWinnerIds.includes(u.uid) ? `<div class="absolute -top-4 -right-2 w-6 h-6 transform rotate-12">${SVGs.crown.replace('CROWN_COLOR', '#fde047')}</div>` : '';
+                        return `<div class="absolute w-12 h-12 hover:scale-125 transition-transform cursor-pointer drop-shadow-md no-select" style="bottom:${h}%; left:${left}%" onclick="Report.clickTreeCharacter('${myRank}', '${u.name}', ${left}, ${h})">
+                            ${SVGs[u.svgKey]} ${crownHtml}
+                        </div>`;
+                    }).join(''); 
+                } catch(e) {}
             },
             
             clickTreeCharacter(rank, name, left, bottom) {
@@ -2041,35 +2170,39 @@
                 else quotes = ["等等我呀～", "我會在下面支持！", "慢慢爬總會到！"];
                 
                 const chosen = quotes[Math.floor(Math.random() * quotes.length)]; const dlg = document.getElementById('tree-dialogue');
-                dlg.innerText = chosen; dlg.style.left = `calc(${left}% + 10px)`; dlg.style.bottom = `calc(${bottom}% + 45px)`;
-                dlg.classList.remove('opacity-0', 'pointer-events-none'); dlg.classList.add('pop-in');
-                
-                if (this.activeTreeDialogueTimer) clearTimeout(this.activeTreeDialogueTimer);
-                this.activeTreeDialogueTimer = setTimeout(() => { dlg.classList.add('opacity-0', 'pointer-events-none'); dlg.classList.remove('pop-in'); }, 3000);
+                if(dlg) {
+                    dlg.innerText = chosen; dlg.style.left = `calc(${left}% + 10px)`; dlg.style.bottom = `calc(${bottom}% + 45px)`;
+                    dlg.classList.remove('opacity-0', 'pointer-events-none'); dlg.classList.add('pop-in');
+                    
+                    if (this.activeTreeDialogueTimer) clearTimeout(this.activeTreeDialogueTimer);
+                    this.activeTreeDialogueTimer = setTimeout(() => { dlg.classList.add('opacity-0', 'pointer-events-none'); dlg.classList.remove('pop-in'); }, 3000);
+                }
             },
             
             renderStats() {
-                const u = getUserData(currentUser.uid); const currentM = new Date().getMonth(); const currentY = new Date().getFullYear();
-                let coinData = []; let countData = []; let activeDays = new Set();
-                
-                Object.keys(u.habits||{}).forEach(hId => {
-                    let c = 0, p = 0;
-                    Object.keys(u.habits[hId]?.logs||{}).forEach(dateStr => {
-                        const d = new Date(dateStr);
-                        if(d.getMonth() === currentM && d.getFullYear() === currentY) { c++; p += u.habits[hId].logs[dateStr].pointsEarned; activeDays.add(dateStr); }
+                try {
+                    const u = getUserData(currentUser.uid); const currentM = new Date().getMonth(); const currentY = new Date().getFullYear();
+                    let coinData = []; let countData = []; let activeDays = new Set();
+                    
+                    Object.keys(u.habits||{}).forEach(hId => {
+                        let c = 0, p = 0;
+                        Object.keys(u.habits[hId]?.logs||{}).forEach(dateStr => {
+                            const d = new Date(dateStr);
+                            if(d.getMonth() === currentM && d.getFullYear() === currentY) { c++; p += u.habits[hId].logs[dateStr].pointsEarned; activeDays.add(dateStr); }
+                        });
+                        if (c > 0 || p > 0) {
+                            const hConfig = appTemplates[hId] || { title: "已刪除的習慣", themeId: "latte" };
+                            const theme = THEMES.find(t=>t.id===hConfig.themeId) || THEMES[0];
+                            coinData.push({ title: hConfig.title, value: p, color: theme.hex }); countData.push({ title: hConfig.title, value: c, color: theme.hex });
+                        }
                     });
-                    if (c > 0 || p > 0) {
-                        const hConfig = appTemplates[hId] || { title: "已刪除的習慣", themeId: "latte" };
-                        const theme = THEMES.find(t=>t.id===hConfig.themeId) || THEMES[0];
-                        coinData.push({ title: hConfig.title, value: p, color: theme.hex }); countData.push({ title: hConfig.title, value: c, color: theme.hex });
-                    }
-                });
-                
-                coinData.sort((a,b)=>b.value - a.value); countData.sort((a,b)=>b.value - a.value);
-                document.getElementById('stats-coin-pie').innerHTML = createPieChartSVG(coinData); document.getElementById('stats-count-pie').innerHTML = createPieChartSVG(countData);
-                document.getElementById('stats-coin-list').innerHTML = renderLeaderboard(coinData, '金幣'); document.getElementById('stats-count-list').innerHTML = renderLeaderboard(countData, '次');
-                document.getElementById('stats-active-days').innerText = activeDays.size; document.getElementById('stats-monthly-coins').innerText = coinData.reduce((s,x)=>s+x.value, 0);
-                document.getElementById('stats-best-habit').innerText = countData.length > 0 ? countData[0].title : '尚未開始';
+                    
+                    coinData.sort((a,b)=>b.value - a.value); countData.sort((a,b)=>b.value - a.value);
+                    document.getElementById('stats-coin-pie').innerHTML = createPieChartSVG(coinData); document.getElementById('stats-count-pie').innerHTML = createPieChartSVG(countData);
+                    document.getElementById('stats-coin-list').innerHTML = renderLeaderboard(coinData, '金幣'); document.getElementById('stats-count-list').innerHTML = renderLeaderboard(countData, '次');
+                    document.getElementById('stats-active-days').innerText = activeDays.size; document.getElementById('stats-monthly-coins').innerText = coinData.reduce((s,x)=>s+x.value, 0);
+                    document.getElementById('stats-best-habit').innerText = countData.length > 0 ? countData[0].title : '尚未開始';
+                } catch(e) {}
             }
         };
 
@@ -2173,44 +2306,48 @@
             pools: {}, 
             shuffle(a) { let c=a.length, r; while(c!=0){ r=Math.floor(Math.random()*c); c--; [a[c],a[r]]=[a[r],a[c]]; } return a; },
             getLine() {
-                const uid = currentUser.uid; const uData = getUserData(uid); const streak = getOverallStreak(uid);
-                if(!this.pools[uid] || this.pools[uid].length === 0) {
-                    let lines = [];
-                    if (uid === 'user_dad') { 
-                        lines = [`穩紮穩打，今天也是好榜樣！`, `連勝 ${streak} 天了，繼續保持！`, `【綠公主廣播】老公辛苦了，真帥氣！`, `口袋裡有 ${uData.currentCoins} 金幣。`, `一步一腳印，我們慢慢來。`, `全家人一起努力的感覺真好！`, `爸爸會一直當你們最堅強的後盾！`]; 
+                try {
+                    const uid = currentUser.uid; const uData = getUserData(uid); const streak = getOverallStreak(uid);
+                    if(!this.pools[uid] || this.pools[uid].length === 0) {
+                        let lines = [];
+                        if (uid === 'user_dad') { 
+                            lines = [`穩紮穩打，今天也是好榜樣！`, `連勝 ${streak} 天了，繼續保持！`, `【綠公主廣播】老公辛苦了，真帥氣！`, `口袋裡有 ${uData.currentCoins} 金幣。`, `一步一腳印，我們慢慢來。`, `全家人一起努力的感覺真好！`, `爸爸會一直當你們最堅強的後盾！`]; 
+                        } 
+                        else if (uid === 'user_mom') { 
+                            lines = [`優雅地打卡了！給自己一個大大的擁抱～`, `已經累積 ${uData.totalCoins} 枚金幣了！`, `【狐狸廣播】老婆今天也閃閃發光！`, `今天也要像公主一樣優雅地完成任務喔！`, `我為你感到驕傲！`, `辛苦了，別忘了喝杯熱水休息一下。`]; 
+                        } 
+                        else { 
+                            lines = [`跑這麼快，後面有狗在追喵？`, `連勝 ${streak} 天？算你有乖乖完成任務喵。`, `【狐狸廣播】阿蛇今天也超棒的！`, `口袋有 ${uData.currentCoins} 金幣了喵？`, `別一直戳喵，本喵很忙的！`, `看在你這麼努力打卡的份上，本喵就勉為其難誇獎你一下。`, `快點去打卡，本喵等著買罐罐呢！`]; 
+                        }
+                        const valid = customRadios.filter(r => r.target === 'all' || r.target === uid).map(r=>escapeHTML(r.text)); 
+                        lines = lines.concat(valid); this.pools[uid] = this.shuffle(lines);
                     } 
-                    else if (uid === 'user_mom') { 
-                        lines = [`優雅地打卡了！給自己一個大大的擁抱～`, `已經累積 ${uData.totalCoins} 枚金幣了！`, `【狐狸廣播】老婆今天也閃閃發光！`, `今天也要像公主一樣優雅地完成任務喔！`, `我為你感到驕傲！`, `辛苦了，別忘了喝杯熱水休息一下。`]; 
-                    } 
-                    else { 
-                        lines = [`跑這麼快，後面有狗在追喵？`, `連勝 ${streak} 天？算你有乖乖完成任務喵。`, `【狐狸廣播】阿蛇今天也超棒的！`, `口袋有 ${uData.currentCoins} 金幣了喵？`, `別一直戳喵，本喵很忙的！`, `看在你這麼努力打卡的份上，本喵就勉為其難誇獎你一下。`, `快點去打卡，本喵等著買罐罐呢！`]; 
-                    }
-                    const valid = customRadios.filter(r => r.target === 'all' || r.target === uid).map(r=>escapeHTML(r.text)); 
-                    lines = lines.concat(valid); this.pools[uid] = this.shuffle(lines);
-                } 
-                return this.pools[uid].pop();
+                    return this.pools[uid].pop();
+                } catch(e) { return "大家好喵！"; }
             },
             openCMS() { UI.toggleHabitMenu(); this.renderList(); UI.openModal('radio-modal'); },
             renderList() { 
-                document.getElementById('radio-list').innerHTML = customRadios.map(r => {
-                    let labelClass = "bg-gray-200 text-gray-800"; let labelText = "所有人";
-                    const targetUser = users.find(u=>u.uid===r.target);
-                    if (r.target === 'user_son') { labelClass = "bg-purple-200 text-purple-800"; labelText = targetUser ? targetUser.name : '阿蛇'; }
-                    else if (r.target === 'user_dad') { labelClass = "bg-orange-200 text-orange-800"; labelText = targetUser ? targetUser.name : '狐狸'; }
-                    else if (r.target === 'user_mom') { labelClass = "bg-green-200 text-green-800"; labelText = targetUser ? targetUser.name : '綠公主'; }
-                    else if (r.target !== 'all') { labelText = targetUser ? targetUser.name : '未知'; }
-                    return `
-                    <div class="bg-white border-2 border-gray-800 rounded-xl p-3 mb-2 flex justify-between items-center shadow-sm">
-                        <div class="max-w-[70%] flex flex-col items-start gap-1">
-                            <span class="text-[10px] ${labelClass} px-2 py-0.5 rounded font-black">給${labelText}</span>
-                            <p class="font-bold text-sm break-words w-full">${escapeHTML(r.text)}</p>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="Radio.editLine('${r.id}')" class="w-8 h-8 p-1.5 bg-blue-100 border border-gray-800 rounded hand-drawn-btn flex items-center justify-center">${SVGs.ui.editPen}</button>
-                            <button onclick="Radio.deleteLine('${r.id}')" class="w-8 h-8 p-1 bg-red-100 border border-gray-800 rounded hand-drawn-btn flex items-center justify-center">${SVGs.ui.trash}</button>
-                        </div>
-                    </div>`
-                }).join(''); 
+                try {
+                    document.getElementById('radio-list').innerHTML = customRadios.map(r => {
+                        let labelClass = "bg-gray-200 text-gray-800"; let labelText = "所有人";
+                        const targetUser = users.find(u=>u.uid===r.target);
+                        if (r.target === 'user_son') { labelClass = "bg-purple-200 text-purple-800"; labelText = targetUser ? targetUser.name : '阿蛇'; }
+                        else if (r.target === 'user_dad') { labelClass = "bg-orange-200 text-orange-800"; labelText = targetUser ? targetUser.name : '狐狸'; }
+                        else if (r.target === 'user_mom') { labelClass = "bg-green-200 text-green-800"; labelText = targetUser ? targetUser.name : '綠公主'; }
+                        else if (r.target !== 'all') { labelText = targetUser ? targetUser.name : '未知'; }
+                        return `
+                        <div class="bg-white border-2 border-gray-800 rounded-xl p-3 mb-2 flex justify-between items-center shadow-sm">
+                            <div class="max-w-[70%] flex flex-col items-start gap-1">
+                                <span class="text-[10px] ${labelClass} px-2 py-0.5 rounded font-black">給${labelText}</span>
+                                <p class="font-bold text-sm break-words w-full">${escapeHTML(r.text)}</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="Radio.editLine('${r.id}')" class="w-8 h-8 p-1.5 bg-blue-100 border border-gray-800 rounded hand-drawn-btn flex items-center justify-center">${SVGs.ui.editPen}</button>
+                                <button onclick="Radio.deleteLine('${r.id}')" class="w-8 h-8 p-1 bg-red-100 border border-gray-800 rounded hand-drawn-btn flex items-center justify-center">${SVGs.ui.trash}</button>
+                            </div>
+                        </div>`
+                    }).join(''); 
+                } catch(e) {}
             },
             addLine() { 
                 const text = document.getElementById('radio-new-text').value.trim(); const target = document.getElementById('radio-target').value; 
@@ -2225,7 +2362,25 @@
             deleteLine(id) { Confirm.show("刪除廣播", "確定刪除？", "刪除", () => { customRadios = customRadios.filter(r => r.id !== id); saveLocal(); this.pools = {}; this.renderList(); }); }
         };
 
-        window.addEventListener('DOMContentLoaded', async () => { await initDB(); });
+        const Confirm = { 
+            execute() { 
+                if(this.cb) { const action = this.cb; this.cb = null; action(); } 
+                UI.closeModal('generic-confirm-modal'); 
+            }, 
+            show(t, d, bt, cb) { 
+                const ct = document.getElementById('confirm-title'); if(ct) ct.innerText = t; 
+                const cd = document.getElementById('confirm-desc'); if(cd) cd.innerText = d; 
+                const cbtn = document.getElementById('confirm-btn-do'); if(cbtn) cbtn.innerText = bt; 
+                this.cb = cb; UI.openModal('generic-confirm-modal'); 
+            } 
+        };
+        
+        function getUserData(uid) { return dailyHabitData[uid]; }
+
+        window.addEventListener('DOMContentLoaded', async () => { 
+            await initDB(); 
+        });
+        
     </script>
 </body>
 </html>
