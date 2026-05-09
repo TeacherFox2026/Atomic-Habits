@@ -423,7 +423,8 @@
                 document.getElementById('sync-overlay').classList.add('hidden');
             }, 500);
             
-            UI.renderAll();
+            // 【重大修正】補回 UI.init(); 指令，讓模態框與介面正常掛載與啟動
+            UI.init();
         }
 
         function pruneAllData() {
@@ -431,7 +432,7 @@
             users.forEach(u => {
                 const uData = dailyHabitData[u.uid];
                 
-                // 【修復】截斷信件前，自動領取即將被刪除的信件金幣
+                // 截斷信件前，自動領取即將被刪除的信件金幣
                 if(uData.mails && uData.mails.length > 50) {
                     const mailsToPrune = uData.mails.slice(50);
                     let autoClaimedCoins = 0;
@@ -479,11 +480,12 @@
         }
 
         const SyncEngine = {
-            API_URL: "https://script.google.com/macros/s/AKfycbz0cO_ps0dtqzeBPYQezi0WIoDW0ON0UAfE_I1PTDquDp2wbVBChqXyIlt4-iN3wjQp_A/exec",
+            API_URL: "https://script.google.com/macros/s/AKfycbwVha-MeBJJJtXQKDB-yLVFpMkwGzRd19s9XG10lHQ6UZAjMoefkp4RJkm-wJuasWd3CA/exec", // 請將雙引號內替換為您最新的 GAS 部署網址
             isSyncing: false,
             syncPending: false, 
             
             async pull() {
+                if (!this.API_URL) return null; // 避免空網址報錯
                 try {
                     const response = await fetch(this.API_URL + "?token=" + encodeURIComponent(myAuthToken));
                     const result = await response.json();
@@ -523,7 +525,7 @@
             },
 
             async push() {
-                if (this.isSyncing) return;
+                if (this.isSyncing || !this.API_URL) return;
                 this.isSyncing = true;
                 const updates = {
                     appTemplates_v13: JSON.parse(localStorage.getItem('appTemplates_v13') || "{}"),
@@ -861,7 +863,7 @@
                         const parsed = JSON.parse(e.target.result);
                         if(parsed.appTemplates_v13) appTemplates = parsed.appTemplates_v13;
                         if(parsed.shopItems_v13) shopItems = parsed.shopItems_v13;
-                        if(parsed.customRadios_v13) customRadios = parsed.customRadios_v13;
+                        if(parsed.customRadios_v13) customRadios = customRadios.parsed.customRadios_v13;
                         if(parsed['daily-habit-v13']) dailyHabitData = parsed['daily-habit-v13'];
                         saveLocal(); UI.renderAll(); UI.showToast("備份還原成功並排入同步！");
                     } catch(err) { UI.showToast("備份檔讀取失敗，格式錯誤"); }
@@ -2145,7 +2147,7 @@
 
                 const topScore = lmScores[0].score;
                 if (topScore > 0) {
-                    // 🎉 修正點：支援並列第一名的成員都獲得獎勵
+                    // 【修正】支援並列第一名的成員都獲得獎勵
                     const winners = lmScores.filter(s => s.score === topScore);
                     
                     winners.forEach(winner => {
@@ -2176,7 +2178,6 @@
                 let lmScores = users.map(u => ({ uid: u.uid, score: getMonthlyCoinsForUser(u.uid, lastMonth, lastYear) }));
                 lmScores.sort((a,b)=>b.score - a.score);
                 
-                // 修正點：判斷所有並列第一的人都會戴皇冠
                 const lmTopScore = lmScores.length > 0 ? lmScores[0].score : 0;
                 const lmWinnerIds = (lmTopScore > 0) ? lmScores.filter(x => x.score === lmTopScore).map(x => x.uid) : [];
                 
