@@ -347,15 +347,13 @@
         let editTargetDate = null;
         let isProcessing = false;
         
-        // 🔑 全域金鑰設定
         let myAuthToken = localStorage.getItem('family_secret_token_v1') || "";
 
         async function initDB() {
-            // 檢查授權
             if (!myAuthToken) {
                 document.getElementById('auth-modal').classList.remove('hidden');
                 setTimeout(() => document.getElementById('auth-modal').classList.remove('opacity-0'), 50);
-                return; // 停止初始化，等待輸入密碼
+                return;
             }
             
             const cloudSync = await SyncEngine.pull();
@@ -398,9 +396,13 @@
                 if (!dailyHabitData[u.uid]) {
                     dailyHabitData[u.uid] = { totalCoins: 0, currentCoins: 0, mails: [], habits: {}, shopHistory: [] };
                 }
+                
+                // 強制結構修復：確保 inventory 永遠存在
+                if (!dailyHabitData[u.uid].inventory) dailyHabitData[u.uid].inventory = { streakSavers: 0 };
+                if (typeof dailyHabitData[u.uid].inventory.streakSavers !== 'number') dailyHabitData[u.uid].inventory.streakSavers = 0;
+
                 if (!dailyHabitData[u.uid].mails) dailyHabitData[u.uid].mails = [];
                 if (!dailyHabitData[u.uid].shopHistory) dailyHabitData[u.uid].shopHistory = [];
-                if (!dailyHabitData[u.uid].inventory) dailyHabitData[u.uid].inventory = { streakSavers: 0 };
                 
                 Object.keys(appTemplates).forEach(hId => { 
                     if(!dailyHabitData[u.uid].habits) dailyHabitData[u.uid].habits = {};
@@ -423,7 +425,6 @@
                 document.getElementById('sync-overlay').classList.add('hidden');
             }, 500);
             
-            // 核心啟動修復：確保系統初始化 Modal 與綁定事件
             UI.init();
         }
 
@@ -432,7 +433,7 @@
             users.forEach(u => {
                 const uData = dailyHabitData[u.uid];
                 
-                // 截斷信件前，自動領取即將被刪除的信件金幣
+                // 自動領取即將被刪除的信件金幣
                 if(uData.mails && uData.mails.length > 50) {
                     const mailsToPrune = uData.mails.slice(50);
                     let autoClaimedCoins = 0;
@@ -480,12 +481,12 @@
         }
 
         const SyncEngine = {
-            API_URL: "https://script.google.com/macros/s/AKfycbwVha-MeBJJJtXQKDB-yLVFpMkwGzRd19s9XG10lHQ6UZAjMoefkp4RJkm-wJuasWd3CA/exec", // 請將雙引號內替換為您最新的 GAS 部署網址
+            API_URL: "https://script.google.com/macros/s/AKfycbwVha-MeBJJJtXQKDB-yLVFpMkwGzRd19s9XG10lHQ6UZAjMoefkp4RJkm-wJuasWd3CA/exec",
             isSyncing: false,
             syncPending: false, 
             
             async pull() {
-                if (!this.API_URL) return null; // 避免空網址報錯
+                if (!this.API_URL) return null;
                 try {
                     const response = await fetch(this.API_URL + "?token=" + encodeURIComponent(myAuthToken));
                     const result = await response.json();
@@ -532,7 +533,7 @@
                     shopItems_v13: JSON.parse(localStorage.getItem('shopItems_v13') || "[]"),
                     customRadios_v13: JSON.parse(localStorage.getItem('customRadios_v13') || "[]"),
                     'daily-habit-v13': JSON.parse(localStorage.getItem('daily-habit-v13') || "{}"),
-                    token: myAuthToken // 附帶金鑰
+                    token: myAuthToken
                 };
                 try {
                     await fetch(this.API_URL, {
@@ -689,7 +690,7 @@
                 }, {passive: true});
                 wrapper.addEventListener('touchend', e => {
                     if (!document.getElementById('modals-container').innerText.includes('hidden') && Array.from(document.getElementById('modals-container').children).some(m => !m.classList.contains('hidden'))) return;
-                    if (startX < 30) return; // iOS 邊緣防護
+                    if (startX < 30) return; 
                     
                     let endX = e.changedTouches[0].screenX, endY = e.changedTouches[0].screenY;
                     let dx = endX - startX, dy = endY - startY;
@@ -716,7 +717,7 @@
                     }, {passive: true});
                     modal.addEventListener('touchend', e => {
                         if(['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest('[contenteditable="true"]') || e.target.closest('#mail-write-area')) return;
-                        if(startX < 30) return; // iOS 邊緣防護
+                        if(startX < 30) return; 
                         
                         let endX = e.changedTouches[0].screenX, endY = e.changedTouches[0].screenY;
                         let dx = endX - startX, dy = endY - startY;
@@ -871,8 +872,16 @@
                 reader.readAsText(file);
             },
             triggerReset() {
-                let pwd = prompt("請輸入「確認重置」來清空所有手帳與金幣紀錄：\n(習慣設定與商店獎品會保留)");
-                if (pwd === "確認重置") {
+                // 進階防呆：隨機四則運算
+                const num1 = Math.floor(Math.random() * 9) + 1;
+                const num2 = Math.floor(Math.random() * 9) + 1;
+                const isAdd = Math.random() > 0.5;
+                const opStr = isAdd ? '+' : '-';
+                const answer = isAdd ? (num1 + num2) : (num1 - num2);
+                
+                let ansInput = prompt(`⚠️ 嚴重警告！這會清空所有歷史資料！\n請計算以確認： ${num1} ${opStr} ${num2} = ?`);
+                
+                if (ansInput !== null && parseInt(ansInput.trim()) === answer) {
                     users.forEach(u => {
                         dailyHabitData[u.uid].currentCoins = 0;
                         dailyHabitData[u.uid].totalCoins = 0;
@@ -885,8 +894,8 @@
                         });
                     });
                     saveLocal(); UI.showToast("資料已完全重置"); UI.closeModal('editor-modal'); UI.renderAll();
-                } else if (pwd !== null) {
-                    UI.showToast("密碼錯誤，取消重置");
+                } else if (ansInput !== null) {
+                    UI.showToast("答案錯誤，取消重置保護機制");
                 }
             }
         };
@@ -1022,7 +1031,6 @@
                     if (!document.hidden && !SyncEngine.isSyncing) this.renderAll(); 
                 });
 
-                // Android 硬體返回鍵攔截
                 window.addEventListener('popstate', (e) => {
                     if (this.activeModals.length > 0) {
                         const topModal = this.activeModals.pop();
@@ -1237,9 +1245,10 @@
             },
             
             injectModals() {
+                // 修改所有主要 Modal 的寬度為 w-[98vw] md:w-[98vw] 並適度縮減 p-4 為 p-3 爭取空間
                 document.getElementById('modals-container').innerHTML = `
-                    <div id="generic-confirm-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-center z-[160] transition-opacity opacity-0 px-4">
-                        <div class="bg-white w-[90vw] md:w-[92vw] max-w-[320px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative flex flex-col items-center box-border pb-[env(safe-area-inset-bottom)]">
+                    <div id="generic-confirm-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-center z-[160] transition-opacity opacity-0 px-2 md:px-4">
+                        <div class="bg-white w-[96vw] md:w-[400px] max-w-[400px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative flex flex-col items-center box-border pb-[env(safe-area-inset-bottom)]">
                             <div class="w-24 h-24 mb-2">${SVGs.cryCat}</div>
                             <h3 id="confirm-title" class="text-xl font-black text-gray-800 mb-2">確認視窗</h3>
                             <p id="confirm-desc" class="text-sm text-gray-600 font-bold mb-6 whitespace-pre-wrap">確定執行嗎？</p>
@@ -1250,13 +1259,13 @@
                         </div>
                     </div>
                     
-                    <div id="radio-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-2 md:px-4">
-                        <div class="bg-[#fff9f0] w-[96vw] md:w-[95vw] max-w-[600px] h-[80vh] rounded-[2rem] p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] relative flex flex-col overflow-hidden box-border pb-[env(safe-area-inset-bottom)]">
+                    <div id="radio-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-1 md:px-2">
+                        <div class="bg-[#fff9f0] w-[98vw] md:w-[98vw] max-w-[800px] h-[80vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] relative flex flex-col overflow-hidden box-border pb-[env(safe-area-inset-bottom)]">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2 flex-shrink-0">
-                                <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.bulb}</div> 廣播台管理</h3>
+                                <h3 class="text-xl md:text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.bulb}</div> 廣播台管理</h3>
                                 <button onclick="UI.closeModal('radio-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white font-black p-1 flex-shrink-0">${SVGs.ui.cross}</button>
                             </div>
-                            <div class="bg-blue-100 border-4 border-gray-800 rounded-xl p-4 mb-4 flex-shrink-0">
+                            <div class="bg-blue-100 border-4 border-gray-800 rounded-xl p-3 md:p-4 mb-4 flex-shrink-0">
                                 <div class="flex gap-2 mb-2">
                                     <select id="radio-target" class="w-full box-border border-4 border-gray-800 rounded-lg p-2 font-bold flex-1">
                                         <option value="all">所有人</option><option value="user_dad">狐狸</option><option value="user_mom">綠公主</option><option value="user_son">阿蛇</option>
@@ -1271,34 +1280,34 @@
                         </div>
                     </div>
                     
-                    <div id="shop-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-2 md:px-4">
-                        <div class="bg-[#fff9f0] w-[96vw] md:w-[95vw] max-w-[1000px] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border pb-safe">
+                    <div id="shop-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-1 md:px-2">
+                        <div class="bg-[#fff9f0] w-[98vw] md:w-[98vw] max-w-[1200px] h-[90vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border pb-safe">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2 flex-shrink-0">
-                                <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-8 h-8">${SVGs.ui.shopStand}</div> 兌換商店</h3>
+                                <h3 class="text-xl md:text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6 md:w-8 md:h-8">${SVGs.ui.shopStand}</div> 兌換商店</h3>
                                 <button onclick="UI.closeModal('shop-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1 flex-shrink-0">${SVGs.ui.cross}</button>
                             </div>
                             <div class="flex flex-nowrap gap-2 mb-4 overflow-x-auto no-scrollbar justify-center flex-shrink-0">
-                                <button id="shop-tab-shop" onclick="Shop.switchTab('shop')" class="flex-1 py-2 px-3 font-black rounded-xl border-4 border-gray-800 transition-colors text-sm whitespace-nowrap">商店</button>
-                                <button id="shop-tab-history" onclick="Shop.switchTab('history')" class="flex-1 py-2 px-3 font-black rounded-xl border-4 border-gray-800 transition-colors text-sm whitespace-nowrap inline-flex justify-center items-center gap-1"><div class="w-4 h-4">${SVGs.ui.history}</div> 紀錄</button>
-                                <button id="shop-tab-edit" onclick="Shop.switchTab('edit')" class="flex-1 py-2 px-3 font-black rounded-xl border-4 border-gray-800 transition-colors text-sm whitespace-nowrap inline-flex justify-center items-center gap-1"><div class="w-4 h-4">${SVGs.ui.setting}</div> 新商品</button>
+                                <button id="shop-tab-shop" onclick="Shop.switchTab('shop')" class="flex-1 py-2 px-2 md:px-3 font-black rounded-xl border-4 border-gray-800 transition-colors text-xs md:text-sm whitespace-nowrap">商店</button>
+                                <button id="shop-tab-history" onclick="Shop.switchTab('history')" class="flex-1 py-2 px-2 md:px-3 font-black rounded-xl border-4 border-gray-800 transition-colors text-xs md:text-sm whitespace-nowrap inline-flex justify-center items-center gap-1"><div class="w-4 h-4">${SVGs.ui.history}</div> 紀錄</button>
+                                <button id="shop-tab-edit" onclick="Shop.switchTab('edit')" class="flex-1 py-2 px-2 md:px-3 font-black rounded-xl border-4 border-gray-800 transition-colors text-xs md:text-sm whitespace-nowrap inline-flex justify-center items-center gap-1"><div class="w-4 h-4">${SVGs.ui.setting}</div> 新商品</button>
                             </div>
                             
                             <div id="shop-area-shop" class="flex-1 overflow-y-auto custom-scroll pr-2 flex flex-col gap-4">
                                 <div class="bg-yellow-100 border-4 border-gray-800 rounded-xl p-3 flex justify-between items-center">
-                                    <span class="font-black flex items-center gap-1"><div class="w-5 h-5">${SVGs.magicWand}</div> 保命符：<span id="shop-saver-count" class="text-purple-600">0</span> 張</span>
-                                    <span class="font-black text-xl text-yellow-600 flex items-center gap-1"><div class="w-6 h-6">${SVGs.coin}</div> <span id="shop-current-coins">0</span></span>
+                                    <span class="font-black text-sm md:text-base flex items-center gap-1"><div class="w-5 h-5">${SVGs.magicWand}</div> 保命符：<span id="shop-saver-count" class="text-purple-600">0</span> 張</span>
+                                    <span class="font-black text-lg md:text-xl text-yellow-600 flex items-center gap-1"><div class="w-5 h-5 md:w-6 md:h-6">${SVGs.coin}</div> <span id="shop-current-coins">0</span></span>
                                 </div>
-                                <div id="shop-items-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 content-start pb-6"></div>
+                                <div id="shop-items-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 content-start pb-6"></div>
                             </div>
                             
                             <div id="shop-area-history" class="flex-1 overflow-y-auto custom-scroll pr-2 hidden flex-col gap-3 pb-6">
-                                <div id="shop-history-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 content-start"></div>
+                                <div id="shop-history-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 content-start"></div>
                                 <button id="btn-load-more-shop" onclick="Shop.loadMoreHistory()" class="hidden mt-2 text-sm font-bold bg-gray-100 py-2 rounded-xl border-2 border-dashed border-gray-300">展開歷史戰利品 ▼</button>
                             </div>
                             
                             <div id="shop-area-edit" class="flex-1 overflow-y-auto hidden flex-col custom-scroll pr-2 pb-6">
                                 <button onclick="Shop.openAddItem()" class="w-full mb-4 py-3 bg-green-400 text-white font-black border-4 border-gray-800 rounded-xl inline-flex justify-center items-center gap-2 flex-shrink-0"><div class="w-5 h-5">${SVGs.ui.plus}</div> 新增獎品</button>
-                                <div id="shop-edit-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 content-start"></div>
+                                <div id="shop-edit-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 content-start"></div>
                             </div>
                             
                             <div id="shop-area-form" class="flex-1 overflow-y-auto hidden flex-col pb-6">
@@ -1317,23 +1326,23 @@
                         </div>
                     </div>
                     
-                    <div id="report-modal" class="fixed inset-0 bg-gray-900/80 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-2 md:px-4">
-                        <div class="bg-[#fef9f0] w-[96vw] md:w-[95vw] max-w-[1000px] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border pb-[env(safe-area-inset-bottom)]">
+                    <div id="report-modal" class="fixed inset-0 bg-gray-900/80 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-1 md:px-2">
+                        <div class="bg-[#fef9f0] w-[98vw] md:w-[98vw] max-w-[1200px] h-[90vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border pb-[env(safe-area-inset-bottom)]">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2 flex-shrink-0">
-                                <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.ui.magicBook}</div> 魔法成就手帳</h3>
+                                <h3 class="text-xl md:text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.ui.magicBook}</div> 魔法成就手帳</h3>
                                 <button onclick="UI.closeModal('report-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1 flex-shrink-0">${SVGs.ui.cross}</button>
                             </div>
                             <div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar flex-shrink-0">
-                                <button id="rep-tab-self" onclick="Report.switchTab('self')" class="flex-1 py-2 px-1 md:px-2 font-black rounded-xl border-4 border-gray-800 bg-purple-500 text-white inline-flex justify-center items-center gap-1 transition-colors text-sm md:text-base whitespace-nowrap"><div class="w-4 h-4">${SVGs.ui.sparkle}</div> 收藏</button>
-                                <button id="rep-tab-family" onclick="Report.switchTab('family')" class="flex-1 py-2 px-1 md:px-2 font-black rounded-xl border-4 border-gray-800 inline-flex justify-center items-center gap-1 transition-colors text-sm md:text-base whitespace-nowrap"><div class="w-4 h-4">${SVGs.ui.tree}</div> 大樹</button>
-                                <button id="rep-tab-stats" onclick="Report.switchTab('stats')" class="flex-1 py-2 px-1 md:px-2 font-black rounded-xl border-4 border-gray-800 inline-flex justify-center items-center gap-1 transition-colors text-sm md:text-base whitespace-nowrap"><div class="w-4 h-4">${SVGs.ui.chart}</div> 成就</button>
+                                <button id="rep-tab-self" onclick="Report.switchTab('self')" class="flex-1 py-2 px-1 md:px-2 font-black rounded-xl border-4 border-gray-800 bg-purple-500 text-white inline-flex justify-center items-center gap-1 transition-colors text-xs md:text-base whitespace-nowrap"><div class="w-4 h-4">${SVGs.ui.sparkle}</div> 收藏</button>
+                                <button id="rep-tab-family" onclick="Report.switchTab('family')" class="flex-1 py-2 px-1 md:px-2 font-black rounded-xl border-4 border-gray-800 inline-flex justify-center items-center gap-1 transition-colors text-xs md:text-base whitespace-nowrap"><div class="w-4 h-4">${SVGs.ui.tree}</div> 大樹</button>
+                                <button id="rep-tab-stats" onclick="Report.switchTab('stats')" class="flex-1 py-2 px-1 md:px-2 font-black rounded-xl border-4 border-gray-800 inline-flex justify-center items-center gap-1 transition-colors text-xs md:text-base whitespace-nowrap"><div class="w-4 h-4">${SVGs.ui.chart}</div> 成就</button>
                             </div>
                             
-                            <div id="rep-area-self" class="flex-1 overflow-y-auto custom-scroll flex flex-col md:flex-row gap-6 pb-6">
-                                <div class="flex-1 bg-white border-4 border-gray-800 rounded-3xl p-4 flex flex-col items-center justify-center relative min-h-[300px]" id="jar-container">
-                                    <div class="absolute -top-3 -left-3 bg-yellow-300 border-2 border-gray-800 px-3 py-1 rounded-lg font-black text-sm z-20">無盡寶物瓶</div>
-                                    <div class="text-3xl font-black text-yellow-600 mb-2 flex items-center gap-2 z-20"><div class="w-8 h-8">${SVGs.coin}</div> <span id="report-total-points">0</span></div>
-                                    <div class="relative w-48 h-56 md:w-64 md:h-72 mt-2">
+                            <div id="rep-area-self" class="flex-1 overflow-y-auto custom-scroll flex flex-col md:flex-row gap-4 md:gap-6 pb-6">
+                                <div class="flex-1 bg-white border-4 border-gray-800 rounded-3xl p-3 md:p-4 flex flex-col items-center justify-center relative min-h-[250px] md:min-h-[300px]" id="jar-container">
+                                    <div class="absolute -top-3 -left-3 bg-yellow-300 border-2 border-gray-800 px-3 py-1 rounded-lg font-black text-xs md:text-sm z-20">無盡寶物瓶</div>
+                                    <div class="text-2xl md:text-3xl font-black text-yellow-600 mb-2 flex items-center gap-2 z-20"><div class="w-6 h-6 md:w-8 md:h-8">${SVGs.coin}</div> <span id="report-total-points">0</span></div>
+                                    <div class="relative w-40 h-48 md:w-64 md:h-72 mt-2">
                                         ${SVGs.fatJar}
                                         <div class="absolute bottom-0 left-0 w-full h-full" style="clip-path: polygon(15% 100%, 85% 100%, 100% 60%, 100% 30%, 0% 30%, 0% 60%);">
                                             <div id="jar-liquid-level" class="bg-yellow-300/80 absolute bottom-0 w-full liquid-fill" style="height: 0%;"></div>
@@ -1341,18 +1350,18 @@
                                     </div>
                                     <div id="cycle-treasures" class="absolute bottom-4 right-4 flex flex-col-reverse gap-1 items-center justify-center z-20"></div>
                                 </div>
-                                <div class="flex-1 bg-white border-4 border-gray-800 rounded-3xl p-4 relative flex flex-col">
-                                    <div class="absolute -top-3 -right-3 bg-pink-300 border-2 border-gray-800 px-3 py-1 rounded-lg font-black text-sm z-20 flex items-center gap-2">
+                                <div class="flex-1 bg-white border-4 border-gray-800 rounded-3xl p-3 md:p-4 relative flex flex-col min-h-[250px]">
+                                    <div class="absolute -top-3 -right-3 bg-pink-300 border-2 border-gray-800 px-2 md:px-3 py-1 rounded-lg font-black text-xs md:text-sm z-20 flex items-center gap-1 md:gap-2">
                                         <button onclick="Report.changeMonth(-1)" class="w-5 h-5 bg-white/50 rounded flex items-center justify-center active:scale-90">◀</button>
-                                        <span id="sticker-month-label">本月</span>貼紙牆
+                                        <span id="sticker-month-label">本月</span>貼紙
                                         <button onclick="Report.changeMonth(1)" class="w-5 h-5 bg-white/50 rounded flex items-center justify-center active:scale-90">▶</button>
                                     </div>
-                                    <div id="sticker-grid" class="grid grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-1 md:gap-2 flex-1 overflow-y-auto custom-scroll pr-2 mt-4 content-start"></div>
+                                    <div id="sticker-grid" class="grid grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-1 md:gap-2 flex-1 overflow-y-auto custom-scroll pr-1 mt-4 content-start"></div>
                                 </div>
                             </div>
                             
                             <div id="rep-area-family" class="flex-1 flex-col hidden relative overflow-hidden bg-blue-50 border-4 border-gray-800 rounded-3xl">
-                                <div class="absolute top-2 left-2 bg-white/80 p-2 rounded-lg border-2 border-gray-800 z-20 font-black text-sm" id="tree-month-title">本月爬樹大賽</div>
+                                <div class="absolute top-2 left-2 bg-white/80 p-2 rounded-lg border-2 border-gray-800 z-20 font-black text-xs md:text-sm" id="tree-month-title">本月爬樹大賽</div>
                                 <div id="tree-group-buff" class="absolute top-12 left-2 bg-yellow-200 p-2 rounded-lg border-2 border-gray-800 z-20 font-black text-xs hidden shadow-sm pop-in">🎉 大樹已進化！</div>
                                 <div class="absolute inset-0 z-0 flex justify-center items-end" id="tree-svg-container">${SVGs.fluffyTree}</div>
                                 <div id="tree-nodes-container" class="absolute inset-0 z-10 p-4"></div>
@@ -1360,24 +1369,24 @@
                             </div>
                             
                             <div id="rep-area-stats" class="flex-1 overflow-y-auto hidden flex-col gap-4 pb-6">
-                                <div class="bg-white border-4 border-gray-800 rounded-3xl p-4 flex flex-col items-center flex-shrink-0">
-                                    <p class="font-black">這月已活躍 <span id="stats-active-days" class="text-3xl text-red-500">0</span> 天</p>
-                                    <div id="stats-apple-mountain" class="w-full min-h-[80px] border-b-4 border-gray-300 mt-2 flex flex-col-reverse items-center pb-1 relative"></div>
+                                <div class="bg-white border-4 border-gray-800 rounded-3xl p-3 md:p-4 flex flex-col items-center flex-shrink-0">
+                                    <p class="font-black text-sm md:text-base">這月已活躍 <span id="stats-active-days" class="text-2xl md:text-3xl text-red-500">0</span> 天</p>
+                                    <div id="stats-apple-mountain" class="w-full min-h-[60px] md:min-h-[80px] border-b-4 border-gray-300 mt-2 flex flex-col-reverse items-center pb-1 relative"></div>
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                                    <div class="bg-yellow-50 border-4 border-gray-800 p-4 rounded-2xl flex flex-col">
-                                        <div class="flex items-center gap-2 mb-3 border-b-2 border-dashed border-gray-300 pb-2"><div class="w-6 h-6">${SVGs.coin}</div><span class="font-black">金幣貢獻榜</span></div>
-                                        <div class="flex gap-4 items-center justify-center mb-4">
-                                            <div class="w-24 h-24 flex-shrink-0" id="stats-coin-pie"></div>
-                                            <div><p class="text-xs font-bold text-gray-500">本月總收穫</p><p class="font-black text-3xl text-yellow-600" id="stats-monthly-coins">0</p></div>
+                                    <div class="bg-yellow-50 border-4 border-gray-800 p-3 md:p-4 rounded-2xl flex flex-col">
+                                        <div class="flex items-center gap-2 mb-3 border-b-2 border-dashed border-gray-300 pb-2"><div class="w-5 h-5 md:w-6 md:h-6">${SVGs.coin}</div><span class="font-black text-sm md:text-base">金幣貢獻榜</span></div>
+                                        <div class="flex gap-3 md:gap-4 items-center justify-center mb-4">
+                                            <div class="w-20 h-20 md:w-24 md:h-24 flex-shrink-0" id="stats-coin-pie"></div>
+                                            <div><p class="text-xs font-bold text-gray-500">本月總收穫</p><p class="font-black text-2xl md:text-3xl text-yellow-600" id="stats-monthly-coins">0</p></div>
                                         </div>
                                         <div id="stats-coin-list" class="flex flex-col flex-1 overflow-y-auto custom-scroll pr-1"></div>
                                     </div>
-                                    <div class="bg-blue-50 border-4 border-gray-800 p-4 rounded-2xl flex flex-col">
-                                        <div class="flex items-center gap-2 mb-3 border-b-2 border-dashed border-gray-300 pb-2"><div class="w-6 h-6">${SVGs.icons.star}</div><span class="font-black">狂熱習慣榜</span></div>
-                                        <div class="flex gap-4 items-center justify-center mb-4">
-                                            <div class="w-24 h-24 flex-shrink-0" id="stats-count-pie"></div>
-                                            <div><p class="text-xs font-bold text-gray-500">本月最愛習慣</p><p class="font-black text-xl text-blue-600 truncate max-w-[150px]" id="stats-best-habit">-</p></div>
+                                    <div class="bg-blue-50 border-4 border-gray-800 p-3 md:p-4 rounded-2xl flex flex-col">
+                                        <div class="flex items-center gap-2 mb-3 border-b-2 border-dashed border-gray-300 pb-2"><div class="w-5 h-5 md:w-6 md:h-6">${SVGs.icons.star}</div><span class="font-black text-sm md:text-base">狂熱習慣榜</span></div>
+                                        <div class="flex gap-3 md:gap-4 items-center justify-center mb-4">
+                                            <div class="w-20 h-20 md:w-24 md:h-24 flex-shrink-0" id="stats-count-pie"></div>
+                                            <div><p class="text-xs font-bold text-gray-500">本月最愛習慣</p><p class="font-black text-lg md:text-xl text-blue-600 truncate max-w-[120px] md:max-w-[150px]" id="stats-best-habit">-</p></div>
                                         </div>
                                         <div id="stats-count-list" class="flex flex-col flex-1 overflow-y-auto custom-scroll pr-1"></div>
                                     </div>
@@ -1386,32 +1395,32 @@
                         </div>
                     </div>
                     
-                    <div id="mailbox-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0 px-2 md:px-4">
-                        <div class="bg-[#fff0f5] w-[96vw] md:w-[95vw] max-w-[1000px] lg:max-w-[1200px] rounded-t-[2rem] md:rounded-[2rem] p-4 md:p-6 border-t-8 border-gray-800 md:border-8 h-[85vh] md:h-[auto] md:max-h-[90vh] flex flex-col overflow-hidden box-border pb-[env(safe-area-inset-bottom)]">
+                    <div id="mailbox-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0 px-1 md:px-2">
+                        <div class="bg-[#fff0f5] w-[98vw] md:w-[98vw] max-w-[1200px] rounded-t-[2rem] md:rounded-[2rem] p-4 md:p-6 border-t-8 border-gray-800 md:border-8 h-[85vh] md:h-[auto] md:max-h-[90vh] flex flex-col overflow-hidden box-border pb-[env(safe-area-inset-bottom)]">
                             <div class="flex-none flex justify-between items-center mb-4 pb-3 border-b-4 border-dashed border-gray-300">
-                                <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.mailbox}</div> 家庭信箱</h3>
+                                <h3 class="text-xl md:text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.mailbox}</div> 家庭信箱</h3>
                                 <button onclick="UI.closeModal('mailbox-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1 flex-shrink-0">${SVGs.ui.cross}</button>
                             </div>
                             <div class="flex-none flex gap-2 mb-4">
-                                <button id="m-tab-read" onclick="Mail.switchTab('read')" class="flex-1 py-2 font-black rounded-xl border-4 border-gray-800 bg-pink-300 transition-colors inline-flex justify-center items-center gap-1"><div class="w-4 h-4">${SVGs.mailbox}</div> 收信箱</button>
-                                <button id="m-tab-write" onclick="Mail.switchTab('write')" class="flex-1 py-2 font-black rounded-xl border-4 border-gray-800 inline-flex justify-center items-center gap-1 transition-colors"><div class="w-4 h-4">${SVGs.ui.editPen}</div> 寫信</button>
+                                <button id="m-tab-read" onclick="Mail.switchTab('read')" class="flex-1 py-2 font-black rounded-xl border-4 border-gray-800 bg-pink-300 transition-colors inline-flex justify-center items-center gap-1 text-sm md:text-base"><div class="w-4 h-4">${SVGs.mailbox}</div> 收信箱</button>
+                                <button id="m-tab-write" onclick="Mail.switchTab('write')" class="flex-1 py-2 font-black rounded-xl border-4 border-gray-800 inline-flex justify-center items-center gap-1 transition-colors text-sm md:text-base"><div class="w-4 h-4">${SVGs.ui.editPen}</div> 寫信</button>
                             </div>
                             
                             <div id="mail-read-area" class="flex-1 overflow-y-auto custom-scroll pr-2 pb-6 flex flex-col gap-3">
-                                <div id="mail-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start content-start"></div>
+                                <div id="mail-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 items-start content-start"></div>
                                 <button id="btn-load-more-mails" onclick="Mail.loadMore()" class="hidden mt-2 text-sm font-bold bg-gray-100 py-2 rounded-xl border-2 border-dashed border-gray-300 flex-shrink-0">展開歷史信件 ▼</button>
                             </div>
                             
                             <div id="mail-write-area" class="flex-1 flex-col md:flex-row hidden pb-6 gap-4 overflow-hidden h-full">
                                 <div class="flex-none md:flex-1 flex flex-col">
                                     <div class="flex items-center gap-2 mb-3">
-                                        <p class="font-black flex-shrink-0">寫給：</p>
+                                        <p class="font-black flex-shrink-0 text-sm md:text-base">寫給：</p>
                                         <select id="mail-target-select" class="w-full box-border bg-white border-2 border-gray-800 rounded-lg px-2 py-1 font-bold shadow-[2px_2px_0px_#1f2937]"></select>
                                     </div>
-                                    <div id="mail-input" contenteditable="true" onpaste="Mail.handlePaste(event)" class="w-full min-h-[100px] max-h-[150px] md:flex-1 md:max-h-none bg-white border-4 border-gray-800 rounded-xl p-3 font-bold mb-3 overflow-y-auto focus:outline-none box-border" placeholder="說點好聽的喵..."></div>
+                                    <div id="mail-input" contenteditable="true" onpaste="Mail.handlePaste(event)" class="w-full min-h-[100px] max-h-[150px] md:flex-1 md:max-h-none bg-white border-4 border-gray-800 rounded-xl p-3 font-bold mb-3 overflow-y-auto focus:outline-none box-border text-sm md:text-base" placeholder="說點好聽的喵..."></div>
                                 </div>
                                 <div class="flex-1 flex flex-col overflow-hidden">
-                                    <div class="bg-pink-50 border-4 border-dashed border-pink-200 p-3 rounded-xl mb-4 flex-1 overflow-y-auto custom-scroll">
+                                    <div class="bg-pink-50 border-4 border-dashed border-pink-200 p-2 md:p-3 rounded-xl mb-4 flex-1 overflow-y-auto custom-scroll">
                                         <p class="text-xs font-black text-pink-500 mb-2 inline-flex items-center gap-1"><div class="w-4 h-4">${SVGs.ui.sparkle}</div> 溫馨短句：</p>
                                         <div class="grid grid-cols-2 lg:grid-cols-3 gap-2 mb-4" id="mail-text-shortcuts"></div>
                                         
@@ -1424,15 +1433,15 @@
                         </div>
                     </div>
                     
-                    <div id="editor-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-2 md:px-4">
-                        <div class="bg-[#fef9f0] w-[96vw] md:w-[95vw] max-w-[1000px] lg:max-w-[1200px] h-[90vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border pb-[env(safe-area-inset-bottom)]">
+                    <div id="editor-modal" class="fixed inset-0 bg-gray-900/90 hidden flex-col items-center justify-center z-[150] transition-opacity opacity-0 px-1 md:px-2">
+                        <div class="bg-[#fef9f0] w-[98vw] md:w-[98vw] max-w-[1200px] h-[90vh] rounded-[2rem] p-3 md:p-4 border-8 border-gray-800 shadow-[8px_8px_0px_#1f2937] flex flex-col overflow-hidden box-border pb-[env(safe-area-inset-bottom)]">
                             <div class="flex justify-between items-center mb-4 border-b-4 border-dashed border-gray-300 pb-2 flex-shrink-0">
-                                <h3 class="text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.ui.magicWand}</div> 系統與習慣管理</h3>
+                                <h3 class="text-xl md:text-2xl font-black inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.ui.magicWand}</div> 系統與習慣管理</h3>
                                 <button onclick="UI.closeModal('editor-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1 flex-shrink-0">${SVGs.ui.cross}</button>
                             </div>
                             
                             <div id="editor-view-list" class="flex-1 flex flex-col overflow-hidden">
-                                <div id="editor-habit-list" class="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 content-start pr-2"></div>
+                                <div id="editor-habit-list" class="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 content-start pr-2"></div>
                                 <button onclick="Editor.createNewHabit()" class="w-full mt-4 py-3 bg-green-400 text-white font-black border-4 border-gray-800 rounded-xl inline-flex justify-center items-center gap-2 flex-shrink-0"><div class="w-5 h-5">${SVGs.ui.plus}</div> 建立新習慣</button>
                                 
                                 <div class="mt-4 border-t-4 border-dashed border-gray-300 pt-4 flex flex-wrap gap-2 flex-shrink-0">
@@ -1440,7 +1449,7 @@
                                     <button onclick="SystemConfig.triggerRestore()" class="flex-auto bg-rose-300 border-4 border-gray-800 py-3 px-2 rounded-xl font-black text-sm shadow-[2px_2px_0px_#1f2937]">📤 還原進度</button>
                                 </div>
                                 <div class="mt-4 border-t-4 border-dashed border-red-300 pt-4 flex-shrink-0">
-                                    <button onclick="SystemConfig.triggerReset()" class="w-full bg-red-100 text-red-600 border-4 border-red-500 py-3 rounded-xl font-black shadow-sm flex items-center justify-center gap-2 active:scale-95">⚠️ 一鍵重置全家手帳資料</button>
+                                    <button onclick="SystemConfig.triggerReset()" class="w-full bg-red-100 text-red-600 border-4 border-red-500 py-3 rounded-xl font-black shadow-sm flex items-center justify-center gap-2 active:scale-95 text-sm md:text-base">⚠️ 一鍵重置全家手帳資料</button>
                                 </div>
                             </div>
                             
@@ -1496,49 +1505,49 @@
                         </div>
                     </div>
                     
-                    <div id="input-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0">
-                        <div id="modal-content" class="bg-[#fff9f0] w-[96vw] md:w-[92vw] max-w-[480px] rounded-t-[2rem] md:rounded-[2rem] p-6 border-t-8 border-gray-800 md:border-8 relative box-border pb-[env(safe-area-inset-bottom)]">
+                    <div id="input-modal" class="fixed inset-0 bg-gray-900/60 hidden flex-col items-center justify-end md:justify-center z-[150] transition-opacity opacity-0 px-1 md:px-2">
+                        <div id="modal-content" class="bg-[#fff9f0] w-[98vw] md:w-[98vw] max-w-[480px] rounded-t-[2rem] md:rounded-[2rem] p-5 md:p-6 border-t-8 border-gray-800 md:border-8 relative box-border pb-[env(safe-area-inset-bottom)]">
                             <div class="flex justify-between items-center mb-5 border-b-4 border-dashed border-gray-300 pb-3">
-                                <h3 class="text-2xl font-black" id="modal-title">紀錄進度</h3>
+                                <h3 class="text-xl md:text-2xl font-black" id="modal-title">紀錄進度</h3>
                                 <button onclick="UI.closeModal('input-modal')" class="w-10 h-10 bg-red-400 border-4 border-gray-800 rounded-full text-white p-1">${SVGs.ui.cross}</button>
                             </div>
                             <div class="mb-5">
-                                <label class="block text-base font-black mb-2 transform -rotate-1 inline-flex items-center gap-1" id="label-title"><div class="w-5 h-5">${SVGs.icons.star}</div> 相關紀錄項目？</label>
+                                <label class="block text-sm md:text-base font-black mb-2 transform -rotate-1 inline-flex items-center gap-1" id="label-title"><div class="w-5 h-5">${SVGs.icons.star}</div> 相關紀錄項目？</label>
                                 <input type="text" id="input-book-title" class="w-full box-border bg-white border-4 border-gray-800 rounded-xl px-4 py-3 font-bold">
                             </div>
                             <div class="mb-5">
-                                <label class="block text-base font-black mb-2 transform rotate-1 inline-flex items-center gap-1" id="label-value"><div class="w-5 h-5">${SVGs.ui.editPen}</div> 數量多少呢？</label>
+                                <label class="block text-sm md:text-base font-black mb-2 transform rotate-1 inline-flex items-center gap-1" id="label-value"><div class="w-5 h-5">${SVGs.ui.editPen}</div> 數量多少呢？</label>
                                 <input type="number" min="1" id="input-value" class="w-full box-border bg-white border-4 border-gray-800 rounded-xl px-4 py-3 font-bold">
                             </div>
                             <div class="mb-8">
-                                <label class="block text-base font-black mb-2 transform -rotate-1 inline-flex items-center gap-1"><div class="w-5 h-5">${SVGs.ui.editPen}</div> 簡單心得 (選填)</label>
+                                <label class="block text-sm md:text-base font-black mb-2 transform -rotate-1 inline-flex items-center gap-1"><div class="w-5 h-5">${SVGs.ui.editPen}</div> 簡單心得 (選填)</label>
                                 <input type="text" id="input-memo" class="w-full box-border bg-white border-4 border-gray-800 rounded-xl px-4 py-3 font-bold">
                             </div>
-                            <button onclick="Logic.saveAction()" class="w-full py-4 rounded-xl font-black text-2xl text-white bg-purple-500 border-4 border-gray-800 tracking-wider">完成打卡！</button>
+                            <button onclick="Logic.saveAction()" class="w-full py-3 md:py-4 rounded-xl font-black text-xl md:text-2xl text-white bg-purple-500 border-4 border-gray-800 tracking-wider">完成打卡！</button>
                         </div>
                     </div>
                     
-                    <div id="ios-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-4 pb-[env(safe-area-inset-bottom)]">
-                        <div class="bg-[#fff9f0] w-[90vw] md:w-[92vw] max-w-[360px] rounded-[2rem] p-6 border-8 border-gray-800 transform transition-transform translate-y-full md:translate-y-0 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
-                            <h3 class="text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.bulb}</div> 安裝至桌面</h3>
-                            <p class="font-bold text-gray-600 mb-4 text-left leading-relaxed">蘋果設備專屬魔法：<br>1. 點擊下方工具列的 <b class="text-blue-500">分享圖示</b><br>2. 往下滑選擇 <b class="text-gray-800">「加入主畫面」</b></p>
+                    <div id="ios-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-2 md:px-4 pb-[env(safe-area-inset-bottom)]">
+                        <div class="bg-[#fff9f0] w-[96vw] md:w-[96vw] max-w-[400px] rounded-[2rem] p-6 border-8 border-gray-800 transform transition-transform translate-y-full md:translate-y-0 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
+                            <h3 class="text-xl md:text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.bulb}</div> 安裝至桌面</h3>
+                            <p class="font-bold text-sm md:text-base text-gray-600 mb-4 text-left leading-relaxed">蘋果設備專屬魔法：<br>1. 點擊下方工具列的 <b class="text-blue-500">分享圖示</b><br>2. 往下滑選擇 <b class="text-gray-800">「加入主畫面」</b></p>
                             <div class="text-4xl mb-6 flex justify-center w-8 h-8 mx-auto">${SVGs.icons.star}</div>
                             <button onclick="UI.closeModal('ios-pwa-modal')" class="w-full py-3 rounded-xl font-black text-gray-800 bg-yellow-300 border-4 border-gray-800 hand-drawn-btn shadow-[4px_4px_0px_#1f2937]">我知道了！</button>
                         </div>
                     </div>
                     
-                    <div id="android-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-4 pb-[env(safe-area-inset-bottom)]">
-                        <div class="bg-[#fff9f0] w-[90vw] md:w-[92vw] max-w-[360px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
-                            <h3 class="text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.star}</div> 安裝至桌面</h3>
-                            <p class="font-bold text-gray-600 mb-4 text-left leading-relaxed">安卓專屬魔法：<br>1. 點擊瀏覽器右上角的 <b class="text-blue-500">⋮ (選單)</b><br>2. 選擇 <b class="text-gray-800">「加到主畫面」</b> 或 <b class="text-gray-800">「安裝應用程式」</b></p>
+                    <div id="android-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-2 md:px-4 pb-[env(safe-area-inset-bottom)]">
+                        <div class="bg-[#fff9f0] w-[96vw] md:w-[96vw] max-w-[400px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
+                            <h3 class="text-xl md:text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.star}</div> 安裝至桌面</h3>
+                            <p class="font-bold text-sm md:text-base text-gray-600 mb-4 text-left leading-relaxed">安卓專屬魔法：<br>1. 點擊瀏覽器右上角的 <b class="text-blue-500">⋮ (選單)</b><br>2. 選擇 <b class="text-gray-800">「加到主畫面」</b> 或 <b class="text-gray-800">「安裝應用程式」</b></p>
                             <button onclick="UI.closeModal('android-pwa-modal')" class="w-full py-3 rounded-xl font-black text-gray-800 bg-yellow-300 border-4 border-gray-800 hand-drawn-btn">我知道了！</button>
                         </div>
                     </div>
                     
-                    <div id="inapp-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-4 pb-[env(safe-area-inset-bottom)]">
-                        <div class="bg-[#fff9f0] w-[90vw] md:w-[92vw] max-w-[360px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
-                            <h3 class="text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.lightning}</div> 跳轉提示</h3>
-                            <p class="font-bold text-gray-600 mb-4 text-left leading-relaxed">您目前使用 App 內建瀏覽器。<br><br>請點擊右上角或右下角選單，選擇 <b class="text-blue-500">「使用預設瀏覽器開啟」</b> 或 <b class="text-blue-500">「在 Safari/Chrome 開啟」</b>，才能順利安裝到手機桌面喔！</p>
+                    <div id="inapp-pwa-modal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-end md:justify-center z-[160] transition-opacity opacity-0 px-2 md:px-4 pb-[env(safe-area-inset-bottom)]">
+                        <div class="bg-[#fff9f0] w-[96vw] md:w-[96vw] max-w-[400px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative box-border mb-4 md:mb-0">
+                            <h3 class="text-xl md:text-2xl font-black text-gray-800 mb-4 inline-flex items-center gap-2"><div class="w-6 h-6">${SVGs.icons.lightning}</div> 跳轉提示</h3>
+                            <p class="font-bold text-sm md:text-base text-gray-600 mb-4 text-left leading-relaxed">您目前使用 App 內建瀏覽器。<br><br>請點擊右上角或右下角選單，選擇 <b class="text-blue-500">「使用預設瀏覽器開啟」</b> 或 <b class="text-blue-500">「在 Safari/Chrome 開啟」</b>，才能順利安裝到手機桌面喔！</p>
                             <button onclick="UI.closeModal('inapp-pwa-modal')" class="w-full py-3 rounded-xl font-black text-gray-800 bg-yellow-300 border-4 border-gray-800 hand-drawn-btn">我知道了！</button>
                         </div>
                     </div>
@@ -1638,7 +1647,6 @@
                     
                     let pts = currentActionObj.points; let msgs = [];
                     
-                    // 週末彩蛋
                     const todayD = new Date();
                     const day = todayD.getDay();
                     if (!isEditMode && !recoveryDate && (day === 0 || day === 6) && !uData.eggWeekend?.[targetKey]) {
@@ -1662,7 +1670,6 @@
                         pts += 50; isGoldenRain = true; msgs.push(`👑 黃金雨 +50`); 
                     }
                     
-                    // 微習慣寶箱
                     if(!isEditMode && currentActionObj.isMicro) {
                         let todayMicroCount = 0;
                         Object.keys(uData.habits).forEach(hId => {
@@ -1671,7 +1678,7 @@
                                 if (actDef && actDef.isMicro) todayMicroCount++;
                             }
                         });
-                        if (todayMicroCount === 2) { // 這次打下去剛好湊滿 3 次
+                        if (todayMicroCount === 2) {
                             pts += 15; msgs.push(`🎁 微习惯寶箱 +15`);
                         }
                     }
@@ -1735,14 +1742,16 @@
             },
             startRecovery(d) {
                 const uData = getUserData(currentUser.uid);
-                // 防呆：確保 inventory 存在
+                // 強制初始化防呆
                 if (!uData.inventory) uData.inventory = { streakSavers: 0 };
-                const savers = uData.inventory.streakSavers || 0;
+                if (typeof uData.inventory.streakSavers !== 'number') uData.inventory.streakSavers = 0;
+                
+                const savers = uData.inventory.streakSavers;
                 
                 if(savers > 0) {
                     Confirm.show("啟動時光機？", `將消耗 1 張「保命符」來補救 ${d} 的進度。\n(目前剩餘: ${savers} 張)`, "開啟", () => {
-                        // 防呆：避免扣成負數
-                        uData.inventory.streakSavers = Math.max(0, uData.inventory.streakSavers - 1);
+                        // 防負數保護
+                        uData.inventory.streakSavers = Math.max(0, (uData.inventory.streakSavers || 0) - 1);
                         saveLocal();
                         recoveryDate = d; UI.renderAll();
                         UI.showToast("時光機已啟動！請選擇要補救的習慣喵。");
@@ -1774,11 +1783,11 @@
                 const uData = getUserData(currentUser.uid); 
                 document.getElementById('shop-current-coins').innerText = uData.currentCoins; 
                 
-                // 防呆：嚴格檢查並設定保命符數量顯示
-                const saversCount = (uData.inventory && typeof uData.inventory.streakSavers === 'number') 
-                                    ? uData.inventory.streakSavers 
-                                    : 0;
-                document.getElementById('shop-saver-count').innerText = saversCount;
+                // 強制初始化防呆
+                if (!uData.inventory) uData.inventory = { streakSavers: 0 };
+                if (typeof uData.inventory.streakSavers !== 'number') uData.inventory.streakSavers = 0;
+                
+                document.getElementById('shop-saver-count').innerText = uData.inventory.streakSavers;
                 
                 document.getElementById('shop-items-list').innerHTML = shopItems.map(i => `
                     <div class="bg-white border-4 border-gray-800 p-3 rounded-xl flex justify-between items-center shadow-sm">
@@ -1804,9 +1813,10 @@
                     uData.currentCoins -= i.cost; 
                     
                     if (i.isSpecial === 'saver') {
-                        // 防呆：確保 inventory 存在
+                        // 強制初始化防呆
                         if (!uData.inventory) uData.inventory = { streakSavers: 0 };
-                        uData.inventory.streakSavers = (uData.inventory.streakSavers || 0) + 1;
+                        if (typeof uData.inventory.streakSavers !== 'number') uData.inventory.streakSavers = 0;
+                        uData.inventory.streakSavers++;
                     }
                     uData.shopHistory.unshift({ itemName: i.name, cost: i.cost, timestamp: Date.now() }); 
                     
@@ -2075,7 +2085,6 @@
                 }
                 document.getElementById('cycle-treasures').innerHTML = treasuresHtml;
                 
-                // 7日連勝徽章
                 const streak = getOverallStreak(currentUser.uid);
                 let badgeHtml = '';
                 if (streak >= 7) {
@@ -2469,7 +2478,6 @@
 
         window.addEventListener('DOMContentLoaded', async () => { 
             await initDB(); 
-            // UI.init() will be called inside initDB() after auth
         });
         
     </script>
