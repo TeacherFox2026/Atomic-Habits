@@ -509,6 +509,8 @@
                 document.getElementById('mute-btn').innerHTML = `<div class="w-6 h-6">${this.muted ? SVGs.ui.mute : SVGs.ui.speaker}</div>`; 
                 if(!this.muted) { this.init(); if(this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); this.playCoin(); } 
             },
+            microVibrate() { if(navigator.vibrate) try { navigator.vibrate([15]); } catch(e){} },
+            vibrate(pattern) { if(navigator.vibrate) try { navigator.vibrate(pattern); } catch(e){} },
             playCoin() { 
                 if(this.muted || !this.ctx) return; 
                 try {
@@ -516,6 +518,39 @@
                     osc.type = 'square'; osc.frequency.setValueAtTime(987, this.ctx.currentTime); osc.frequency.setValueAtTime(1318, this.ctx.currentTime + 0.1); 
                     gain.gain.setValueAtTime(0.1, this.ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.4); 
                     osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.4); 
+                } catch(e){}
+            },
+            playCheck() {
+                if(this.muted || !this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(1200, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.1, this.ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
+                    osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.2);
+                } catch(e){}
+            },
+            playBuy() {
+                if(this.muted || !this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+                    osc.type = 'triangle'; osc.frequency.setValueAtTime(800, this.ctx.currentTime); osc.frequency.setValueAtTime(1000, this.ctx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.1, this.ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.3);
+                    osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.3);
+                } catch(e){}
+            },
+            playBlindBox() {
+                if(this.muted || !this.ctx) return;
+                try {
+                    for(let i=0; i<5; i++) {
+                        const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+                        osc.type = 'square'; osc.frequency.value = 200 + i*20;
+                        gain.gain.setValueAtTime(0.05, this.ctx.currentTime + i*0.1); gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + i*0.1 + 0.1);
+                        osc.connect(gain); gain.connect(this.ctx.destination); osc.start(this.ctx.currentTime + i*0.1); osc.stop(this.ctx.currentTime + i*0.1 + 0.1);
+                    }
+                    const osc2 = this.ctx.createOscillator(); const gain2 = this.ctx.createGain();
+                    osc2.type = 'sine'; osc2.frequency.setValueAtTime(800, this.ctx.currentTime + 0.6); osc2.frequency.setValueAtTime(1200, this.ctx.currentTime + 0.7);
+                    gain2.gain.setValueAtTime(0.1, this.ctx.currentTime + 0.6); gain2.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 1.2);
+                    osc2.connect(gain2); gain2.connect(this.ctx.destination); osc2.start(this.ctx.currentTime + 0.6); osc2.stop(this.ctx.currentTime + 1.2);
                 } catch(e){}
             },
             playLevelUp() { 
@@ -555,8 +590,7 @@
                     gain.gain.setValueAtTime(0.2, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 2); 
                     osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 2); 
                 } catch(e){}
-            },
-            vibrate(pattern) { if(navigator.vibrate) try{navigator.vibrate(pattern);}catch(e){} }
+            }
         };
 
         const PWA = {
@@ -652,7 +686,11 @@
                 if(e && e.cancelable) e.preventDefault(); if(this.isPressed) return; 
                 this.isPressed = true; this.pressStartTime = Date.now(); 
                 this.pressTimer = setTimeout(() => { 
-                    if(this.isPressed) { this.isPressed = false; AudioEngine.init(); AudioEngine.playPurr(); AudioEngine.vibrate([2000]); this.spawnHearts(); Mascot.speak("呼嚕嚕...算你摸得挺舒服的喵..."); } 
+                    if(this.isPressed) { 
+                        this.isPressed = false; AudioEngine.init(); AudioEngine.playPurr(); 
+                        AudioEngine.vibrate([50, 100, 50, 100, 50, 150, 50, 100, 50, 150, 50, 100, 50, 150]); 
+                        this.spawnHearts(); Mascot.speak("呼嚕嚕...算你摸得挺舒服的喵..."); 
+                    } 
                 }, 1000); 
             },
             endPress(e) { 
@@ -925,6 +963,7 @@
             
             switchUser(uid, isInit=false, swipeDir=0) {
                 try {
+                    if (!isInit) AudioEngine.microVibrate();
                     if(swipeDir !== 0) SwipeDetector.playSlide('main-panel-left', swipeDir);
                     currentUser = users.find(u => u.uid === uid) || users[0];
                     localStorage.setItem('last_active_user_v13', currentUser.uid);
@@ -936,8 +975,8 @@
                         }
                     });
                     const mascot = document.getElementById('mascot-img'); if(mascot) mascot.innerHTML = SVGs[currentUser.svgKey];
-                    if(isInit) this.switchHabit(currentHabitId); else this.renderAll();
-                    this.showMascotMessage();
+                    if(isInit) this.switchHabit(currentHabitId, true); else this.renderAll();
+                    if(!isInit) this.showMascotMessage();
                 } catch(e) { console.error(e); }
             },
             
@@ -955,8 +994,9 @@
                 } catch(e) {}
             },
             
-            switchHabit(hId) {
+            switchHabit(hId, isInit=false) {
                 try {
+                    if (!isInit) AudioEngine.microVibrate();
                     currentHabitId = hId; localStorage.setItem('lastHabitId_v13', hId); 
                     const dropdown = document.getElementById('habit-dropdown'); if(dropdown) dropdown.classList.add('hidden'); 
                     recoveryDate = null;
@@ -1085,6 +1125,7 @@
             },
             
             openModal(id) { 
+                AudioEngine.microVibrate();
                 const m = document.getElementById(id);
                 if(m) {
                     document.body.style.overflow = 'hidden';
@@ -1099,7 +1140,7 @@
                     if (!fromPop) { this.activeModals = this.activeModals.filter(x => x !== id); }
                 }
             },
-            toggleHabitMenu(e) { if(e) e.stopPropagation(); const d = document.getElementById('habit-dropdown'); if(d) d.classList.toggle('hidden'); },
+            toggleHabitMenu(e) { AudioEngine.microVibrate(); if(e) e.stopPropagation(); const d = document.getElementById('habit-dropdown'); if(d) d.classList.toggle('hidden'); },
             updateMailBadge() { 
                 try {
                     const uData = getUserData(currentUser.uid); if(!uData) return;
@@ -1537,7 +1578,7 @@
                     }
                     
                     let isGoldenRain = false; 
-                    if(!isEditMode && currentActionObj.isCrit && Math.random() < 0.15) { pts *= 2; AudioEngine.playCoin(); msgs.push(`🔥 爆擊雙倍`); } 
+                    if(!isEditMode && currentActionObj.isCrit && Math.random() < 0.15) { pts *= 2; msgs.push(`🔥 爆擊雙倍`); } 
                     if(!isEditMode && Math.random() < 0.01) { pts += 50; isGoldenRain = true; msgs.push(`👑 黃金雨 +50`); }
                     
                     if(!isEditMode && currentActionObj.isMicro) {
@@ -1571,7 +1612,14 @@
                     
                     if(!isEditMode) { 
                         if(isGoldenRain) EasterEggs.triggerGoldenRain(); 
-                        AudioEngine.playLevelUp(); AudioEngine.vibrate([50]);
+                        
+                        // 動態反饋系統：根據是否有驚喜觸發，給予不同的音效與震動
+                        if (msgs.length > 0) {
+                            AudioEngine.playLevelUp(); AudioEngine.vibrate([50, 50, 100, 50, 150]);
+                        } else {
+                            AudioEngine.playCheck(); AudioEngine.vibrate([30]);
+                        }
+                        
                         UI.showToast(`獲得 ${pts} 金幣！ ` + msgs.join(' | ')); 
                     } else {
                         UI.showToast("紀錄修改成功！");
@@ -1612,6 +1660,7 @@
             open() { this.historyLimit = 10; this.switchTab('shop'); UI.openModal('shop-modal'); },
             switchTab(tab, swipeDir = 0) { 
                 try {
+                    AudioEngine.microVibrate();
                     ['shop','history','edit'].forEach(t => { const el = document.getElementById(`shop-tab-${t}`); if(el){ el.classList.toggle('bg-pink-500', tab === t); el.classList.toggle('text-white', tab === t); } }); 
                     document.getElementById('shop-area-shop').classList.toggle('hidden', tab !== 'shop'); 
                     document.getElementById('shop-area-history').classList.toggle('hidden', tab !== 'history'); 
@@ -1658,18 +1707,20 @@
                         if (pool.length > 0) {
                             const draw = pool[Math.floor(Math.random() * pool.length)];
                             resultName = `[盲盒] ${i.name} ➔ ${draw}`;
+                            AudioEngine.playBlindBox(); AudioEngine.vibrate([30, 50, 30, 50, 100, 100, 200]);
                             UI.showToast(`🎉 盲盒開箱！獲得：${draw}`);
                             Mascot.speak(`哇！你抽中了：「${draw}」！`);
                             EasterEggs.triggerGoldenRain();
                         }
                     } else {
+                        AudioEngine.playBuy(); AudioEngine.vibrate([20, 50, 20]);
                         UI.showToast(`兌換「${i.name}」成功！`); 
                         Mascot.speak("換了禮物別太高興，明天還要繼續賺回來喵！");
                     }
                     
                     uData.shopHistory.unshift({ itemName: resultName, cost: i.cost, timestamp: Date.now() }); 
                     
-                    saveLocal(); UI.renderAll(); this.renderItems(); AudioEngine.playCoin(); 
+                    saveLocal(); UI.renderAll(); this.renderItems();
                 } finally { setTimeout(() => isProcessing = false, 300); }
             },
             renderHistory() { 
@@ -1749,6 +1800,7 @@
             open() { this.mailLimit = 10; this.switchTab('read'); UI.openModal('mailbox-modal'); },
             switchTab(tab, swipeDir = 0) { 
                 try {
+                    AudioEngine.microVibrate();
                     document.getElementById('m-tab-read').classList.toggle('bg-pink-300', tab === 'read');
                     document.getElementById('m-tab-write').classList.toggle('bg-pink-300', tab === 'write');
                     document.getElementById('mail-read-area').classList.toggle('hidden', tab !== 'read');
@@ -1857,6 +1909,7 @@
             open() { this.viewYear = new Date().getFullYear(); this.viewMonth = new Date().getMonth(); this.switchTab('self'); UI.openModal('report-modal'); },
             switchTab(tab, swipeDir = 0) { 
                 try {
+                    AudioEngine.microVibrate();
                     ['self','family','stats'].forEach(t => document.getElementById(`rep-tab-${t}`).classList.toggle('bg-purple-500', tab === t)); 
                     ['self','family','stats'].forEach(t => document.getElementById(`rep-tab-${t}`).classList.toggle('text-white', tab === t)); 
                     document.getElementById('rep-area-self').classList.toggle('hidden', tab !== 'self'); document.getElementById('rep-area-self').classList.toggle('flex', tab === 'self');
