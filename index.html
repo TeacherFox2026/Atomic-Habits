@@ -354,7 +354,6 @@
             const savedShop = localStorage.getItem('shopItems_v13');
             try { 
                 shopItems = savedShop ? JSON.parse(savedShop) : [{ id: "s1", name: "看電視 30 分鐘", cost: 50, icon: "star", reqLog: true }]; 
-                // 深度資料清洗：移除任何可能殘留的保命符商品
                 shopItems = shopItems.filter(i => i.isSpecial !== 'saver' && i.id !== 'special_saver');
             } catch(e) { 
                 shopItems = [{ id: "s1", name: "看電視 30 分鐘", cost: 50, icon: "star", reqLog: true }]; 
@@ -376,7 +375,6 @@
                     dailyHabitData[u.uid] = { totalCoins: 0, currentCoins: 0, mails: [], habits: {}, shopHistory: [] };
                 }
                 
-                // 深度資料清洗：徹底移除舊的 inventory / streakSavers 結構
                 if (dailyHabitData[u.uid].inventory) { delete dailyHabitData[u.uid].inventory; }
 
                 if (!dailyHabitData[u.uid].mails) dailyHabitData[u.uid].mails = [];
@@ -539,12 +537,19 @@
         };
 
         const AudioEngine = {
-            muted: false, ctx: null,
+            muted: true, ctx: null, // 預設為靜音 (true)
             init() { try { window.AudioContext = window.AudioContext || window.webkitAudioContext; this.ctx = new AudioContext(); } catch(e) {} },
             toggleMute() { 
                 this.muted = !this.muted; 
                 document.getElementById('mute-btn').innerHTML = `<div class="w-6 h-6">${this.muted ? SVGs.ui.mute : SVGs.ui.speaker}</div>`; 
-                if(!this.muted) { this.init(); if(this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); this.playCoin(); } 
+                if(!this.muted) { 
+                    this.init(); 
+                    if(this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); 
+                    this.playCoin(); // 開啟時播放測試音
+                    UI.showToast("音效已開啟 🎵");
+                } else {
+                    UI.showToast("音效已關閉 🔇");
+                }
             },
             microVibrate() { if(navigator.vibrate) try { navigator.vibrate([15]); } catch(e){} },
             vibrate(pattern) { if(navigator.vibrate) try { navigator.vibrate(pattern); } catch(e){} },
@@ -1202,6 +1207,16 @@
                         </div>
                     </div>
                     
+                    <div id="blindbox-result-modal" onclick="if(event.target === this) UI.closeModal('blindbox-result-modal')" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-center z-[170] transition-opacity opacity-0 px-2 md:px-4 pb-[env(safe-area-inset-bottom)]">
+                        <div class="bg-[#fff9f0] w-[96vw] max-w-[400px] rounded-[2rem] p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative flex flex-col items-center box-border pop-in">
+                            <div class="w-32 h-32 mb-4 drop-shadow-md mascot-float">${SVGs.icons.chest}</div>
+                            <h3 class="text-3xl font-black text-red-500 mb-4 tracking-widest drop-shadow-sm">🎉 恭喜中獎！</h3>
+                            <p class="text-gray-600 font-bold text-sm mb-2">哇！你從幸運盲盒中抽中了：</p>
+                            <p id="blindbox-result-text" class="text-xl md:text-2xl font-black text-purple-600 mb-8 bg-purple-100 border-4 border-dashed border-purple-300 py-3 px-4 rounded-xl w-full break-words"></p>
+                            <button onclick="UI.closeModal('blindbox-result-modal')" class="w-full py-4 rounded-xl font-black text-xl text-white bg-purple-500 border-4 border-gray-800 hand-drawn-btn shadow-[4px_4px_0px_#1f2937] tracking-widest">太棒了！</button>
+                        </div>
+                    </div>
+                    
                     <div id="math-confirm-modal" onclick="if(event.target === this) UI.closeModal('math-confirm-modal')" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-center z-[160] transition-opacity opacity-0 px-2 md:px-4">
                         <div class="bg-white w-[96vw] max-w-[400px] box-border overflow-x-hidden rounded-[2rem] p-4 md:p-6 border-8 border-gray-800 text-center shadow-[8px_8px_0px_#1f2937] relative flex flex-col items-center pb-[env(safe-area-inset-bottom)]">
                             <div class="w-20 h-20 mb-2 flex-shrink-0">${SVGs.icons.lightning}</div>
@@ -1718,34 +1733,51 @@
                                 ${i.reqLog ? `<span class="text-[10px] text-pink-600 font-bold inline-flex items-center gap-1"><div class="w-3 h-3">${SVGs.ui.lock}</div> 需打卡解鎖</span>` : ''}
                                 ${i.isBlindBox ? `<span class="text-[10px] text-purple-600 font-bold inline-flex items-center gap-1"><div class="w-3 h-3">${SVGs.icons.chest}</div> 驚喜盲盒</span>` : ''}
                             </div>
-                            <button onclick="Shop.buyItem('${i.id}')" class="bg-yellow-200 border-2 border-gray-800 px-3 py-1 font-black rounded-lg flex-shrink-0 active:scale-95 shadow-sm">${i.cost}</button>
+                            <button onclick="Shop.triggerBuy('${i.id}')" class="bg-yellow-200 border-2 border-gray-800 px-3 py-1 font-black rounded-lg flex-shrink-0 active:scale-95 shadow-sm">${i.cost}</button>
                         </div>
                     `).join(''); 
                     this.renderHistory(); this.renderEditList(); 
                 } catch(e){}
             },
-            buyItem(id) { 
+            triggerBuy(id) {
                 if(SyncEngine.isSyncing || isProcessing) return UI.showToast("系統處理中，請稍後操作");
+                const uData = getUserData(currentUser.uid); const i = shopItems.find(x=>x.id===id); 
+                if(!i || !uData) return;
+                
+                if(uData.currentCoins < i.cost) return UI.showToast("金幣不夠！快去打卡賺金幣喵！"); 
+                
+                if (i.reqLog) {
+                    const today = getTodayStr(); const hasHabitToday = Object.values(uData.habits||{}).some(h => h?.logs?.[today] && !h.logs[today].isPruned);
+                    if (!hasHabitToday) return UI.showToast("此獎品需要今天有打卡才能兌換喔！");
+                }
+                
+                // 加入防誤觸的確認視窗
+                Confirm.show(
+                    "確認兌換？", 
+                    `確定要花費 ${i.cost} 金幣兌換「${i.name}」嗎？`, 
+                    "確定兌換", 
+                    () => { this.executeBuy(id); }
+                );
+            },
+            executeBuy(id) {
                 isProcessing = true;
                 try {
                     const uData = getUserData(currentUser.uid); const i = shopItems.find(x=>x.id===id); 
                     if(!i || !uData) return;
-                    if (i.reqLog) {
-                        const today = getTodayStr(); const hasHabitToday = Object.values(uData.habits||{}).some(h => h?.logs?.[today] && !h.logs[today].isPruned);
-                        if (!hasHabitToday) return UI.showToast("此獎品需要今天有打卡才能兌換喔！");
-                    }
-                    if(uData.currentCoins < i.cost) return UI.showToast("金幣不夠！"); 
-                    uData.currentCoins -= i.cost; 
                     
+                    uData.currentCoins -= i.cost; 
                     let resultName = i.name;
+                    
                     if (i.isBlindBox && i.blindBoxPool) {
                         const pool = i.blindBoxPool.split(',').map(s => s.trim()).filter(s => s);
                         if (pool.length > 0) {
                             const draw = pool[Math.floor(Math.random() * pool.length)];
                             resultName = `[盲盒] ${i.name} ➔ ${draw}`;
+                            
+                            // 華麗盲盒開獎視窗
+                            document.getElementById('blindbox-result-text').innerText = `【 ${draw} 】`;
+                            UI.openModal('blindbox-result-modal');
                             AudioEngine.playBlindBox(); AudioEngine.vibrate([30, 50, 30, 50, 100, 100, 200]);
-                            UI.showToast(`🎉 盲盒開箱！獲得：${draw}`);
-                            Mascot.speak(`哇！你抽中了：「${draw}」！`);
                             EasterEggs.triggerGoldenRain();
                         }
                     } else {
@@ -1755,7 +1787,6 @@
                     }
                     
                     uData.shopHistory.unshift({ itemName: resultName, cost: i.cost, timestamp: Date.now() }); 
-                    
                     saveLocal(); UI.renderAll(); this.renderItems();
                 } finally { setTimeout(() => isProcessing = false, 300); }
             },
